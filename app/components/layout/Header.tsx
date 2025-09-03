@@ -120,9 +120,8 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               </button>
 
               {/* Connect Wallet Button */}
-              <button className="
-                gradient-button  text-black font-semibold px-4 py-4 lg:px-6 lg:py-6
-                rounded-full border border-white/10 hover:shadow-lg
+              <button className="gradient-button font-semibold px-4 py-4 lg:px-6 lg:py-6
+                rounded-full  border-white/10 hover:shadow-lg
                 transition-all duration-200 focus-visible text-sm lg:text-base md:font-medium
               ">
                 Connect Wallet

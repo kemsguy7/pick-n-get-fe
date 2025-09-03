@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
-@import "tailwindcss/preflight";
+/* @import "tailwindcss/preflight"; */
+/* @import 'tw-animate-css'; */
 
 
 :root {
@@ -59,9 +60,9 @@ a {
     background: linear-gradient(162.26deg, var(--header-bg-start) 10.67%, var(--header-bg-end) 50.23%);
   }
   
-  .gradient-button {
+   .gradient-button {
     background: linear-gradient(90deg, var(--primary-yellow) 0%, var(--primary-green) 100%);
-  }
+  } 
   
   .active-link {
     border: 1px solid var(--active-link-border);
