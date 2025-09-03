@@ -71,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   return (
     <>
       <header className={`header-gradient backdrop-blur-custom relative z-50 ${className}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[90vw]  mx-auto px-4 sm:px-6 lg:px-12  ">
           <div className="flex items-center justify-between h-16 lg:h-20">
             
             {/* Left - Logo */}
@@ -80,12 +80,12 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 <Leaf className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
               </div>
               <span className="text-white text-xl lg:text-2xl font-semibold font-space-grotesk">
-                EcoCleans
+                Pick'n'get
               </span>
             </div>
 
             {/* Center - Navigation Links (Desktop) */}
-            <nav className="hidden lg:flex items-center space-x-2">
+            <nav className="hidden lg:flex gap-6 items-center space-x-2">
               {navLinks.map((link) => (
                 <button
                   key={link}
@@ -104,7 +104,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             </nav>
 
             {/* Right - Theme Toggle & Connect Wallet */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-4 ">
               
               {/* Theme Toggle */}
               <button
@@ -121,9 +121,9 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
               {/* Connect Wallet Button */}
               <button className="
-                gradient-button text-black font-semibold px-4 py-2 lg:px-6 lg:py-3
+                gradient-button  text-black font-semibold px-4 py-4 lg:px-6 lg:py-6
                 rounded-full border border-white/10 hover:shadow-lg
-                transition-all duration-200 focus-visible text-sm lg:text-base
+                transition-all duration-200 focus-visible text-sm lg:text-base md:font-medium
               ">
                 Connect Wallet
               </button>
@@ -174,7 +174,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
         }
       `}>
         <div className="header-gradient backdrop-blur-custom border-t border-white/10">
-          <nav className="max-w-7xl mx-auto px-4 py-4">
+          <nav className="max-w-[90vw] mx-auto px-10 ml-0 py-4">
             <div className="flex flex-col space-y-2">
               {navLinks.map((link, index) => (
                 <button
