@@ -17,6 +17,7 @@
   --active-link-border: #1ED7601A;
   --active-link-bg: #1ED76033;
   --white: #FFFFFF;
+  --bg-primary:  linear-gradient(90deg, #0D1B1E 0%, #142E2C 47%);
   --dark-bg: #0D1B1E;
   --dark-text: #E5E5E5;
   --light-bg: #FFFFFF;
@@ -80,7 +81,8 @@ a {
   .active-link {
     color : var(--primary-green) ; 
     background: var(--active-link-bg);
-    border: 1px solid var(--primary-green);
+    border: 1px solid color(from var(--primary-green) r g b / 10%); /* adding opacity to the border color*/
+
   }
   
   .font-space-grotesk {

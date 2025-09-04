@@ -94,7 +94,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                     nav-link px-2 py-2  rounded-lg transition-all duration-200 focus-visible
                     ${activeLink === link 
                       ? 'active-link text-white' 
-                      : 'text-white/80 hover:text-white border border-[#1ED760]/10 hover:bg-white/10'
+                      : 'text-white/80 hover:text-white   hover:bg-white/10'
                     }
                   `}
                 >
