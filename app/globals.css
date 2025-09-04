@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 /* @import "tailwindcss/preflight"; */
 /* @import 'tw-animate-css'; */
@@ -17,6 +17,15 @@
   --dark-text: #E5E5E5;
   --light-bg: #FFFFFF;
   --light-text: #1A1A1A;
+  
+  /* Hero Component Colors */
+  --secondary-text: #CDEFCE;
+  --description-text: #E0F2E9;
+  --badge-bg: #1DE9B666;
+  --badge-border: #1DE9B699;
+  --dashboard-bg: #1DE9B61A;
+  --dashboard-border: #A5D6A780;
+  --card-bg: #1DE9B666;
 }
 
 [data-theme="dark"] {
@@ -29,11 +38,11 @@
   --text-primary: var(--light-text);
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
+/* * {
+  /* box-sizing: content-box; */
+  /* padding: 0;
+  margin: 0; */
+
 
 html,
 body {
@@ -65,12 +74,16 @@ a {
   } 
   
   .active-link {
-    border: 1px solid var(--active-link-border);
+    color : var(--primary-green) ; 
     background: var(--active-link-bg);
   }
   
   .font-space-grotesk {
     font-family: 'Space Grotesk', sans-serif;
+  }
+  
+  .font-inter {
+    font-family: 'Inter', sans-serif;
   }
   
   .nav-link {
@@ -171,4 +184,81 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #19c454;
+}
+
+/* Hero Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(180deg);
+  }
+}
+
+@keyframes floatDelayed {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-180deg);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft 0.8s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatDelayed 8s ease-in-out infinite;
+}
+
+.animation-delay-200 {
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+.animation-delay-600 {
+  animation-delay: 0.6s;
+  opacity: 0;
+}
+
+.animation-delay-800 {
+  animation-delay: 0.8s;
+  opacity: 0;
 }

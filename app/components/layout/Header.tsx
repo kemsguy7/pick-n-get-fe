@@ -70,9 +70,9 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
   return (
     <>
-      <header className={`header-gradient backdrop-blur-custom relative z-50 ${className}`}>
-        <div className="max-w-[90vw]  mx-auto px-4 sm:px-6 lg:px-12  ">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+      <header className={`header-gradient  backdrop-blur-custom relative z-50 ${className}`}>
+        <div className="  mx-auto   px-4  ">
+          <div className="flex space-x-5 items-center  justify-around h-16 lg:h-20">
             
             {/* Left - Logo */}
             <div className="flex items-center space-x-3">
@@ -80,18 +80,18 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 <Leaf className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
               </div>
               <span className="text-white text-xl lg:text-2xl font-semibold font-space-grotesk">
-                Pick'n'get
+                Pick-n-get
               </span>
             </div>
 
             {/* Center - Navigation Links (Desktop) */}
-            <nav className="hidden lg:flex gap-6 items-center space-x-2">
+            <nav className="hidden lg:flex gap-3 items-center space-x-2">
               {navLinks.map((link) => (
                 <button
                   key={link}
                   onClick={() => handleLinkClick(link)}
                   className={`
-                    nav-link px-4 py-2 rounded-lg transition-all duration-200 focus-visible
+                    nav-link px-2 py-2 rounded-lg transition-all duration-200 focus-visible
                     ${activeLink === link 
                       ? 'active-link text-white' 
                       : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -104,12 +104,12 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             </nav>
 
             {/* Right - Theme Toggle & Connect Wallet */}
-            <div className="flex items-center gap-4 ">
+            <div className="flex items-center gap-2 ">
               
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors duration-200 focus-visible"
+                className=" rounded-full hover:bg-white/20 transition-colors duration-200 focus-visible"
                 aria-label="Toggle theme"
               >
                 {isDarkMode ? (
@@ -120,8 +120,8 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               </button>
 
               {/* Connect Wallet Button */}
-              <button className="gradient-button font-semibold px-4 py-4 lg:px-6 lg:py-6
-                rounded-full  border-white/10 hover:shadow-lg
+              <button className="gradient-button font-semibold px-2   py-1.5 
+                rounded-lg  hover:shadow-lg
                 transition-all duration-200 focus-visible text-sm lg:text-base md:font-medium
               ">
                 Connect Wallet
