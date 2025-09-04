@@ -1,13 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
 @import "tailwindcss";
-/* @import "tailwindcss/preflight"; */
-/* @import 'tw-animate-css'; */
+
 
 
 :root {
   /* Colors */
   --primary-green: #1ED760;
   --primary-yellow: #FFD54F;
+  --secondary-green: #079865; 
+  --lighter-green-text : #E0F2E9; 
   --header-bg-start: rgba(13, 27, 30, 0.85);
   --header-bg-end: rgba(20, 46, 44, 0.85);
   --active-link-border: #1ED7601A;
@@ -76,6 +80,7 @@ a {
   .active-link {
     color : var(--primary-green) ; 
     background: var(--active-link-bg);
+    border: 1px solid var(--primary-green);
   }
   
   .font-space-grotesk {
