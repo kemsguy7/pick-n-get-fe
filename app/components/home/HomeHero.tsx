@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Recycle, Play, BarChart3, Leaf, Coins, TreePine } from 'lucide-react';
+import { Recycle, Play, Coins, TreePine } from 'lucide-react';
 
 interface CounterProps {
   end: number;
