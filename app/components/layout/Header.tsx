@@ -71,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   return (
     <>
       <header className={`header-gradient  backdrop-blur-custom relative z-50 ${className}`}>
-        <div className="  mx-auto   px-4  ">
+        <div className="  mx-auto   px-4 ">
           <div className="flex space-x-5 items-center  justify-around h-16 lg:h-20">
             
             {/* Left - Logo */}
