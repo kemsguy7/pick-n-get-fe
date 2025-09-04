@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import StepIndicator from "./step-indicator"
-import SelectCategory from "./select-category"
-import ItemDetails from "./item-details"
-import PickupSchedule from "./pickup-schedule"
-import Confirmation from "./confirmation"
+
+import StepIndicator from "../components/recycle/step-indicator"
+import SelectCategory from "../components/recycle/select-category"
+import ItemDetails from "../components/recycle/item-details"
+import PickupSchedule from "../components/recycle/pickup-schedule"
+import Confirmation from "../components/recycle/confirmation"
 
 export interface RecycleFormData {
   category: {

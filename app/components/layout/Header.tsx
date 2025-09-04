@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Leaf, Sun, Moon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   className?: string;
@@ -11,9 +12,11 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [activeLink, setActiveLink] = useState('Home');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter(); // Initialize the router
 
   const navLinks = [
     'Home',
+    'Recycle',
     'How It Works',
     'Features',
     'Shop',
@@ -49,6 +52,33 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const handleLinkClick = (link: string) => {
     setActiveLink(link);
     setIsMobileMenuOpen(false);
+
+    // Use router to navigate instead of creating Link components
+    switch (link) {
+      case 'Home':
+        router.push('/');
+        break;
+      case 'How It Works':
+        router.push('/how-it-works');
+        break;
+      case 'Features':
+        router.push('/features');
+        break;
+      case 'Shop':
+        router.push('/shop');
+        break;
+      case 'FAQs':
+        router.push('/faqs');
+        break;
+      case 'Contact':
+        router.push('/contact');
+        break;
+      case 'Recycle':
+        router.push('/recycle');
+        break;
+      default:
+        router.push('/');
+    }
   };
 
   const toggleMobileMenu = () => {

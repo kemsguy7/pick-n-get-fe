@@ -6,6 +6,7 @@ import WhyChoose from "./components/home/WhyChoose";
 import  Footer  from "./components/layout/Footer";
 import EcoProducts from "./components/home/HomeProducts";
 
+
 export default function Home() {
   return (
     <div> 

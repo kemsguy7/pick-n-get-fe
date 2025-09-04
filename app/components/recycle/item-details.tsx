@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import type { RecycleFormData } from "./page"
+import type { RecycleFormData } from "../../recycle/page"
 
 interface ItemDetailsProps {
   formData: RecycleFormData

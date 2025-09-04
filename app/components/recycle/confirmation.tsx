@@ -1,6 +1,6 @@
 "use client"
 
-import type { RecycleFormData } from "./page"
+import type { RecycleFormData } from "../../recycle/page"
 
 interface ConfirmationProps {
   formData: RecycleFormData
