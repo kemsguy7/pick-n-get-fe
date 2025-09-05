@@ -114,7 +114,7 @@ const HomeHero: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 animate-fade-in-up animation-delay-600">
               <button className="
                 gradient-button font-space-grotesk font-medium text-lg leading-6
-                px-8 py-4 rounded-full text-black hover:shadow-xl
+                px-3 py-4 rounded-xl text-white hover:shadow-xl
                 transform hover:scale-105 transition-all duration-300
                 flex items-center justify-center gap-3 min-w-[200px]
               ">
@@ -124,7 +124,7 @@ const HomeHero: React.FC = () => {
               
               <button className="
                 bg-black font-space-grotesk font-medium text-lg leading-6
-                px-8 py-4 rounded-full text-white border border-gray-700
+                px-3 py-4 rounded-xl text-white border border-gray-700
                 hover:bg-gray-900 transform hover:scale-105 transition-all duration-300
                 flex items-center justify-center gap-3 min-w-[180px]
               ">
@@ -147,7 +147,7 @@ const HomeHero: React.FC = () => {
                     end={stat.value} 
                     isVisible={isStatsVisible}
                   />
-                  <p className="font-inter text-base leading-6 text-gray-400 mt-2">
+                  <p className="font-inter font-light leading-6 secondary-text mt-2">
                     {stat.label}
                   </p>
                 </div>
@@ -178,17 +178,17 @@ const HomeHero: React.FC = () => {
               {/* Stats Cards */}
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div 
-                  className="rounded-xl p-4 lg:p-6 transform hover:scale-105 transition-all duration-300"
-                  style={{ backgroundColor: 'var(--color-card-bg)' }}
+                  className="rounded-lg p-3 card-bg z-50  transform hover:scale-105 transition-all duration-300"
+                  
                 >
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center justify-center gap-3 mb-3">
                     <Coins className="w-6 h-6 text-primary-yellow" />
                   </div>
-                  <div className="font-space-grotesk font-bold text-2xl lg:text-[28px] leading-9 text-white mb-1">
+                  <div className="font-space-grotesk text-center  font-bold text-2xl lg:text-[28px] leading-9 text-white mb-1">
                     2,450
                   </div>
                   <div 
-                    className="font-inter text-base leading-6"
+                    className="font-inter text-center  text-base leading-6"
                     style={{ color: 'var(--color-secondary-text)' }}
                   >
                     ECO Tokens
@@ -196,17 +196,17 @@ const HomeHero: React.FC = () => {
                 </div>
 
                 <div 
-                  className="rounded-xl p-4 lg:p-6 transform hover:scale-105 transition-all duration-300 relative"
-                  style={{ backgroundColor: 'var(--color-card-bg)' }}
+                  className="rounded-lg p-4  card-bg transform hover:scale-105 transition-all duration-300 relative"
+                  
                 >
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center justify-center gap-3 mb-3">
                     <TreePine className="w-6 h-6 text-primary-green" />
                   </div>
-                  <div className="font-space-grotesk font-bold text-2xl lg:text-[28px] leading-9 text-white mb-1">
+                  <div className="font-space-grotesk text-center font-bold text-2xl lg:text-[28px] leading-9 text-white mb-1">
                     13.4kg
                   </div>
                   <div 
-                    className="font-inter text-base leading-6"
+                    className="font-inter text-base text-center leading-6"
                     style={{ color: 'var(--color-secondary-text)' }}
                   >
                     CO₂ Saved
@@ -226,14 +226,14 @@ const HomeHero: React.FC = () => {
                   Recent Activity
                 </h3>
                 <div 
-                  className="rounded-xl p-4 lg:p-6 transform hover:scale-105 transition-all duration-300"
-                  style={{ backgroundColor: 'var(--color-card-bg)' }}
+                  className="card-bg p-2  rounded-lg lg:p-2 transform hover:scale-105 transition-all duration-300"
+                 
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-primary-green/20 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Recycle className="w-5 h-5 text-primary-green" />
+                  <div className="flex items-start gap-4  p-3 ">
+                    <div className="w-10 h-5 flex items-center  justify-center my-auto  flex-shrink-0">
+                      <Recycle className="w-5 h-5 text-[#text-primary]" />
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 ">
                       <div className="font-inter text-base leading-6 text-white mb-1">
                         Plastic bottles collected
                       </div>
