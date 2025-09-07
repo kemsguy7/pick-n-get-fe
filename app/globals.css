@@ -22,6 +22,8 @@
   --dark-text: #E5E5E5;
   --light-bg: #FFFFFF;
   --light-text: #1A1A1A;
+  --footer-bg-start: #0D1B1E;
+  --footer-bg-end: #142E2C; 
   
   /* Hero Component Colors */
   --secondary-text: #CDEFCE;
@@ -72,7 +74,11 @@ a {
   .header-gradient {
     background: linear-gradient(162.26deg, var(--header-bg-start) 10.67%, var(--header-bg-end) 50.23%);
   }
-  
+  .footer-gradient {
+    background: linear-gradient(162.26deg, var(--footer-bg-start) 10.67%, var(--footer-bg-end) 50.23%);
+
+  }
+    
    .gradient-button {
     background: linear-gradient(90deg, var(--primary-yellow) 0%, var(--primary-green) 100%);
   } 
