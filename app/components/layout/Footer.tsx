@@ -1,3 +1,26 @@
+import { FooterLink } from '../../types/footerTypes';
+
+const platformLinks : FooterLink[] = [
+  { title: "Start Recycling", href: "/start-recycling" },
+  { title: "Pick Shop ", href: "/pick-shop" },
+  { title: "Wallet", href: "/wallet" },
+  { title: "Rewards", href: "/rewards" },
+];
+
+const supportLinks : FooterLink[] = [
+  { title: "Help Center", href: "/help-center" },
+  { title: "Contact Us", href: "/contact-us" },
+  { title: "Agent Portal", href: "/agent-portal" },
+  { title: "Vendor Program", href: "/vendor-program" },
+];
+
+const communityLinks : FooterLink[] = [
+  { title: "Blog", href: "/blog" },
+  { title: "Impact Stories", href: "/impact-stories" },
+  { title: "Sustainability Report", href: "/sustainaibility report" },
+  { title: "Carbon Credits", href: "/carbon-credits" },
+];  
+
 const Footer = () => {
 
   function getYear() {
@@ -149,8 +172,11 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className="border-t border-gray-700 mt-12 pt-8 flex flex-col lg:flex-row justify-between items-center gap-4">
+        
+      </div>
+
+      {/* Bottom Section */}
+        <div className="mt-12 pt-8 flex flex-col lg:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">
             © {getYear()}  Pick-n-get • All Rights Reserved • Built for sustainable, tokenized recycling
           </p>
@@ -165,7 +191,6 @@ const Footer = () => {
             </span>
           </div>
         </div>
-      </div>
     </footer>
   )
 }
