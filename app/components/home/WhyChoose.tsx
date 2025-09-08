@@ -1,6 +1,6 @@
 export default function WhyChoose() {
   return (
-    <section className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black px-4 py-16 lg:py-24">
+    <section className="min-h-screen  px-4 py-16 lg:py-24">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-16">

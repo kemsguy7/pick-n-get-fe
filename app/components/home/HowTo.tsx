@@ -11,19 +11,26 @@ interface StepCardProps {
 const StepCard: React.FC<StepCardProps> = ({ stepNumber, title, description, icon, iconBgColor }) => {
   return (
     <div
-      className="relative backdrop-blur-custom border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center min-h-[320px] w-full max-w-[280px]"
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.4)" }}
+      className="relative bg-black backdrop-blur-custom border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center  w-full 
+      "
+      
     >
-      {/* Step Number Badge */}
+      
+
+
+<div className="relative"> 
+
+  {/* Step Number Badge */}
       <div
-        className="absolute -top-3 -right-3 text-white text-sm font-medium rounded-full w-8 h-8 flex items-center justify-center font-space-grotesk"
-        style={{ backgroundColor: "rgba(107, 114, 128, 1)" }}
+        className="absolute bg-[#1E2A28] -top-3 -right-3 text-white text-sm font-medium rounded-full w-8 h-8 flex items-center justify-center font-space-grotesk"
+       
       >
         {stepNumber}
       </div>
-
       {/* Icon */}
       <div className={`${iconBgColor} rounded-2xl p-4 mb-6 w-16 h-16 flex items-center justify-center`}>{icon}</div>
+
+</div>
 
       {/* Title */}
       <h3 className="text-white text-xl font-semibold mb-4 leading-tight font-space-grotesk">{title}</h3>
@@ -94,10 +101,8 @@ export const HowTO: React.FC = () => {
 
   return (
     <section
-      className="min-h-screen py-16 px-4"
-      style={{
-        background: "linear-gradient(135deg, var(--dark-bg) 0%, #1a3a37 50%, #000000 100%)",
-      }}
+      className=" py-16 px-4"
+      
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
