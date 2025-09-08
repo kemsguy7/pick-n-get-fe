@@ -1,25 +1,25 @@
 import { FooterLink } from '../../types/footerTypes';
 
 const platformLinks : FooterLink[] = [
-  { title: "Start Recycling", href: "/start-recycling" },
-  { title: "Pick Shop ", href: "/pick-shop" },
-  { title: "Wallet", href: "/wallet" },
-  { title: "Rewards", href: "/rewards" },
+  { id: 1, title: "Start Recycling", href: "/start-recycling" },
+  { id: 2, title: "Pick Shop ", href: "/pick-shop" },
+  { id: 3, title: "Wallet", href: "/wallet" },
+  { id: 4, title: "Rewards", href: "/rewards" },
 ];
 
 const supportLinks : FooterLink[] = [
-  { title: "Help Center", href: "/help-center" },
-  { title: "Contact Us", href: "/contact-us" },
-  { title: "Agent Portal", href: "/agent-portal" },
-  { title: "Vendor Program", href: "/vendor-program" },
+  { id: 5, title: "Help Center", href: "/help-center" },
+  { id: 6, title: "Contact Us", href: "/contact-us" },
+  { id: 7, title: "Agent Portal", href: "/agent-portal" },
+  { id: 8, title: "Vendor Program", href: "/vendor-program" },
 ];
 
 const communityLinks : FooterLink[] = [
-  { title: "Blog", href: "/blog" },
-  { title: "Impact Stories", href: "/impact-stories" },
-  { title: "Sustainability Report", href: "/sustainaibility report" },
-  { title: "Carbon Credits", href: "/carbon-credits" },
-];  
+  { id: 9, title: "Blog", href: "/blog" },
+  { id: 10, title: "Impact Stories", href: "/impact-stories" },
+  { id: 11, title: "Sustainability Report", href: "/sustainability-report" },
+  { id: 12, title: "Carbon Credits", href: "/carbon-credits" },
+];
 
 const Footer = () => {
 
@@ -71,7 +71,7 @@ const Footer = () => {
                     />
                   </svg>
                 </div>
-                <span className="text-sm text-gray-300">125,420kg recycled</span>
+                <span className="text-sm text-gray-300">125,420kg <br/>recycled</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ const Footer = () => {
                     />
                   </svg>
                 </div>
-                <span className="text-sm text-gray-300">89,340kg CO₂ saved</span>
+                <span className="text-sm text-gray-300">89,340kg CO₂ <br/>saved</span>
               </div>
             </div>
           </div>
@@ -94,26 +94,16 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-white mb-4">Platform</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Start Recycling
+
+              {platformLinks.map((link) =>  (
+                <li key={link.id}> 
+                <a href={link.href} className="text-[#E0F2E9] font-inter font-light  hover:text-green-400 transition-colors">
+                  {link.title}
                 </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Pick Shop
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Wallet
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Rewards
-                </a>
-              </li>
+                </li>
+              ))}
+
+              
             </ul>
           </div>
 
@@ -121,26 +111,14 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-white mb-4">Support</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Help Center
+                {supportLinks.map((link) =>  (
+                <li key={link.id}> 
+                <a href={link.href} className="text-[#E0F2E9] font-inter font-light hover:text-green-400 transition-colors">
+                  {link.title}
                 </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Contact Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Agent Portal
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Vendor Program
-                </a>
-              </li>
+                </li>
+              ))}
+
             </ul>
           </div>
 
@@ -148,26 +126,13 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold text-white mb-4">Community</h4>
             <ul className="space-y-3">
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Blog
+              {communityLinks.map((link) =>  (
+                <li key={link.id}> 
+                <a href={link.href} className="text-[#E0F2E9] font-inter font-normal hover:text-green-400 transition-colors">
+                  {link.title}
                 </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Impact Stories
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Sustainability Report
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Carbon Credits
-                </a>
-              </li>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -176,17 +141,17 @@ const Footer = () => {
       </div>
 
       {/* Bottom Section */}
-        <div className="mt-12 pt-8 flex flex-col lg:flex-row justify-between items-center gap-4">
+        <div className="mt-12 pt-8 flex  flex-col lg:flex-row  items-center mx-3 md:justify-between gap-4">
           <p className="text-gray-400 text-sm">
             © {getYear()}  Pick-n-get • All Rights Reserved • Built for sustainable, tokenized recycling
           </p>
 
           {/* Badges */}
-          <div className="flex gap-3">
-            <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-medium rounded-full border border-green-500/30">
+          <div className="flex gap-3  text-[#1ED760] font-roboto mb-6">
+            <span className="px-3 bg-black py-0.5  border-[#1DE9B6]/50  font-roboto text-primary  text-xs md:text-sm  font-medium rounded-md border">
               Carbon Neutral Platform
             </span>
-            <span className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs font-medium rounded-full border border-blue-500/30">
+            <span className="px-3 py-0.5 bg-black  border-[#1DE9B6]/50 font-roboto  text-blue-400 text-xs md:text-sm  font-medium rounded-md border ">
               Web3 Verified
             </span>
           </div>
