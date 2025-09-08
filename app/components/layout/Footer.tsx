@@ -1,7 +1,14 @@
 const Footer = () => {
+
+  function getYear() {
+    const date = new Date();
+    return date.getFullYear();
+  }
+  getYear();
+
   return (
     <footer className="bg-footer-gradient text-white">
-      <div className="h-3 bg-[#142f2c]">
+      <div className="h-4 bg-[#142f2c]">
 
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -21,7 +28,7 @@ const Footer = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-green-400">EcoCleans</h3>
+              <h3 className="text-xl font-bold text-green-400">Pick-n-get</h3>
             </div>
 
             <p className="text-gray-300 mb-6 leading-relaxed">
@@ -71,7 +78,7 @@ const Footer = () => {
               </li>
               <li>
                 <a href="#" className="text-gray-300 hover:text-green-400 transition-colors">
-                  Eco Shop
+                  Pick Shop
                 </a>
               </li>
               <li>
@@ -145,7 +152,7 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="border-t border-gray-700 mt-12 pt-8 flex flex-col lg:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">
-            © 2025 Eco Cleans • All Rights Reserved • Built for sustainable, tokenized recycling
+            © {getYear()}  Pick-n-get • All Rights Reserved • Built for sustainable, tokenized recycling
           </p>
 
           {/* Badges */}

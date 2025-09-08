@@ -102,11 +102,11 @@ export const HowTO: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 text-balance font-space-grotesk">
+          <h1 className="text-3xl md:text-5xl  font-bold text-white mb-3 text-balance font-space-grotesk">
             How EcoCleans Works
           </h1>
           <p
-            className="text-lg md:text-xl max-w-4xl mx-auto leading-relaxed text-balance font-inter"
+            className="  mx-auto leading-relaxed text-balance font-inter font-light"
             style={{ color: "var(--description-text)" }}
           >
             Simple steps to start earning your recyclable waste while making a positive environmental impact
