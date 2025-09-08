@@ -1,6 +1,6 @@
 export default function WhyChoose() {
   return (
-    <section className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black px-4 py-16 lg:py-24">
+    <section className="min-h-screen  px-4 py-16 lg:py-24">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-16">
@@ -98,7 +98,7 @@ export default function WhyChoose() {
 
             {/* CTA Button */}
             <div className="pt-8">
-              <button className="bg-gradient-to-r from-yellow-400 to-green-500 text-black font-semibold px-8 py-4 rounded-2xl flex items-center gap-2 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+              <button className="gradient-button font-space-grotesk font-medium text-md px-8 py-3 rounded-lg flex items-center gap-2 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                 Get Started Today
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
