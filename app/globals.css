@@ -138,6 +138,11 @@ a {
     color: var(--description-text);
   }
 
+  /*Shadows*/
+  .shadow-border-green {
+    box-shadow: 0px 4px 10px 0px #1DE9B61A;
+  }
+
 }
 
 /* Hamburger Animation Styles */

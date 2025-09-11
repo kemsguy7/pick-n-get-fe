@@ -50,10 +50,10 @@ export function EcoProducts() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-space-grotesk text-balance">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-6 font-space-grotesk text-balance">
             Eco-Friendly Products
           </h2>
-          <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto font-inter text-pretty">
+          <p className="text-lg md:text-xl font-normal text-gray-300 max-w-3xl mx-auto font-inter secondary-text text-pretty">
             Shop sustainable products made from recycled materials and support the cultural economy
           </p>
         </div>
@@ -63,7 +63,7 @@ export function EcoProducts() {
           {products.map((product) => (
             <div
               key={product.id}
-              className="bg-gray-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:transform hover:scale-105"
+              className="bg-black backdrop-blur-sm shadow-border-green rounded-[20px] overflow-hidden border-[0.2px] border-[#1DE9B6]   hover:border-gray-600/50 transition-all duration-300 hover:transform hover:scale-105"
             >
               {/* Product Image */}
               <div className="relative aspect-[4/3] overflow-hidden">
@@ -72,30 +72,31 @@ export function EcoProducts() {
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
-                {/* Recycled Badge */}
-                <div className="absolute top-4 left-4">
-                  <span className="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-semibold font-inter">
-                    {product.recycledPercentage}% Recycled
-                  </span>
-                </div>
+                
               </div>
 
               {/* Product Info */}
               <div className="p-6">
-                <h3 className="text-white font-semibold text-lg mb-4 font-space-grotesk leading-tight">
+                {/* Recycled Badge */}
+                <div className="mb-4 bg-white font-roboto font-medium inline-block px-3 py-0 rounded-lg">
+                  <span className=" text-primary  text-sm font-semibold font-inter">
+                    {product.recycledPercentage}% Recycled
+                  </span>
+                </div>
+                <h3 className="text-white font-bold text-lg mb-4 font-space-grotesk leading-tight">
                   {product.name}
                 </h3>
 
                 {/* Price and Tokens */}
                 <div className="flex items-center justify-between">
-                  <span className="text-white font-bold text-xl font-inter">{product.price}</span>
+                  <span className="text-white font-space-grotesk  font-medium text-xl font-inter">{product.price}</span>
                   <div className="flex items-center gap-1">
                     {/* ECO Token Icon */}
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-green-500">
                       <circle cx="12" cy="12" r="10" fill="currentColor" />
                       <path d="M8 12h8M12 8v8" stroke="black" strokeWidth="2" strokeLinecap="round" />
                     </svg>
-                    <span className="text-green-500 font-bold text-lg font-inter">
+                    <span className="text-green-500 font-normal text-lg font-space-grotesk font-inter">
                       {product.tokens.toLocaleString()}
                     </span>
                   </div>
@@ -107,7 +108,7 @@ export function EcoProducts() {
 
         {/* View All Products Button */}
         <div className="text-center">
-          <button className="bg-black hover:bg-gray-900 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 hover:transform hover:scale-105 font-inter inline-flex items-center gap-2">
+          <button className="bg-black font-space-grotesk hover:bg-emerald-400 text-white px-8 py-4 rounded-xl font-medium text-lg transition-all duration-300 hover:transform hover:scale-105 font-inter inline-flex items-center gap-2">
             View All Products
             <svg
               width="20"
