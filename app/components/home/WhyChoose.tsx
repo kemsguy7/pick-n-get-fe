@@ -67,11 +67,11 @@ export default function WhyChoose() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 text-balance">
-            Why Choose EcoCleans?
+          <h2 className="text-4xl md:text-5xl font-space-grotesk  lg:text-6xl font-semibold text-white mb-6 text-balance">
+            Why Choose PicknGet?
           </h2>
-          <p className="text-lg md:text-xl text-gray-300 max-w-2xl text-pretty">
-            {"We're revolutionizing waste management across Africa with cutting-edge Web3 technology"}
+          <p className="text-lg md:text-xl font-normal secondary-text text-gray-300 max-w-2xl text-pretty">
+            We're revolutionizing waste management across Africa with cutting-edge Web3 technology"
           </p>
         </div>
 
@@ -108,17 +108,17 @@ export default function WhyChoose() {
           </div>
 
           {/* Right Column - Dashboard */}
-          <div className="space-y-6">
+          <div className="space-y-6 footer-gradient footer-theme-shadow p-6 rounded-3xl">
             {/* Real-time Badge */}
-            <div className="flex justify-end">
-              <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">Real-time</span>
+            <div className="flex justify-end ">
+              <span className="bg-[#1ED76033] border border-black text-primary font-roboto  px-3  rounded-lg text-sm font-medium">Real - time</span>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1  sm:grid-cols-2 gap-4">
               {/* CO2 Prevented Card */}
-              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-6">
-                <div className="flex items-center justify-center w-12 h-12 bg-blue-500/20 rounded-xl mb-4">
+              <div className="bg-white/10 flex flex-col items-center  justify-center backdrop-blur-sm hover:border hover:border-gray-700 rounded-2xl p-6">
+                <div className="flex items-center  justify-center w-12 h-12 bg-blue-500/20 rounded-xl mb-4">
                   <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -128,12 +128,12 @@ export default function WhyChoose() {
                     />
                   </svg>
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">89,340</div>
-                <div className="text-gray-400 text-sm">kg CO₂ Prevented</div>
+                <div className="text-2xl font-space-grotesk font-bold text-white mb-3">89,340</div>
+                <div className="text-gray-400 md:text-md font-inter secondary-text text-sm">kg CO₂ Prevented</div>
               </div>
 
               {/* Trees Equivalent Card */}
-              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-6">
+              <div className="bg-white/10 flex flex-col items-center backdrop-blur-sm border border-gray-700 rounded-2xl p-6">
                 <div className="flex items-center justify-center w-12 h-12 bg-green-500/20 rounded-xl mb-4">
                   <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -144,16 +144,16 @@ export default function WhyChoose() {
                     />
                   </svg>
                 </div>
-                <div className="text-2xl font-bold text-white mb-1">1247</div>
-                <div className="text-gray-400 text-sm">Trees Equivalent</div>
+                <div className="text-2xl font-bold font-space-grotesk text-white mb-4">1247</div>
+                <div className="text-gray-400 font-normal font-inter secondary-text text-sm md:text-md">Trees Equivalent</div>
               </div>
             </div>
 
             {/* Recent Activity */}
-            <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-6">
-              <h4 className="text-white font-semibold mb-4">Recent Activity</h4>
+            <div className=" border border-gray-700 rounded-2xl p-6">
+              <h4 className="text-white font-normal font-inter mb-4">Recent Activity</h4>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-xl">
+                <div className="flex items-center gap-3 py-6 px-3 bg-white/10 backdrop-blur-sm rounded-xl">
                   <div className="flex items-center justify-center w-8 h-8 bg-yellow-500/20 rounded-lg">
                     <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -166,7 +166,7 @@ export default function WhyChoose() {
                   </div>
                   <span className="text-gray-300 text-sm">Milestone reached this month</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-xl">
+                <div className="flex items-center gap-3 py-6 px-3 bg-white/10 backdrop-blur-sm rounded-xl">
                   <div className="flex items-center justify-center w-8 h-8 bg-blue-500/20 rounded-lg">
                     <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path

@@ -11,7 +11,7 @@ interface StepCardProps {
 const StepCard: React.FC<StepCardProps> = ({ stepNumber, title, description, icon, iconBgColor }) => {
   return (
     <div
-      className="relative bg-black backdrop-blur-custom border border-white/10 rounded-2xl p-8 flex flex-col items-center text-center  w-full 
+      className="relative bg-black border-shiny-green backdrop-blur-custom border hover:transform hover:scale-105 duration-300 rounded-2xl p-8 flex flex-col items-center text-center  w-full 
       "
       
     >
@@ -107,12 +107,11 @@ export const HowTO: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-3xl md:text-5xl  font-bold text-white mb-3 text-balance font-space-grotesk">
-            How EcoCleans Works
+          <h1 className="text-3xl md:text-5xl  font-semibold  mb-3 text-balance font-space-grotesk description-text">
+            How PicknGet Works
           </h1>
           <p
-            className="  mx-auto leading-relaxed text-balance font-inter font-light"
-            style={{ color: "var(--description-text)" }}
+            className="  mx-auto leading-relaxed text-balance font-inter font-light secondary-text"
           >
             Simple steps to start earning your recyclable waste while making a positive environmental impact
           </p>

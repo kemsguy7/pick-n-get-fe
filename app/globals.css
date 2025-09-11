@@ -138,6 +138,11 @@ a {
     color: var(--description-text);
   }
 
+  /* borders */
+  .border-shiny-green {
+    border: 1px solid #1DE9B666
+  }
+
   /*Shadows*/
   .shadow-border-green {
     box-shadow: 0px 4px 10px 0px #1DE9B61A;
