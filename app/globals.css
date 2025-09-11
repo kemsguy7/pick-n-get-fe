@@ -21,6 +21,7 @@
   --white: #FFFFFF;
   --bg-primary:  linear-gradient(90deg, #0D1B1E 0%, #142E2C 47%);
   --dark-bg: #0D1B1E;
+  --light-green-bg: #1DE9B61A; 
   --dark-text: #E5E5E5;
   --light-bg: #FFFFFF;
   --light-text: #1A1A1A;
@@ -59,7 +60,7 @@ body {
   min-height: 100vh;
   cursor: url('../public/mouse-icon.svg' ), auto;
   /* overflow-x: hidden; */
-  font-family: 'Space Grotesk', sans-serif;
+  /* font-family: 'Space Grotesk', sans-serif; */
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -92,6 +93,8 @@ a {
 
   }
   
+
+
   /* Font Families */
   .font-space-grotesk {
     font-family: 'Space Grotesk', sans-serif;
@@ -101,7 +104,7 @@ a {
     font-family: 'Inter', sans-serif;
   }
   .font-roboto {
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto Mono", monospace;
   }
 
   /* nav styles */
@@ -118,6 +121,21 @@ a {
     -webkit-backdrop-filter: blur(10px);
   }
 
+  /* Backgrounds */
+  .light-green-bg {
+    background-color: var(--light-bg);
+  }
+  .card-bg {
+    background-color: var(--card-bg);
+    /* border: 1px solid var(--badge-border);
+    border-radius: 12px; */
+  }
+  .bg-primary-green {
+    background-color: var(--primary-green);
+  }
+
+
+/* Text Colors */
   .text-primary {
     color: var(--primary-green);
   }
@@ -125,10 +143,9 @@ a {
     color: var(--info-blue); 
   }
  
-  .card-bg {
-    background-color: var(--card-bg);
-    /* border: 1px solid var(--badge-border);
-    border-radius: 12px; */
+  
+  .text-primary-yellow {
+    color: var(--primary-yellow);
   }
 
   .secondary-text {
@@ -136,6 +153,22 @@ a {
   }
   .description-text {
     color: var(--description-text);
+  }
+
+
+
+  /* borders */
+  .border-shiny-green {
+    border: 1px solid #1DE9B666
+  }
+
+  /*Shadows*/
+  .shadow-border-green {
+    box-shadow: 0px 4px 10px 0px #1DE9B61A;
+  }
+
+  .footer-theme-shadow {
+    box-shadow: 0px 4px 10px 0px #00000040;
   }
 
 }
@@ -206,7 +239,6 @@ html {
   outline: 2px solid var(--primary-green);
   outline-offset: 2px;
   border-radius: 4px;
-
 }
 
 /* Custom scrollbar */
