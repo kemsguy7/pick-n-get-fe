@@ -21,6 +21,7 @@
   --white: #FFFFFF;
   --bg-primary:  linear-gradient(90deg, #0D1B1E 0%, #142E2C 47%);
   --dark-bg: #0D1B1E;
+  --light-green-bg: #1DE9B61A; 
   --dark-text: #E5E5E5;
   --light-bg: #FFFFFF;
   --light-text: #1A1A1A;
@@ -92,6 +93,8 @@ a {
 
   }
   
+
+
   /* Font Families */
   .font-space-grotesk {
     font-family: 'Space Grotesk', sans-serif;
@@ -101,7 +104,7 @@ a {
     font-family: 'Inter', sans-serif;
   }
   .font-roboto {
-    font-family: 'Roboto', sans-serif;
+    font-family: "Roboto Mono", monospace;
   }
 
   /* nav styles */
@@ -118,6 +121,21 @@ a {
     -webkit-backdrop-filter: blur(10px);
   }
 
+  /* Backgrounds */
+  .light-green-bg {
+    background-color: var(--light-bg);
+  }
+  .card-bg {
+    background-color: var(--card-bg);
+    /* border: 1px solid var(--badge-border);
+    border-radius: 12px; */
+  }
+  .bg-primary-green {
+    background-color: var(--primary-green);
+  }
+
+
+/* Text Colors */
   .text-primary {
     color: var(--primary-green);
   }
@@ -125,10 +143,9 @@ a {
     color: var(--info-blue); 
   }
  
-  .card-bg {
-    background-color: var(--card-bg);
-    /* border: 1px solid var(--badge-border);
-    border-radius: 12px; */
+  
+  .text-primary-yellow {
+    color: var(--primary-yellow);
   }
 
   .secondary-text {
@@ -137,6 +154,8 @@ a {
   .description-text {
     color: var(--description-text);
   }
+
+
 
   /* borders */
   .border-shiny-green {
