@@ -59,7 +59,7 @@ body {
   min-height: 100vh;
   cursor: url('../public/mouse-icon.svg' ), auto;
   /* overflow-x: hidden; */
-  font-family: 'Space Grotesk', sans-serif;
+  /* font-family: 'Space Grotesk', sans-serif; */
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
@@ -206,7 +206,6 @@ html {
   outline: 2px solid var(--primary-green);
   outline-offset: 2px;
   border-radius: 4px;
-
 }
 
 /* Custom scrollbar */

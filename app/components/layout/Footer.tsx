@@ -92,7 +92,7 @@ const Footer = () => {
 
           {/* Platform Links */}
           <div>
-            <h4 className="font-semibold text-white mb-4">Platform</h4>
+            <h4 className="font-semibold font-space-grotesk text-white mb-4">Platform</h4>
             <ul className="space-y-3">
 
               {platformLinks.map((link) =>  (

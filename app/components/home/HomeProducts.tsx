@@ -46,7 +46,7 @@ const products: Product[] = [
 
 export function EcoProducts() {
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black py-16 px-4 sm:px-6 lg:px-8">
+    <section className="relative min-h-screen py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
