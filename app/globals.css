@@ -90,10 +90,8 @@ a {
     color : var(--primary-green) ; 
     background: var(--active-link-bg);
     border: 1px solid color(from var(--primary-green) r g b / 10%); /* adding opacity to the border color*/
-
   }
   
-
 
   /* Font Families */
   .font-space-grotesk {
