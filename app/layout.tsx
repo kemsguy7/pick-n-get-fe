@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 
-import LayoutProvider from "./components/layout/LayoutProvider";
+import {LayoutProvider} from "./components/layout/LayoutProvider";
 
 export const metadata: Metadata = {
   title: "Pick-n-get - Sustainable Recycling Made Easy",

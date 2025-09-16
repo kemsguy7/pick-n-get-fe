@@ -1,9 +1,11 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Leaf, Sun, Moon, Menu } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLayout } from './LayoutProvider';
+import Link from 'next/link';
 
 interface HeaderProps {
   className?: string;
@@ -102,73 +104,77 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
   return (
     <>
       <header className={`header-gradient backdrop-blur-custom relative z-50 ${className}`}>
-        <div className="mx-auto px-4">
-          <div className="flex space-x-5 items-center justify-between h-16 lg:h-20">
+        <div className="mx-auto px-3 sm:px-4 lg:px-6">
+          <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
             
             {/* Left Section */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Sidebar Toggle (only show when sidebar is enabled) */}
               {showSidebarToggle && (
                 <button
                   onClick={toggleSidebar}
-                  className="lg:hidden p-2 text-white hover:bg-white/20 rounded-lg transition-colors duration-200"
+                  className="lg:hidden p-1.5 sm:p-2 text-white hover:bg-white/20 rounded-lg transition-colors duration-200 menu-button"
                   aria-label="Toggle sidebar"
                 >
-                  <Menu className="w-5 h-5" />
+                  <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               )}
               
               {/* Logo */}
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                  <Leaf className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-500 rounded-lg flex items-center justify-center">
+
+                  <Link href="/" passHref>
+                    <Leaf className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
+                  </Link>
                 </div>
-                <span className="text-white text-xl lg:text-2xl font-semibold font-space-grotesk">
+                <span className="text-white text-lg sm:text-xl lg:text-2xl font-semibold font-space-grotesk">
                   Pick-n-get
                 </span>
               </div>
             </div>
 
-            {/* Center - Navigation Links (Desktop - only show when no sidebar) */}
-            {!showSidebarToggle && (
-              <nav className="hidden lg:flex gap-3 items-center space-x-2">
-                {navLinks.map((link) => (
-                  <button
-                    key={link}
-                    onClick={() => handleLinkClick(link)}
-                    className={`
-                      nav-link px-2 py-2 rounded-lg transition-all duration-200 focus-visible
-                      ${activeLink === link 
-                        ? 'active-link text-white' 
-                        : 'text-white/80 hover:text-white hover:bg-white/10'
-                      }
-                    `}
-                  >
-                    {link}
-                  </button>
-                ))}
-              </nav>
-            )}
+            {/* Center - Navigation Links (Desktop - always show, but hide on mobile when sidebar is present) */}
+            <nav className={`
+              hidden lg:flex gap-1 xl:gap-3 items-center space-x-2
+              ${showSidebarToggle ? 'lg:flex' : 'lg:flex'}
+            `}>
+              {navLinks.map((link) => (
+                <button
+                  key={link}
+                  onClick={() => handleLinkClick(link)}
+                  className={`
+                    nav-link px-2 xl:px-3 py-2 rounded-lg transition-all duration-200 focus-visible text-sm xl:text-base
+                    ${activeLink === link 
+                      ? 'active-link text-white' 
+                      : 'text-white/80 hover:text-white hover:bg-white/10'
+                    }
+                  `}
+                >
+                  {link}
+                </button>
+              ))}
+            </nav>
 
             {/* Right Section */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full hover:bg-white/20 transition-colors duration-200 focus-visible"
+                className="p-1.5 sm:p-2 rounded-full hover:bg-white/20 transition-colors duration-200 focus-visible"
                 aria-label="Toggle theme"
               >
                 {isDarkMode ? (
-                  <Sun className="w-5 h-5 text-white" />
+                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 ) : (
-                  <Moon className="w-5 h-5 text-white" />
+                  <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 )}
               </button>
 
               {/* Connect Wallet Button */}
-              <button className="gradient-button font-semibold px-2 py-1.5 
+              <button className="gradient-button font-semibold px-2 sm:px-3 py-1 sm:py-1.5 
                 rounded-lg hover:shadow-lg transition-all duration-200 focus-visible 
-                text-sm lg:text-base md:font-medium"
+                text-xs sm:text-sm lg:text-base  whitespace-nowrap"
               >
                 Connect Wallet
               </button>
@@ -177,7 +183,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
               {!showSidebarToggle && (
                 <button
                   onClick={toggleMobileMenu}
-                  className="lg:hidden p-2 focus-visible"
+                  className="lg:hidden p-1.5 sm:p-2 focus-visible menu-button"
                   aria-label="Toggle menu"
                 >
                   <div className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
@@ -214,7 +220,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
       {/* Mobile Menu (only show when no sidebar) */}
       {!showSidebarToggle && (
         <div className={`
-          mobile-menu-container fixed top-16 left-0 right-0 z-50 lg:hidden
+          mobile-menu-container fixed top-14 sm:top-16 left-0 right-0 z-50 lg:hidden
           transform transition-all duration-300 ease-in-out
           ${isMobileMenuOpen 
             ? 'translate-y-0 opacity-100' 
@@ -222,7 +228,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
           }
         `}>
           <div className="header-gradient backdrop-blur-custom border-t border-white/10">
-            <nav className="max-w-[90vw] mx-auto px-10 ml-0 py-4">
+            <nav className="max-w-[90vw] mx-auto px-4 py-4">
               <div className="flex flex-col space-y-2">
                 {navLinks.map((link, index) => (
                   <button
@@ -250,7 +256,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
       )}
 
       {/* Spacer to prevent content overlap */}
-      <div className="h-16 lg:h-20"></div>
+      <div className="h-14 sm:h-16 lg:h-20"></div>
     </>
   );
 };

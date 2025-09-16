@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -32,14 +33,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         
         <main className={`
           flex-1 transition-all duration-300 ease-in-out
-          ${showSidebar ? 'lg:ml-0' : ''}
+          ${showSidebar ? 'lg:ml-6 ml-0' : ''}
           ${showHeader && !showSidebar ? 'pt-0' : ''}
         `}>
           {children}
         </main>
       </div>
       
-      {showFooter && <Footer />}
+      {showFooter && (
+        <div className={`${showSidebar ? 'lg:ml-6 ml-0' : ''} mt-16`}>
+          <Footer />
+        </div>
+      )}
     </div>
   );
 };

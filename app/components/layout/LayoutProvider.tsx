@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -19,7 +18,7 @@ export const useLayout = () => {
   return context;
 };
 
- const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const setSidebarOpen = (open: boolean) => setIsSidebarOpen(open);
@@ -43,5 +42,3 @@ export const useLayout = () => {
     </LayoutContext.Provider>
   );
 };
-
-export default LayoutProvider;
