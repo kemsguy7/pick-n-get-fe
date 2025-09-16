@@ -116,10 +116,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
                     key={item.path}
                     onClick={() => handleNavigation(item.path)}
                     className={`
-                      w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left
-                      transition-all duration-200 font-inter font-medium
+                      w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-lg
+                      transition-all duration-200 font-space-grotesk font-medium
                       ${isActive 
-                        ? 'bg-primary-green/20 text-primary-green border border-primary-green/30' 
+                        ? 'bg-[#1ED76033] text-primary border border-[#1ED7601A]' 
                         : 'text-white/80 hover:text-white hover:bg-white/10'
                       }
                     `}
