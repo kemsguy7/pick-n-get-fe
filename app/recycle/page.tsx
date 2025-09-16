@@ -62,8 +62,8 @@ export default function RecyclePage() {
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}> 
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen ">
+        <div className="container mx-auto px-4 py-12">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 font-space-grotesk">

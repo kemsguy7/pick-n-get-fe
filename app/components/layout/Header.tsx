@@ -256,7 +256,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
       )}
 
       {/* Spacer to prevent content overlap */}
-      <div className="h-14 sm:h-16 lg:h-20"></div>
+      {/* <div className="h-14 sm:h-16 lg:h-20"></div> */}
     </>
   );
 };

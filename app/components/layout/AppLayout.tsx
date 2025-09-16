@@ -41,7 +41,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       </div>
       
       {showFooter && (
-        <div className={`${showSidebar ? 'lg:ml-6 ml-0' : ''} mt-16`}>
+        <div className={`${showSidebar ? ' ml-0' : ''} mt-16`}>
           <Footer />
         </div>
       )}
