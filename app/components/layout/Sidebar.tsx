@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect} from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
   Home, 
@@ -18,11 +18,18 @@ import {
 } from 'lucide-react';
 import { useLayout } from './LayoutProvider';
 
+
 interface SidebarProps {
   className?: string;
 }
 
+
+
 const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
+
+  //state to track active link  
+  const [isActive, setIsActive] = useState<string>('');
+
   const router = useRouter();
   const pathname = usePathname();
   const { isSidebarOpen, setSidebarOpen } = useLayout();
@@ -38,8 +45,21 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 
+
+  // update active item when pathname changes (for browser navigation) 
+ useEffect(() => { 
+    setIsActive(pathname);
+ }, [pathname])
+
   const handleNavigation = (path: string) => {
+
+    // Set the clicked item as active immediately
+    setIsActive(path);
+
+    // Navigate to the new Route
     router.push(path);
+
+    // Close sidebar on mobile after navigation 
     setSidebarOpen(false); // Close sidebar on mobile after navigation
   };
 
@@ -61,7 +81,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
 
       {/* Sidebar */}
       <div className={`
-        fixed left-0 top-0 h-full w-64 z-50 transform transition-transform duration-300 ease-in-out
+        fixed left-0 top-0 h-full w-64 z-50 transform transition-transform font-space-grotesk duration-300 ease-in-out
         lg:translate-x-0 lg:static lg:z-auto
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         ${className}

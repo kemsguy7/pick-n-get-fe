@@ -224,6 +224,14 @@ a {
     -webkit-backdrop-filter: blur(8px);
   }
 
+  /* Backdrop blur for pages */
+  .blur-page {
+    backdrop-filter: blur(10px);
+   -webkit-backdrop-filter: blur(10px);
+
+  }
+  
+
   /* Custom scrollbar for sidebar */
   .sidebar-scroll::-webkit-scrollbar {
     width: 4px;
