@@ -68,7 +68,7 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
               </div>
               <button
                 onClick={onBack}
-                className="bg-black px-4 py-2 rounded-lg text-white text-sm hover:bg-gray-800 transition-colors"
+                className="bg-black px-4 py-2 rounded-lg font-space-grotesk font-medium  text-white text-lg hover:bg-gray-800 transition-colors"
               >
                 Change
               </button>
@@ -76,14 +76,14 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
 
             {/* Weight Input */}
             <div>
-              <label className="block text-white font-medium mb-2 font-inter">Estimated Weight (kg) *</label>
+              <label className="block text-white font-space-grotesk font-medium font-lg mb-2 font-inter">Estimated Weight (kg) *</label>
               <input
                 type="number"
                 step="0.1"
                 placeholder="e.g., 2.5"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="w-full  border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
+                className="w-full  border border-white rounded-lg px-4 py-3 secondary-text font-inter font-normal  text-base focus:outline-none focus:border-green-500 transition-colors"
               />
             </div>
 
@@ -95,14 +95,14 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
                 placeholder="Describe your items (e.g. plastic bottles, aluminium cans, etc."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full  border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors resize-none"
+                className="w-full  border border-white  rounded-lg px-4 py-3 secondary-text font-inter font-normal  text-base   focus:outline-none focus:border-green-500 transition-colors resize-none"
               />
             </div>
 
             {/* Photo Upload */}
             <div>
               <label className="block text-white font-medium mb-2 font-inter">Add Photos (Optional)</label>
-              <div className="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-green-500/50 transition-colors">
+              <div className="border-2 border-dashed  rounded-xl p-8 text-center hover:border-green-500/50 transition-colors">
                 <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -127,7 +127,7 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
           {/* Right Column - Calculations */}
           <div className="space-y-6">
             {/* Estimated Earnings */}
-            <div className="bg-white/20 blur-darker rounded-xl p-6">
+            <div className="bg-white/20 blur-darker border-solid  border border-[#1DE9B633] rounded-xl p-6">
               <div className="flex items-center mb-4">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
                   <span className="text-white text-xs">₦</span>
@@ -144,21 +144,21 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
             </div>
 
             {/* Environmental Impact */}
-            <div className="bg-white/20 blur-darker rounded-xl p-6">
+            <div className="bg-white/20 border-solid  border border-[#1DE9B633] blur-darker rounded-xl p-6">
               <div className="flex items-center mb-4">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
                   <span className="text-white text-xs">🌱</span>
                 </div>
                 <h3 className="text-green-400 font-semibold font-space-grotesk">Environmental Impact</h3>
               </div>
-              <div className="space-y-2">
+              <div className="lighter-green-text text-base font-inter font-normal">
                 <div>
-                  <span className="text-gray-300 text-sm font-inter">CO₂ Saved:</span>
-                  <span className="text-white font-semibold ml-2">~{impact.co2}kg</span>
+                  <span>CO₂ Saved:</span>
+                  <span>~{impact.co2}kg</span>
                 </div>
                 <div>
-                  <span className="text-gray-300 text-sm font-inter">Water Saved:</span>
-                  <span className="text-white font-semibold ml-2">~{impact.water}L</span>
+                  <span>Water Saved:</span>
+                  <span>~{impact.water}L</span>
                 </div>
               </div>
             </div>
