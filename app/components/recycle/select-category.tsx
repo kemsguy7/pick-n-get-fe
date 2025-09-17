@@ -1,6 +1,9 @@
 "use client"
 
 import type { RecycleFormData } from "../../recycle/page"
+import Image from 'next/image'
+import  RecycleIcon  from "../../../public/icons/RecycleIcon.svg"
+
 
 interface SelectCategoryProps {
   formData: RecycleFormData
@@ -67,21 +70,15 @@ export default function SelectCategory({ formData, updateFormData, onNext }: Sel
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50">
-        <div className="flex items-center mb-6">
-          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
+      <div className="bg-white/10  blur-page rounded-2xl p-8 hover:border hover:border-slate-700/50">
+        <div className="flex items-center mb-1">
+          <div className="w-8 h-8  rounded-full flex items-center justify-center mr-3">
+            <Image src={RecycleIcon} alt="Recycle" className="w-4 h-4" />
           </div>
-          <h2 className="text-xl font-semibold text-green-400 font-space-grotesk">Choose recycling category</h2>
+          <h2 className="text-lg font-medium text-primary font-inter">Choose recycling category</h2>
         </div>
 
-        <p className="text-gray-300 mb-8 font-inter">
+        <p className="text-gray-300 mb-8 font-normal text-md font-inter secondary-text ">
           Select the type of materials you want to recycle. Each category has different rates and requirements.
         </p>
 
