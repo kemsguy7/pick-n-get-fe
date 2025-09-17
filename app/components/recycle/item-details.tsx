@@ -41,12 +41,12 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50">
+      <div className="bg-white/10 blur-page rounded-2xl p-8 border border-slate-700/50">
         <div className="flex items-center mb-6">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
             <span className="text-white text-sm font-semibold">2</span>
           </div>
-          <h2 className="text-xl font-semibold text-blue-400 font-space-grotesk">
+          <h2 className="text-lg font-medium text-info font-inter ">
             Item Details - {formData.category?.name}
           </h2>
         </div>
@@ -55,20 +55,20 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
           {/* Left Column - Form */}
           <div className="lg:col-span-2 space-y-6">
             {/* Selected Category */}
-            <div className="bg-slate-700/30 rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-white/20 blur-darker rounded-2xl p-4 flex items-center justify-between">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-slate-600 rounded-lg flex items-center justify-center text-xl mr-4">
+                <div className="w-12 h-12 bg-white   rounded-lg flex items-center justify-center text-xl mr-4">
                   {formData.category?.icon}
                 </div>
                 <div>
-                  <h3 className="text-white font-semibold font-space-grotesk">{formData.category?.name}</h3>
-                  <p className="text-gray-400 text-sm font-inter">{formData.category?.description}</p>
-                  <p className="text-green-400 text-sm font-semibold">₦{formData.category?.rate}/kg</p>
+                  <h3 className="text-white font-bold font-space-grotesk description-text text-xl">{formData.category?.name}</h3>
+                  <p className="text-gray-400 text-base font-normal font-inter secondary-text mb-1">{formData.category?.description}</p>
+                  <p className="text-primary text-lg font-medium">₦{formData.category?.rate}/kg</p>
                 </div>
               </div>
               <button
                 onClick={onBack}
-                className="bg-black px-4 py-2 rounded-lg text-white text-sm hover:bg-gray-800 transition-colors"
+                className="bg-black px-4 py-2 rounded-lg font-space-grotesk font-medium  text-white text-lg hover:bg-gray-800 transition-colors"
               >
                 Change
               </button>
@@ -76,14 +76,14 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
 
             {/* Weight Input */}
             <div>
-              <label className="block text-white font-medium mb-2 font-inter">Estimated Weight (kg) *</label>
+              <label className="block text-white font-space-grotesk font-medium font-lg mb-2 font-inter">Estimated Weight (kg) *</label>
               <input
                 type="number"
                 step="0.1"
                 placeholder="e.g., 2.5"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
+                className="w-full  border border-white rounded-lg px-4 py-3 secondary-text font-inter font-normal  text-base focus:outline-none focus:border-green-500 transition-colors"
               />
             </div>
 
@@ -95,14 +95,14 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
                 placeholder="Describe your items (e.g. plastic bottles, aluminium cans, etc."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors resize-none"
+                className="w-full  border border-white  rounded-lg px-4 py-3 secondary-text font-inter font-normal  text-base   focus:outline-none focus:border-green-500 transition-colors resize-none"
               />
             </div>
 
             {/* Photo Upload */}
             <div>
               <label className="block text-white font-medium mb-2 font-inter">Add Photos (Optional)</label>
-              <div className="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-green-500/50 transition-colors">
+              <div className="border-2 border-dashed  rounded-xl p-8 text-center hover:border-green-500/50 transition-colors">
                 <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -127,7 +127,7 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
           {/* Right Column - Calculations */}
           <div className="space-y-6">
             {/* Estimated Earnings */}
-            <div className="bg-slate-700/30 rounded-xl p-6">
+            <div className="bg-white/20 blur-darker border-solid  border border-[#1DE9B633] rounded-xl p-6">
               <div className="flex items-center mb-4">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
                   <span className="text-white text-xs">₦</span>
@@ -144,21 +144,21 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
             </div>
 
             {/* Environmental Impact */}
-            <div className="bg-slate-700/30 rounded-xl p-6">
+            <div className="bg-white/20 border-solid  border border-[#1DE9B633] blur-darker rounded-xl p-6">
               <div className="flex items-center mb-4">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-2">
                   <span className="text-white text-xs">🌱</span>
                 </div>
                 <h3 className="text-green-400 font-semibold font-space-grotesk">Environmental Impact</h3>
               </div>
-              <div className="space-y-3">
+              <div className="lighter-green-text text-base font-inter font-normal">
                 <div>
-                  <span className="text-gray-300 text-sm font-inter">CO₂ Saved:</span>
-                  <span className="text-white font-semibold ml-2">~{impact.co2}kg</span>
+                  <span>CO₂ Saved:</span>
+                  <span>~{impact.co2}kg</span>
                 </div>
                 <div>
-                  <span className="text-gray-300 text-sm font-inter">Water Saved:</span>
-                  <span className="text-white font-semibold ml-2">~{impact.water}L</span>
+                  <span>Water Saved:</span>
+                  <span>~{impact.water}L</span>
                 </div>
               </div>
             </div>
@@ -176,7 +176,7 @@ export default function ItemDetails({ formData, updateFormData, onNext, onBack }
           <button
             onClick={handleContinue}
             disabled={!weight}
-            className="bg-gradient-to-r from-yellow-400 to-green-500 px-6 py-3 rounded-lg text-black font-semibold hover:from-yellow-500 hover:to-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-inter"
+            className="gradient-button px-6 py-3 rounded-xl text-black font-semibold hover:from-yellow-500 hover:to-green-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-inter"
           >
             Continue to Pickup →
           </button>

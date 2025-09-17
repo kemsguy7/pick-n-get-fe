@@ -1,6 +1,9 @@
 "use client"
 
 import type { RecycleFormData } from "../../recycle/page"
+import Image from 'next/image'
+import  RecycleIcon  from "../../../public/icons/RecycleIcon.svg"
+
 
 interface SelectCategoryProps {
   formData: RecycleFormData
@@ -67,21 +70,15 @@ export default function SelectCategory({ formData, updateFormData, onNext }: Sel
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50">
-        <div className="flex items-center mb-6">
-          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
-            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
+      <div className="bg-white/10  blur-page rounded-2xl p-8 hover:border hover:border-slate-700/50">
+        <div className="flex items-center mb-1">
+          <div className="w-8 h-8  rounded-full flex items-center justify-center mr-3">
+            <Image src={RecycleIcon} alt="Recycle" className="w-4 h-4" />
           </div>
-          <h2 className="text-xl font-semibold text-green-400 font-space-grotesk">Choose recycling category</h2>
+          <h2 className="text-lg font-medium text-primary font-inter">Choose recycling category</h2>
         </div>
 
-        <p className="text-gray-300 mb-8 font-inter">
+        <p className="text-gray-300 mb-8 font-normal text-md font-inter secondary-text ">
           Select the type of materials you want to recycle. Each category has different rates and requirements.
         </p>
 
@@ -90,26 +87,26 @@ export default function SelectCategory({ formData, updateFormData, onNext }: Sel
             <button
               key={category.id}
               onClick={() => handleCategorySelect(category)}
-              className="bg-black/80 rounded-xl p-6 border border-slate-600/50 hover:border-green-500/50 transition-all duration-200 hover:bg-black/90 text-left group"
+              className="bg-black/80 rounded-2xl p-6 border border-slate-600/50 hover:border-green-500/50 transition-all duration-200 hover:bg-black/90 text-left group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-slate-700 rounded-lg flex items-center justify-center text-xl">
                   {category.icon}
                 </div>
-                <div className="bg-slate-700 px-3 py-1 rounded-full text-sm text-gray-300">₦{category.rate}/kg</div>
+                <div className="bg-[#D9D9D93D] px-2  rounded-md  text-sm text-gray-300">₦{category.rate}/kg</div>
               </div>
 
-              <h3 className="text-white font-semibold mb-2 group-hover:text-green-400 transition-colors font-space-grotesk">
+              <h3 className=" description-text font-bold mb-4 group-hover:text-green-400 text-lg  transition-colors font-space-grotesk">
                 {category.name}
               </h3>
 
-              <p className="text-gray-400 text-sm mb-4 font-inter">{category.description}</p>
+              <p className="text-gray-400 text-base mb-4 secondary-text font-inter">{category.description}</p>
 
               <div className="space-y-2">
-                <p className="text-gray-500 text-xs font-inter">Examples:</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="secondary-text text-sm font-inter">Examples:</p>
+                <div className="flex flex-wrap font-medium  font-roboto gap-2">
                   {category.examples.map((example, index) => (
-                    <span key={index} className="bg-slate-700/50 px-2 py-1 rounded text-xs text-gray-300">
+                    <span key={index} className="bg-transparent border border-[#D9D9D933] px-2  rounded text-gray-300">
                       {example}
                     </span>
                   ))}

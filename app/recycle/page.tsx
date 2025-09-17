@@ -66,10 +66,10 @@ export default function RecyclePage() {
         <div className="container mx-auto px-4 py-12">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 font-space-grotesk">
+            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4 font-space-grotesk">
               Submit Recycling Items ♻️
             </h1>
-            <p className="text-lg text-gray-300 font-inter">
+            <p className="text-lg text-gray-300 font-inter secondary-text">
               Turn your waste into rewards while helping the environment
             </p>
           </div>
