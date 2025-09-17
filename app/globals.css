@@ -230,7 +230,11 @@ a {
    -webkit-backdrop-filter: blur(10px);
 
   }
-  
+  .blur-darker {
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+  }
+ 
 
   /* Custom scrollbar for sidebar */
   .sidebar-scroll::-webkit-scrollbar {
