@@ -72,7 +72,7 @@ const HomeHero: React.FC = () => {
 
   return (
     <section className="min-h-screen bg-dark-bg text-white overflow-hidden">
-      <div className="mx-[80px] sm:mx-[120px] lg:mx-[180px] px-4 py-12 lg:py-20">
+      <div className="mx-auto md:mx-[7rem] px-4 py-12 lg:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           
           {/* Left Section */}
@@ -80,14 +80,11 @@ const HomeHero: React.FC = () => {
             
             {/* Badge */}
             <div 
-              className="inline-flex items-center gap-3 px-4 py-2 rounded-full border animate-fade-in-up"
-              style={{
-                backgroundColor: 'var(--color-badge-bg)',
-                borderColor: 'var(--color-badge-border)'
-              }}
+              className="inline-flex items-center gap-3 py-2 px-2  rounded-lg animate-fade-in-up
+              bg-[#1DE9B666] border border-[#1DE9B699]"
             >
               <Recycle className="w-4 h-4 text-primary-green" />
-              <span className="font-inter text-sm leading-5 tracking-wide text-white">
+              <span className="font-inter  text-sm leading-5 tracking-wide text-white">
                 Web3 Recycling Revolution
               </span>
             </div>
@@ -114,7 +111,7 @@ const HomeHero: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 animate-fade-in-up animation-delay-600">
               <button className="
                 gradient-button font-space-grotesk font-medium text-lg leading-6
-                px-3 py-4 rounded-xl text-white hover:shadow-xl
+                px-3 py-4 rounded-xl text-black hover:shadow-xl
                 transform hover:scale-105 transition-all duration-300
                 flex items-center justify-center gap-3 min-w-[200px]
               ">
@@ -124,7 +121,7 @@ const HomeHero: React.FC = () => {
               
               <button className="
                 bg-black font-space-grotesk font-medium text-lg leading-6
-                px-3 py-4 rounded-xl text-white border border-gray-700
+                px-3 py-4 rounded-xl text-white hover:border hover:border-gray-700
                 hover:bg-gray-900 transform hover:scale-105 transition-all duration-300
                 flex items-center justify-center gap-3 min-w-[180px]
               ">
@@ -158,19 +155,16 @@ const HomeHero: React.FC = () => {
           {/* Right Section - Dashboard */}
           <div className="animate-fade-in-left animation-delay-400">
             <div 
-              className="rounded-2xl p-6 lg:p-8 border backdrop-blur-sm relative overflow-hidden"
-              style={{
-                backgroundColor: 'var(--color-dashboard-bg)',
-                borderColor: 'var(--color-dashboard-border)'
-              }}
+              className="rounded-2xl p-6 lg:p-8 border  bg-[#1DE9B61A]  border-[#A5D6A780]  backdrop-blur-sm relative overflow-hidden"
+              
             >
               
               {/* Header */}
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center  justify-between mb-8">
                 <h2 className="font-space-grotesk font-bold text-xl lg:text-2xl leading-7 tracking-wide text-white">
                   Your Impact Dashboard
                 </h2>
-                <span className="bg-primary-green text-black px-3 py-1 rounded-full text-sm font-medium animate-pulse">
+                <span className="bg-primary-green text-black px-3 font-roboto rounded-md text-sm font-medium animate-pulse">
                   LIVE
                 </span>
               </div>
@@ -188,8 +182,8 @@ const HomeHero: React.FC = () => {
                     2,450
                   </div>
                   <div 
-                    className="font-inter text-center  text-base leading-6"
-                    style={{ color: 'var(--color-secondary-text)' }}
+                    className="font-inter text-center font-normal text-base leading-6 secondary-text"
+                   
                   >
                     ECO Tokens
                   </div>
@@ -206,9 +200,7 @@ const HomeHero: React.FC = () => {
                     13.4kg
                   </div>
                   <div 
-                    className="font-inter text-base text-center leading-6"
-                    style={{ color: 'var(--color-secondary-text)' }}
-                  >
+                    className="font-inter text-center font-normal text-base leading-6 secondary-text"                >
                     CO₂ Saved
                   </div>
                   <div className="absolute top-4 right-4 text-primary-green text-sm font-medium">
@@ -238,8 +230,7 @@ const HomeHero: React.FC = () => {
                         Plastic bottles collected
                       </div>
                       <div 
-                        className="font-inter text-sm leading-5 tracking-wide"
-                        style={{ color: 'var(--color-secondary-text)' }}
+                        className="font-inter text-sm leading-5 tracking-wide  font-normal  secondary-text"
                       >
                         5.3kg • Victoria Island
                       </div>

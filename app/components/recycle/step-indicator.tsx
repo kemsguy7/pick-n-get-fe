@@ -17,8 +17,8 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
           {/* Step Circle */}
           <div className="flex items-center">
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                step.number <= currentStep ? "bg-green-500 text-white" : "bg-gray-600 text-gray-300"
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-normal font-inter transition-colors ${
+                step.number <= currentStep ? "bg-[#DCFCE7] text-primary" : "bg-white secondary-text"
               }`}
             >
               {step.number <= currentStep ? (
@@ -34,8 +34,8 @@ export default function StepIndicator({ currentStep }: StepIndicatorProps) {
               )}
             </div>
             <span
-              className={`ml-2 text-sm font-medium hidden md:block ${
-                step.number <= currentStep ? "text-green-400" : "text-gray-400"
+              className={`ml-2  font-normal text-base font-inter hidden md:block ${
+                step.number <= currentStep ? "text-primary" : "secondary-text"
               }`}
             >
               {step.label}
