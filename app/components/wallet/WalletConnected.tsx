@@ -11,8 +11,7 @@ import {
   Clock,
   Plus,
   Minus,
-  ArrowRight,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react"
 
 interface WalletConnectedProps {
@@ -82,82 +81,87 @@ export default function WalletConnected({ onDisconnect }: WalletConnectedProps) 
   return (
     <div className="space-y-6">
       {/* Wallet Status Card */}
-      <div className="bg-black/80 rounded-2xl p-6 lg:p-8 border border-slate-700/50">
+      <div className="bg-black/80 rounded-2xl p-6 lg:p-8   .shadow-wallet-green border border-[#A5D6A74D]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
               <Wallet className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-white font-semibold font-space-grotesk">Wallet Connected</h3>
-              <p className="text-gray-400 text-sm font-inter">
+              <h3 className="text-white font-medium font-inter font-lg">Wallet Connected</h3>
+              <p className="text-white/50 font-normal text-base font-inter">
                 {walletData.address.slice(0, 8)}...{walletData.address.slice(-4)}
               </p>
             </div>
           </div>
-          <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium border border-green-500/30">
-            Active
+          <span className="px-4 font-space-grotesk  text-black py-2 gradient-button  rounded-lg  text-lg font-medium border ">
+            Trade HBAR For Cash
           </span>
         </div>
 
         {/* Balance Section */}
         <div className="mb-6">
-          <h4 className="text-white font-medium mb-4 font-inter">Balance</h4>
+          <h4 className="text-white font-space-grotesk font-medium mb-4 font-inter text-lg">Balance</h4>
           <div className="space-y-3">
             {/* ECO Tokens */}
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-              <div className="flex items-center justify-between">
+            <div className="bg-[#DCFCE7] border  rounded-lg p-4">
+              <div className="flex items-center justify-between font-inter text-primary">
                 <div>
-                  <p className="text-green-400 font-medium">Receive Tokens</p>
-                  <p className="text-green-300 text-sm">EcoCleans Utility Token</p>
+                  <p className="font-medium">Receive Tokens</p>
+                  <p className="text-sm">EcoCleans Utility Token</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-white font-bold text-lg">{walletData.balance.eco.toLocaleString()} ECO</p>
-                  <p className="text-green-300 text-sm">₦2082.50</p>
+                <div className="text-right text-primary">
+                  <p className=" font-medium text-lg  ">{walletData.balance.eco.toLocaleString()} ECO</p>
+                  <p className="text-sm ">₦2082.50</p>
                 </div>
               </div>
             </div>
 
             {/* USDC */}
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+            <div className="bg-[#DBEAFE] border  rounded-lg p-4">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-400 font-medium">USDC</p>
-                  <p className="text-blue-300 text-sm">USD Coin Stablecoin</p>
+                <div className="text-info-darker">
+                  <p className="font-medium">USDC</p>
+                  <p className="text-sm">USD Coin Stablecoin</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-white font-bold text-lg">${walletData.balance.usdc}</p>
-                  <p className="text-blue-300 text-sm">{walletData.balance.usdc} USDC</p>
+                <div className="text-right text-info-darker font-inter">
+                  <p className="font-medium text-lg">${walletData.balance.usdc}</p>
+                  <p className="text-sm font-normal">{walletData.balance.usdc} HBAR</p>
                 </div>
               </div>
             </div>
 
             {/* Fiat Equivalent */}
-            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4">
-              <div className="flex items-center justify-between">
+            <div className="bg-[#F3E8FF]  rounded-lg p-4">
+              <div className="flex items-center justify-between text-[#9333EA]">
                 <div>
-                  <p className="text-purple-400 font-medium">Fiat Equivalent</p>
-                  <p className="text-purple-300 text-sm">Local currency</p>
+                  <p className=" font-medium">Fiat Equivalent</p>
+                  <p className=" text-sm">Local currency</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-white font-bold text-lg">${walletData.balance.fiat}</p>
-                  <p className="text-purple-300 text-sm">{walletData.balance.fiat} USDC</p>
+                <div className="text-right text-[#9333EA]">
+                  <p className=" font-bold text-lg">${walletData.balance.fiat}</p>
+                  <p className=" text-sm">{walletData.balance.fiat} USDC</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Disconnect Button */}
+      
         <button
           onClick={onDisconnect}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 
-            rounded-lg transition-all duration-200 font-inter"
+          className="bg-[#EF5350] hover:bg-red-700 w-full font-space-grotesk font-medium  px-8 py-2 rounded-lg text-lg 
+            hover:shadow-lg transition-all  duration-200 focus-visible mb-4 inline-flex justify-center items-center gap-2"
         >
+          <Wallet className="w-5 h-5"  />
           Disconnect Wallet
         </button>
+            
+     
+        {/* Disconnect Button */}
+        
 
-        <p className="text-gray-500 text-sm text-center mt-4 font-inter">
+        <p className="text-inactive text-sm text-center mt-2 font-inter">
           Supported wallets: MetaMask, WalletConnect, Coinbase Wallet
         </p>
       </div>

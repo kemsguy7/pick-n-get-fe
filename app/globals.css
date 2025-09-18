@@ -8,6 +8,8 @@
   /* Colors */
   --primary-green: #1ED760;
   --info-blue: #64B5F6; 
+  --info-darker: #2563EB;
+  --text-inactive: #A1A1A1;
   --primary-yellow: #FFD54F;
   --secondary-green: #079865; 
   --lighter-green-text : #E0F2E9; 
@@ -139,6 +141,13 @@ a {
   .text-info {
     color: var(--info-blue); 
   }
+
+  .text-info-darker {
+    color: var(--info-darker); 
+  }
+  .text-inactive {
+    color: var(--text-inactive);
+  }
   
   .text-primary-yellow {
     color: var(--primary-yellow);
@@ -163,6 +172,10 @@ a {
   /* Shadows */
   .shadow-border-green {
     box-shadow: 0px 4px 10px 0px #1DE9B61A;
+  }
+
+  .shadow-wallet-green {
+    box-shadow: 0px 4px 10px 0px #1ED76014;
   }
 
   .footer-theme-shadow {
