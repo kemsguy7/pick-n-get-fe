@@ -9,6 +9,7 @@
   --primary-green: #1ED760;
   --info-blue: #64B5F6; 
   --info-darker: #2563EB;
+  --info-purple : #9333EA;
   --text-inactive: #A1A1A1;
   --primary-yellow: #FFD54F;
   --secondary-green: #079865; 
@@ -145,6 +146,11 @@ a {
   .text-info-darker {
     color: var(--info-darker); 
   }
+
+  .text-info-purple {
+    color: var(--info-purple); 
+  }
+
   .text-inactive {
     color: var(--text-inactive);
   }

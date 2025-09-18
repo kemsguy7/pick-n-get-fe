@@ -160,7 +160,6 @@ export default function WalletConnected({ onDisconnect }: WalletConnectedProps) 
      
         {/* Disconnect Button */}
         
-
         <p className="text-inactive text-sm text-center mt-2 font-inter">
           Supported wallets: MetaMask, WalletConnect, Coinbase Wallet
         </p>
@@ -168,34 +167,34 @@ export default function WalletConnected({ onDisconnect }: WalletConnectedProps) 
 
       {/* Portfolio Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 lg:p-6">
+        <div className="bg-[#DCFCE7] border border-green-500/20 rounded-xl p-4 lg:p-6">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-green-400" />
-            <span className="text-green-400 text-sm font-medium">Total Portfolio Value</span>
+            <Wallet className="w-5 h-5 text-primary" />
+            <span className="text-primary text-sm font-inter font-medium">Total Portfolio Value</span>
           </div>
-          <p className="text-2xl lg:text-3xl font-bold text-white">₦{walletData.totalValue.toLocaleString()}</p>
-          <p className="text-green-400 text-sm flex items-center gap-1 mt-1">
+          <p className="text-2xl lg:text-3xl font-space-grotesk font-bold font-space-grotesk text-primary">₦{walletData.totalValue.toLocaleString()}</p>
+          <p className="text-primary text-xs flex items-center font-inter font-normal gap-1 mt-1">
             <TrendingUp className="w-3 h-3" />
             +{walletData.change}% (24h)
           </p>
         </div>
 
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 lg:p-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Wallet className="w-5 h-5 text-blue-400" />
-            <span className="text-blue-400 text-sm font-medium">ECO Tokens</span>
+        <div className="bg-[#DBEAFE] text-info-darker rounded-lg p-4 lg:p-6">
+          <div className="flex items-center gap-2 mb-2 ">
+            <Wallet className="w-5 h-5 " />
+            <span className="text-sm font-inter font-medium">ECO Tokens</span>
           </div>
-          <p className="text-2xl lg:text-3xl font-bold text-white">{walletData.balance.eco.toLocaleString()}</p>
-          <p className="text-blue-400 text-sm mt-1">₦2082.50</p>
+          <p className="text-2xl lg:text-3xl font-space-grotesk font-bold">{walletData.balance.eco.toLocaleString()}</p>
+          <p className=" text-sm font-inter font-normal mt-1">₦2082.50</p>
         </div>
 
-        <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 lg:p-6">
+        <div className="bg-[#F3E8FF] text-info-purple border border-purple-500/20 rounded-lg p-4 lg:p-6">
           <div className="flex items-center gap-2 mb-2">
-            <Wallet className="w-5 h-5 text-purple-400" />
-            <span className="text-purple-400 text-sm font-medium">USDC Balance</span>
+            <Wallet className="w-5 h-5" />
+            <span className="text-sm font-inter font-medium">HBAR Balance</span>
           </div>
-          <p className="text-2xl lg:text-3xl font-bold text-white">${walletData.balance.usdc}</p>
-          <p className="text-purple-400 text-sm mt-1">Stablecoin</p>
+          <p className="text-2xl lg:text-3xl font-bold  font-space-grotesk">{walletData.balance.usdc}</p>
+          <p className="text-info-purple text-sm font-inter mt-1">Stablecoin</p>
         </div>
       </div>
 
