@@ -30,10 +30,8 @@ const Footer = () => {
   getYear();
 
   return (
-    <footer className="bg-footer-gradient text-white">
-      <div className="h-4 bg-[#142f2c]">
-
-      </div>
+    <footer className="footer-gradient text-white">
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">

@@ -68,7 +68,10 @@ a {
   }
   
   .footer-gradient {
-    background: linear-gradient(162.26deg, var(--footer-bg-start) 10.67%, var(--footer-bg-end) 50.23%);
+    /* background: linear-gradient(162.26deg, var(--footer-bg-start) 10.67%, var(--footer-bg-end) 50.23%); */
+
+    background: linear-gradient(162.26deg, #0D1B1E 10.67%, #142E2C 50.23%);
+
   }
   
   /* Sidebar specific styles */
