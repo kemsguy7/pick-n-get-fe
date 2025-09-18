@@ -181,7 +181,9 @@ a {
   }
 
   .shadow-wallet-green {
+    border: 1px solid #A5D6A74D;
     box-shadow: 0px 4px 10px 0px #1ED76014;
+
   }
 
   .footer-theme-shadow {

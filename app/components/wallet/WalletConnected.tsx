@@ -225,7 +225,7 @@ export default function WalletConnected({ onDisconnect }: WalletConnectedProps) 
 
       {/* Wallet Address & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-black/80 rounded-2xl p-6 border border-slate-700/50">
+        <div className="bg-black/80 shadow-wallet-green rounded-2xl p-6 ">
           <h3 className="text-white font-semibold mb-4 flex items-center gap-2 font-space-grotesk">
             <Wallet className="w-5 h-5" />
             Wallet Address
@@ -255,7 +255,7 @@ export default function WalletConnected({ onDisconnect }: WalletConnectedProps) 
           </div>
         </div>
 
-        <div className="bg-black/80 rounded-2xl p-6 border border-slate-700/50">
+        <div className="bg-black/80 rounded-2xl p-6 shadow-wallet-green">
           <h3 className="text-white font-semibold mb-4 font-space-grotesk">Quick Actions</h3>
           <div className="space-y-3">
             <button className="w-full flex items-center gap-3 px-4 py-3 bg-green-600 hover:bg-green-700 
