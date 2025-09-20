@@ -1,6 +1,4 @@
-// components/recycle/pickup-schedule.tsx - Updated with vehicle selection
 "use client"
-
 import { useState } from "react"
 import { Calendar, Bike, Car, Truck, MapPin, AlertTriangle, Info } from "lucide-react"
 import type { RecycleFormData } from "../../recycle/page"
@@ -100,14 +98,14 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
   const [address, setAddress] = useState(formData.address)
   const [date, setDate] = useState(formData.date)
   const [time, setTime] = useState(formData.time)
-  const [selectedVehicle, setSelectedVehicle] = useState<string>('')
+  const [selectedVehicle, setSelectedVehicle] = useState<"bike" | "car" | "truck" | undefined>(undefined)
   const [selectedDriver, setSelectedDriver] = useState<string>('')
   const [showDrivers, setShowDrivers] = useState(false)
 
   // Mock weight from category (in real app, this would come from previous step)
   const estimatedWeight = 8.5 // kg
 
-  const handleVehicleSelect = (vehicleId: string) => {
+  const handleVehicleSelect = (vehicleId: any) => {
     setSelectedVehicle(vehicleId)
     setShowDrivers(true)
     setSelectedDriver('') // Reset driver selection
