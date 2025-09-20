@@ -194,19 +194,20 @@ export default function DashboardPage() {
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 font-space-grotesk flex items-center gap-3">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-green-gradient bg-transparent bg-clip-text mb-2 font-space-grotesk flex items-center gap-3">
                 Welcome back, Adaora <Recycle className="w-8 h-8 lg:w-10 lg:h-10 text-green-400" />
               </h1>
-              <p className="text-lg text-gray-300 font-inter">
+              <p className="text-lg  secondary-text font-inter">
                 Your eco-impact is making a difference in Lagos
               </p>
             </div>
             <div className="flex gap-3">
-              <button className="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors font-inter flex items-center gap-2">
-                <Trophy className="w-4 h-4" />
+              <button className="px-4  bg-[#DCFCE7] text-primary text-white rounded-lg hover:bg-white/20 font-semibold transition-colors font-inter flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-primary" />
                 8 - Eco Champion
               </button>
-              <button className="gradient-button px-6 py-2 rounded-lg text-black font-semibold hover:shadow-lg transition-all duration-200 font-inter">
+              <button className="gradient-button px-6 py-2 rounded-lg text-black font-semibold hover:shadow-lg flex items-center transition-all duration-200 font-inter gap-2">
+                <Recycle className="w-4 h-4 text-black" />
                 Recycle Now
               </button>
             </div>
@@ -220,7 +221,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex overflow-x-auto bg-black/40 rounded-lg p-1 gap-1">
+          <div className="flex overflow-x-auto bg-[#1a2928] rounded-lg p-1 gap-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}

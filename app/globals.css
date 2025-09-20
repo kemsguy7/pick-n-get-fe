@@ -36,6 +36,11 @@
   --dashboard-bg: #1DE9B61A;
   --dashboard-border: #A5D6A780;
   --card-bg: #1DE9B666;
+
+
+  /* Text Linear Gradient */
+  --text-green-linear-gradient:  linear-gradient(90deg, #1ED760 0%, #1DE9B6 68.75%);
+
 }
 
 [data-theme="dark"] {
@@ -168,6 +173,13 @@ a {
   
   .description-text {
     color: var(--description-text);
+  }
+  .text-green-gradient {
+    background: var(--text-green-linear-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  
   }
 
   /* Borders */
