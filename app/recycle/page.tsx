@@ -24,6 +24,8 @@ export interface RecycleFormData {
   date: string
   time: string
   requestId?: string
+  selectedVehicle?: 'bike' | 'car' | 'truck'
+  selectedDriver?: string
 }
 
 export default function RecyclePage() {

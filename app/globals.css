@@ -401,6 +401,96 @@ a {
       padding-right: 2rem;
     }
   }
+
+
+  /* dashboard specific styles*/
+
+/* Product card responsive layouts and overflow fixes */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Dashboard container overflow fix */
+.dashboard-container {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Grid responsive layouts to prevent overflow */
+.stats-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.products-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Tab navigation overflow fix */
+.tab-nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab-nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 640px) {
+  .dashboard-title {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+  
+  .dashboard-subtitle {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+  
+  /* Ensure cards don't overflow on mobile */
+  .dashboard-card {
+    min-width: 0;
+    width: 100%;
+  }
+}
 }
 
 /* Hamburger Animation Styles */
