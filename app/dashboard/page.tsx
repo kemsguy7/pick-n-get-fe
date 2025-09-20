@@ -188,7 +188,7 @@ export default function DashboardPage() {
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
+      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6 dashboard-container">
         <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
           
           {/* Header Section */}
@@ -213,7 +213,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 stats-grid">
             {statsData.overview.map((stat, index) => (
               <StatCard key={index} {...stat} />
             ))}
@@ -387,7 +387,7 @@ export default function DashboardPage() {
           </button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 products-grid">
           {productsData.map((product) => (
             <ProductCard key={product.id} {...product} />
           ))}
