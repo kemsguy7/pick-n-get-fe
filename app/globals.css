@@ -87,6 +87,10 @@ a {
     background: linear-gradient(162.26deg, #0D1B1E 10.67%, #142E2C 50.23%);
 
   }
+
+  .body-gradient {
+    background: var(--bg-primary);
+  }
   
   /* Sidebar specific styles */
   .sidebar-gradient {

@@ -5,7 +5,6 @@ import AppLayout from "../components/layout/AppLayout"
 import ProductCard, { ProductCardProps } from "../components/ui/ProductCard"
 import ProductListCard from "../components/shop/ProductListCard"
 import ShoppingCart from "../components/shop/shoppingCart"
-
 import { 
   Search,
   Filter,
@@ -49,7 +48,7 @@ export default function EcoShopPage() {
     { id: 'garden', name: 'Home & Garden', icon: <div className="w-4 h-4 bg-orange-500 rounded" />, count: 1 },
   ]
 
-  // Products data with updated structure
+  // Products data
   const productsData: ProductCardProps[] = [
     {
       id: '1',
@@ -215,78 +214,183 @@ export default function EcoShopPage() {
               100% Eco-Friendly
             </span>
             <span className="px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
-              Certified Vendors
-            </span>
-            <span className="px-4 py-2 bg-yellow-100 text-yellow-600 rounded-full text-sm font-medium">
-              5-Days Fast Delivery
+              Verified Vendors
             </span>
             <span className="px-4 py-2 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">
-              Carbon Neutral Delivery
+              Pay with ECO Tokens
+            </span>
+            <span className="px-4 py-2 bg-orange-100 text-orange-600 rounded-full text-sm font-medium">
+              Carbon-Neutral Shipping
             </span>
           </div>
 
-          {/* Search and Filters */}
-          <div className="bg-black rounded-2xl p-6 border border-[#A5D6A74D]">
-            <div className="flex flex-col lg:flex-row gap-4 mb-6">
-              {/* Search Bar */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search eco-friendly products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
-                />
-              </div>
-
-              {/* View Toggle */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-3 rounded-lg transition-colors ${
-                    viewMode === 'grid' 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-                  }`}
-                >
-                  <Grid3X3 className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-3 rounded-lg transition-colors ${
-                    viewMode === 'list' 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
-                  }`}
-                >
-                  <List className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Cart Button */}
-              <button
-                onClick={() => setShowCart(true)}
-                className="relative bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2 font-medium"
-              >
-                <ShoppingBag className="w-5 h-5" />
-                Cart
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
-                    {cartItemCount}
+          {/* Featured Products Section */}
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6 font-space-grotesk flex items-center gap-2">
+              <Star className="w-6 h-6 text-yellow-400" />
+              Featured Products
+            </h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Featured Product 1 */}
+              <div className="relative bg-slate-800 rounded-2xl overflow-hidden border border-[#A5D6A74D]">
+                <div className="absolute top-4 left-4 flex gap-2 z-10">
+                  <span className="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    Featured Eco Product
                   </span>
-                )}
-              </button>
+                  <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-xs font-medium">
+                    95% Recycled
+                  </span>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/2 p-6">
+                    <img 
+                      src="/api/placeholder/300/300" 
+                      alt="Recycled Ocean Plastic Backpack"
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                  </div>
+                  
+                  <div className="w-1/2 p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-xl font-space-grotesk mb-3">
+                        Recycled Ocean Plastic Backpack
+                      </h3>
+                      <p className="text-gray-300 text-sm mb-4 font-inter">
+                        Durable and stylish backpack made from 100% recycled ocean plastic bottles. Perfect for daily use with multiple compartments.
+                      </p>
+                      
+                      <div className="flex items-center gap-1 mb-4">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-white font-medium text-sm">4.8</span>
+                        <span className="text-gray-400 text-sm">(127 reviews)</span>
+                      </div>
+
+                      <div className="flex items-center gap-4 mb-4 text-xs text-gray-300">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span>89,340kg CO₂ saved</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <span>12.5L of water saved</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <span className="text-white font-bold text-2xl font-space-grotesk">₦65.99</span>
+                          <p className="text-green-400 text-sm">920ECO</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-400">by EcoCraft Lagos</p>
+                          <p className="text-xs text-gray-400">24 in stock</p>
+                        </div>
+                      </div>
+                      
+                      <button className="w-full gradient-button text-black font-semibold py-3 rounded-lg">
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Featured Product 2 */}
+              <div className="relative bg-slate-800 rounded-2xl overflow-hidden border border-[#A5D6A74D]">
+                <div className="absolute top-4 left-4 flex gap-2 z-10">
+                  <span className="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    Featured Eco Product
+                  </span>
+                  <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-xs font-medium">
+                    95% Recycled
+                  </span>
+                </div>
+                
+                <div className="flex">
+                  <div className="w-1/2 p-6">
+                    <img 
+                      src="/api/placeholder/300/300" 
+                      alt="Tire Ottoman Seat"
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                  </div>
+                  
+                  <div className="w-1/2 p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-xl font-space-grotesk mb-3">
+                        Tire Ottoman Seat
+                      </h3>
+                      <p className="text-gray-300 text-sm mb-4 font-inter">
+                        Comfortable ottoman made from upcycled car tires with eco-friendly cushioning. Perfect for modern living spaces.
+                      </p>
+                      
+                      <div className="flex items-center gap-1 mb-4">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-white font-medium text-sm">4.6</span>
+                        <span className="text-gray-400 text-sm">(89 reviews)</span>
+                      </div>
+
+                      <div className="flex items-center gap-4 mb-4 text-xs text-gray-300">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span>15.7kg CO₂ saved</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <span>45L of water saved</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <span className="text-white font-bold text-2xl font-space-grotesk">₦89.99</span>
+                          <p className="text-green-400 text-sm">1800ECO</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-gray-400">by Sustainable Furniture Co.</p>
+                          <p className="text-xs text-gray-400">12 in stock</p>
+                        </div>
+                      </div>
+                      
+                      <button className="w-full gradient-button text-black font-semibold py-3 rounded-lg">
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search, Filters & View Toggle */}
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            {/* Search Bar */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search eco-friendly products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
+              />
             </div>
 
-            {/* Filters Row */}
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Category Filter */}
+            {/* Category & Sort Dropdowns */}
+            <div className="flex gap-4">
               <div className="relative">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none bg-slate-800 border border-[#D9D9D94D] rounded-lg px-4 py-2 pr-8 text-white focus:outline-none focus:border-green-500"
+                  className="appearance-none bg-slate-800 border border-[#D9D9D94D] rounded-lg px-4 py-3 pr-8 text-white focus:outline-none focus:border-green-500"
                   style={{ backdropFilter: 'blur(4px)' }}
                 >
                   {categories.map(category => (
@@ -298,50 +402,21 @@ export default function EcoShopPage() {
                 <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>
 
-              {/* Sort Filter */}
               <div className="relative">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none bg-slate-800 border border-[#D9D9D94D] rounded-lg px-4 py-2 pr-8 text-white focus:outline-none focus:border-green-500"
+                  className="appearance-none bg-slate-800 border border-[#D9D9D94D] rounded-lg px-4 py-3 pr-8 text-white focus:outline-none focus:border-green-500"
                   style={{ backdropFilter: 'blur(4px)' }}
                 >
                   <option value="featured">Featured</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
-                  <option value="newest">Newest First</option>
+                  <option value="newest">Most Eco-Friendly</option>
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
               </div>
-
-              <span className="text-gray-400 text-sm self-center">
-                {filteredProducts.length} products found
-              </span>
-            </div>
-          </div>
-
-          {/* Featured Products */}
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-6 font-space-grotesk flex items-center gap-2">
-              <Star className="w-6 h-6 text-yellow-400" />
-              Featured Products
-            </h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              {productsData.slice(0, 3).map((product) => (
-                <div key={product.id} className="relative">
-                  <ProductCard 
-                    {...product}
-                    onAddToCart={handleAddToCart}
-                    onToggleFavorite={handleToggleFavorite}
-                    isFavorited={favoriteItems.includes(product.id)}
-                  />
-                  <div className="absolute top-4 left-4 bg-yellow-400 text-black px-2 py-1 rounded-lg text-xs font-bold">
-                    FEATURED
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -372,10 +447,40 @@ export default function EcoShopPage() {
             </div>
           </div>
 
+          {/* View Toggle and Products Count */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
+                  viewMode === 'grid' 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                }`}
+              >
+                Grid View
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
+                  viewMode === 'list' 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                }`}
+              >
+                List View
+              </button>
+            </div>
+            
+            <span className="text-gray-400 text-sm">
+              {filteredProducts.length} products found
+            </span>
+          </div>
+
           {/* Products Grid/List */}
           <div>
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 products-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -402,7 +507,7 @@ export default function EcoShopPage() {
           </div>
 
           {/* Shopping Impact */}
-          <div className="bg-[#DCFCE7] rounded-2xl p-6 border border-green-200">
+          <div className="bg-[#DCFCE7] rounded-2xl p-6 border border-green-200 mt-12">
             <h3 className="text-primary font-semibold font-space-grotesk mb-4 flex items-center gap-2">
               <Recycle className="w-5 h-5" />
               Your Shopping Impact
