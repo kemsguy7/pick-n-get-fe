@@ -55,14 +55,15 @@ export default function ProductCard({
         />
         
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          <div className="bg-green-500/90 text-white px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
+        <div className="absolute top-3 left-3 flex font-inter font-medium flex-col gap-2">
+          <div className="bg-light-green text-primary border-[#000000]  border-[0.5px] text-white px-6 py-1 rounded-lg text-xs font-medium backdrop-blur-sm">
             {recycledPercentage}% Recycled
           </div>
           {isVerified && (
-            <div className="bg-blue-500/90 text-white px-2 py-1 rounded-full text-xs font-medium backdrop-blur-sm flex items-center gap-1">
-              <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+            <div className="bg-blue-100 text-[#2563ED] border-[#000000]  border-[0.5px] rounded-lg px-2 py-1  text-xs  
+            backdrop-blur-sm flex items-center gap-1">
+              <div className="w-3 h-3 flex items-center justify-center">
+                <div className="w-1.5 h-1.5 "></div>
               </div>
               Verified
             </div>
@@ -72,21 +73,21 @@ export default function ProductCard({
         {/* Favorite Button */}
         <button
           onClick={() => onToggleFavorite?.(id)}
-          className="absolute top-3 right-3 w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-all duration-200"
+          className="absolute top-3 right-3 w-8 h-8 bg-white backdrop-blur-sm rounded-md flex items-center justify-center hover:bg-red-500/70 transition-all duration-200"
         >
-          <Heart className={`w-4 h-4 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+          <Heart className={`w-4 h-4 ${isFavorited ? 'fill-red-500 text-red-500' : 'text-black'}`} />
         </button>
       </div>
 
       {/* Content Section */}
       <div className="p-4 space-y-3">
         {/* Product Name */}
-        <h3 className="text-white font-semibold font-space-grotesk text-lg leading-tight">
+        <h3 className="text-white font-medium  font-space-grotesk text-lg leading-tight">
           {name}
         </h3>
 
         {/* Description */}
-        <p className="text-gray-400 text-sm font-inter line-clamp-2">
+        <p className="secondary-text text-sm font-inter line-clamp-2">
           {description}
         </p>
 
@@ -94,13 +95,13 @@ export default function ProductCard({
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-            <span className="text-white font-medium text-sm">{rating}</span>
+            <span className="text-white space font-medium text-sm">{rating}</span>
           </div>
-          <span className="text-gray-400 text-sm">({reviewCount} reviews)</span>
+          <span className="text-gray-400 secondary-text font-normal font-inter text-sm">({reviewCount} reviews)</span>
         </div>
 
         {/* Brand */}
-        <p className="text-green-400 text-sm font-medium">by {brand}</p>
+        <p className="font-inter text-xs font-medium"> <span className="secondary-text"> by</span> {brand}</p>
 
         {/* Price Section */}
         <div className="flex items-center gap-2">
