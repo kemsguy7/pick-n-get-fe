@@ -395,37 +395,37 @@ export default function DashboardPage() {
         </div>
 
         {/* Special Offers */}
-        <div className="bg-green-50 rounded-2xl p-6 border border-green-200">
+        <div className="bg-[#edfff3] rounded-2xl p-6 border border-green-200">
           <div className="flex items-center gap-2 mb-4">
-            <Gift className="w-5 h-5 text-green-600" />
-            <h3 className="text-green-800 font-semibold font-space-grotesk">Special Offers</h3>
+            <Gift className="w-5 h-5 text-green-600 primary-gradient-text" />
+            <h3 className="primary-gradient-text  font-medium  font-inter">Special Offers</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-lg p-4 border border-green-200">
+            <div className="bg-white rounded-xl p-4 border border-black">
               <div className="flex items-center gap-2 mb-2">
                 <Recycle className="w-4 h-4 text-green-600" />
                 <span className="text-green-600 font-medium font-inter">Eco Starter Pack</span>
               </div>
-              <p className="text-gray-700 text-sm mb-3">Get 20% off on your first eco-product purchase</p>
+              <p className="text-black/60 text-sm mb-3">Get 20% off on your first eco-product purchase</p>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-green-600 font-space-grotesk">500 ECO</span>
-                <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                <button className="bg-green-600 text-black hover:text-white px-4 py-2 rounded-lg font-inter text-xs font-normal hover:bg-green-700 transition-colors  ">
                   Claim
                 </button>
               </div>
             </div>
             
-            <div className="bg-white rounded-lg p-4 border border-green-200">
+            <div className="bg-white rounded-lg p-4 border border-black">
               <div className="flex items-center gap-2 mb-2">
                 <Trophy className="w-4 h-4 text-green-600" />
                 <span className="text-green-600 font-medium font-inter">Recycler's Reward</span>
               </div>
-              <p className="text-gray-700 text-sm mb-3">Free shipping on orders above ₦50,000</p>
+              <p className="text-black/60 text-sm mb-3">Free shipping on orders above ₦50,000</p>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold text-green-600 font-space-grotesk">Free</span>
-                <button className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                  Apply Now
+                <button className="bg-gray-800 hover:text-white text-info-darker font-space-grotesk px-4 py-2 rounded-lg text-sm font-medium">
+                  Learn More
                 </button>
               </div>
             </div>

@@ -7,6 +7,9 @@
 :root {
   /* Colors */
   --primary-green: #1ED760;
+  --primary-green-gradient-text: linear-gradient(0deg, var(--Primary, #1ED760), var(--Primary, #1ED760)),
+linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+;
   --info-blue: #64B5F6; 
   --info-darker: #2563EB;
   --info-purple : #9333EA;
@@ -36,6 +39,9 @@
   --dashboard-bg: #1DE9B61A;
   --dashboard-border: #A5D6A780;
   --card-bg: #1DE9B666;
+
+  /*backgrounds */
+  --bg-light-green: #DCFCE7;
 
 
   /* Text Linear Gradient */
@@ -137,6 +143,17 @@ a {
   
   .bg-primary-green {
     background-color: var(--primary-green);
+  }
+
+  .primary-gradient-text {
+    background: var(--primary-green-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-light-green {
+    background-color: var(--bg-light-green);
   }
 
   /* Text Colors */
