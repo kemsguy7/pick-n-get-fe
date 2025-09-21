@@ -188,11 +188,11 @@ export default function DashboardPage() {
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6 dashboard-container">
+      <div className="min-h-screen  p-4 lg:p-6 dashboard-container">
         <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
           
           {/* Header Section */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col lg:flex-row mt-4 lg:items-center lg:justify-between gap-4">
             <div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-green-gradient bg-transparent bg-clip-text mb-2 font-space-grotesk flex items-center gap-3">
                 Welcome back, Adaora <Recycle className="w-8 h-8 lg:w-10 lg:h-10 text-green-400" />
@@ -228,8 +228,8 @@ export default function DashboardPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-2 ${
                   activeTab === tab.id
-                    ? 'bg-white text-black'
-                    : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    ? 'bg-[#EDFFF3] text-primary'
+                    : 'lighter-green-text hover:text-white hover:bg-white/10'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -256,10 +256,10 @@ export default function DashboardPage() {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Goal Progress */}
-        <div className="bg-black/80 rounded-2xl p-6 border border-slate-700/50">
-          <div className="flex items-center gap-2 mb-4">
-            <Recycle className="w-5 h-5 text-green-400" />
-            <h3 className="text-white font-semibold font-space-grotesk">Monthly Goal Progress</h3>
+        <div className="bg-black/80 rounded-2xl  p-6 border border-slate-700/50">
+          <div className="flex items-center gap-2  mb-4">
+            <Recycle className="w-5 h-5 text-primary" />
+            <h3 className="text-white text-primary font-semibold font-space-grotesk">Monthly Goal Progress</h3>
           </div>
           
           <div className="space-y-4">
@@ -281,9 +281,9 @@ export default function DashboardPage() {
 
         {/* Environmental Impact */}
         <div className="bg-black/80 rounded-2xl p-6 border border-slate-700/50">
-          <div className="flex items-center gap-2 mb-4">
-            <Leaf className="w-5 h-5 text-green-400" />
-            <h3 className="text-white font-semibold font-space-grotesk">Environmental Impact</h3>
+          <div className="flex items-center text-primary gap-2 mb-4">
+            <Leaf className="w-5 h-5 " />
+            <h3 className="text-white text-primary font-semibold font-space-grotesk">Environmental Impact</h3>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -303,10 +303,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="lg:col-span-2 bg-black/80 rounded-2xl p-6 border border-slate-700/50">
+        <div className="lg:col-span-2 bg-black rounded-2xl p-6 border border-slate-700/50">
           <div className="flex items-center gap-2 mb-6">
             <Recycle className="w-5 h-5 text-green-400" />
-            <h3 className="text-white font-semibold font-space-grotesk">Recent Recycling Activity</h3>
+            <h3 className="text-white font-semibold font-inter">Recent Recycling Activity</h3>
           </div>
           
           <div className="space-y-4">
@@ -315,20 +315,20 @@ export default function DashboardPage() {
               { amount: '12.5kg', type: 'recycled', date: '2025-01-18 T09:15:00Z', status: 'collected', earnings: '+₦' },
               { amount: '2.8kg', type: 'recycled', date: '2025-01-20 T16:00:00Z', status: 'pending', earnings: '+₦' }
             ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-4 border border-[#D9D9D933] rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-                    <Recycle className="w-5 h-5 text-green-400" />
+                    <Recycle className="w-5 h-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-white font-medium">{activity.amount} {activity.type}</p>
-                    <p className="text-gray-400 text-sm">{new Date(activity.date).toLocaleDateString()}</p>
+                    <p className="text-gray-400 text-sm font-inter font-normal">{new Date(activity.date).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-green-400 font-semibold">{activity.earnings}</p>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    activity.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                  <span className={`px-2 py-1 font-roboto rounded-lg text-xs font-medium ${
+                    activity.status === 'completed' ? 'bg-[#EEEEEE] text-info-purple' :
                     activity.status === 'collected' ? 'bg-blue-500/20 text-blue-400' :
                     'bg-yellow-500/20 text-yellow-400'
                   }`}>
@@ -345,7 +345,7 @@ export default function DashboardPage() {
 
   function ActivityTab() {
     return (
-      <div className="bg-black/80 rounded-2xl p-6 border border-slate-700/50">
+      <div className=" rounded-2xl   bg-black  p-6 border border-slate-700/50">
         <div className="flex items-center gap-2 mb-6">
           <Activity className="w-5 h-5 text-white" />
           <h3 className="text-white font-semibold font-space-grotesk">Recent Transaction</h3>
@@ -357,9 +357,9 @@ export default function DashboardPage() {
             { type: 'Eco-friendly notebook', date: '2025-01-14', amount: '-15 USDC' },
             { type: 'Electronic waste', date: '2025-01-13', amount: '+₦2,008' }
           ].map((transaction, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg">
+            <div key={index} className="flex items-center justify-between  p-4 border border-[#D9D9D933] rounded-lg">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#DCFCE7] rounded-full flex items-center justify-center">
                   <Recycle className="w-5 h-5 text-green-400" />
                 </div>
                 <div>
