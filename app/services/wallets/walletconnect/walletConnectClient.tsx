@@ -1,0 +1,208 @@
+'use client';
+
+import { WalletConnectContext } from "../../../contexts/WalletConnectContext";
+import { useCallback, useContext, useEffect } from 'react';
+import { WalletInterface } from "../walletInterface";
+import { AccountId, ContractExecuteTransaction, ContractId, LedgerId, TokenAssociateTransaction, TokenId, TransferTransaction, Client } from "@hashgraph/sdk";
+import { ContractFunctionParameterBuilder } from "../contractFunctionParameterBuilder";
+import { getCurrentNetworkConfig } from "../../../config";
+import { SignClientTypes } from "@walletconnect/types";
+import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId } from "@hashgraph/hedera-wallet-connect";
+import EventEmitter from "events";
+
+// Created refreshEvent because `dappConnector.walletConnectClient.on(eventName, syncWithWalletConnectContext)` would not call syncWithWalletConnectContext
+// Reference usage from walletconnect implementation https://github.com/hashgraph/hedera-wallet-connect/blob/main/src/lib/dapp/index.ts#L120C1-L124C9
+const refreshEvent = new EventEmitter();
+
+// Get project ID from environment variables
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "377d75bb6f86a2ffd427d032ff6ea7d3";
+const currentNetworkConfig = getCurrentNetworkConfig();
+const hederaNetwork = currentNetworkConfig.network;
+
+// Initialize these only on the client side
+let hederaClient: Client | null = null;
+let dappConnector: DAppConnector | null = null;
+
+// Initialize client-side only components
+const initializeClientSide = () => {
+  if (typeof window === 'undefined') return;
+  
+  if (!hederaClient) {
+    hederaClient = Client.forName(hederaNetwork);
+  }
+
+  if (!dappConnector) {
+    const metadata: SignClientTypes.Metadata = {
+      name: "Pick'n'Get - Hedera Integration",
+      description: "Sustainable Recycling Platform with Hedera Integration",
+      url: window.location.origin,
+      icons: [window.location.origin + "/favicon.ico"],
+    };
+
+    dappConnector = new DAppConnector(
+      metadata,
+      LedgerId.fromString(hederaNetwork),
+      walletConnectProjectId,
+      Object.values(HederaJsonRpcMethod),
+      [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged],
+      [HederaChainId.Testnet],
+    );
+  }
+  
+  return dappConnector;
+};
+
+// Ensure walletconnect is initialized only once
+let walletConnectInitPromise: Promise<void> | undefined = undefined;
+const initializeWalletConnect = async () => {
+  if (typeof window === 'undefined') return;
+  
+  const connector = initializeClientSide();
+  if (!connector) return;
+
+  if (walletConnectInitPromise === undefined) {
+    walletConnectInitPromise = connector.init();
+  }
+  await walletConnectInitPromise;
+};
+
+export const openWalletConnectModal = async () => {
+  if (typeof window === 'undefined') {
+    console.warn("WalletConnect modal can only be opened on the client side");
+    return;
+  }
+  
+  await initializeWalletConnect();
+  const connector = initializeClientSide();
+  if (!connector) return;
+  
+  await connector.openModal().then(() => {
+    refreshEvent.emit("sync");
+  });
+};
+
+class WalletConnectWallet implements WalletInterface {
+  private getSigner() {
+    if (!dappConnector || dappConnector.signers.length === 0) {
+      throw new Error('No signers found!');
+    }
+    return dappConnector.signers[0];
+  }
+
+  private getAccountId() {
+    // Need to convert from walletconnect's AccountId to hashgraph/sdk's AccountId because walletconnect's AccountId and hashgraph/sdk's AccountId are not the same!
+    return AccountId.fromString(this.getSigner().getAccountId().toString());
+  }
+
+  async transferHBAR(toAddress: AccountId, amount: number) {
+    const transferHBARTransaction = new TransferTransaction()
+      .addHbarTransfer(this.getAccountId(), -amount)
+      .addHbarTransfer(toAddress, amount);
+
+    const signer = this.getSigner();
+    await transferHBARTransaction.freezeWithSigner(signer);
+    const txResult = await transferHBARTransaction.executeWithSigner(signer);
+    return txResult ? txResult.transactionId.toString() : null;
+  }
+
+  async transferFungibleToken(toAddress: AccountId, tokenId: TokenId, amount: number) {
+    const transferTokenTransaction = new TransferTransaction()
+      .addTokenTransfer(tokenId, this.getAccountId(), -amount)
+      .addTokenTransfer(tokenId, toAddress.toString(), amount);
+
+    const signer = this.getSigner();
+    await transferTokenTransaction.freezeWithSigner(signer);
+    const txResult = await transferTokenTransaction.executeWithSigner(signer);
+    return txResult ? txResult.transactionId.toString() : null;
+  }
+
+  async transferNonFungibleToken(toAddress: AccountId, tokenId: TokenId, serialNumber: number) {
+    const transferTokenTransaction = new TransferTransaction()
+      .addNftTransfer(tokenId, serialNumber, this.getAccountId(), toAddress);
+
+    const signer = this.getSigner();
+    await transferTokenTransaction.freezeWithSigner(signer);
+    const txResult = await transferTokenTransaction.executeWithSigner(signer);
+    return txResult ? txResult.transactionId.toString() : null;
+  }
+
+  async associateToken(tokenId: TokenId) {
+    const associateTokenTransaction = new TokenAssociateTransaction()
+      .setAccountId(this.getAccountId())
+      .setTokenIds([tokenId]);
+
+    const signer = this.getSigner();
+    await associateTokenTransaction.freezeWithSigner(signer);
+    const txResult = await associateTokenTransaction.executeWithSigner(signer);
+    return txResult ? txResult.transactionId.toString() : null;
+  }
+
+  // Purpose: build contract execute transaction and send to wallet for signing and execution
+  // Returns: Promise<string | null>
+  async executeContractFunction(contractId: ContractId, functionName: string, functionParameters: ContractFunctionParameterBuilder, gasLimit: number) {
+    const tx = new ContractExecuteTransaction()
+      .setContractId(contractId)
+      .setGas(gasLimit)
+      .setFunction(functionName, functionParameters.buildHAPIParams());
+
+    const signer = this.getSigner();
+    await tx.freezeWithSigner(signer);
+    const txResult = await tx.executeWithSigner(signer);
+
+    // in order to read the contract call results, you will need to query the contract call's results from a mirror node using the transaction id
+    // after getting the contract call results, use ethers and abi.decode to decode the call_result
+    return txResult ? txResult.transactionId.toString() : null;
+  }
+
+  disconnect() {
+    if (!dappConnector) return;
+    
+    dappConnector.disconnectAll().then(() => {
+      refreshEvent.emit("sync");
+    });
+  }
+}
+
+export const walletConnectWallet = new WalletConnectWallet();
+
+// this component will sync the walletconnect state with the context
+export const WalletConnectClient = () => {
+  // use the WalletConnectContext to keep track of the walletconnect account and connection
+  const { setAccountId, setIsConnected } = useContext(WalletConnectContext);
+
+  // sync the walletconnect state with the context
+  const syncWithWalletConnectContext = useCallback(() => {
+    if (!dappConnector || dappConnector.signers.length === 0) {
+      setAccountId('');
+      setIsConnected(false);
+      return;
+    }
+
+    const accountId = dappConnector.signers[0]?.getAccountId()?.toString();
+    if (accountId) {
+      setAccountId(accountId);
+      setIsConnected(true);
+    } else {
+      setAccountId('');
+      setIsConnected(false);
+    }
+  }, [setAccountId, setIsConnected]);
+
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+    
+    // Sync after walletconnect finishes initializing
+    refreshEvent.addListener("sync", syncWithWalletConnectContext);
+
+    initializeWalletConnect().then(() => {
+      syncWithWalletConnectContext();
+    });
+
+    return () => {
+      refreshEvent.removeListener("sync", syncWithWalletConnectContext);
+    }
+  }, [syncWithWalletConnectContext]);
+  
+  return null;
+};

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Leaf, Sun, Moon, Menu, Bell } from 'lucide-react';
+import { Leaf, Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLayout } from './LayoutProvider';
+import { useWallets, WalletType } from '../../hooks/useWallets';
 import Link from 'next/link';
 
 interface HeaderProps {
@@ -15,17 +16,26 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
   const [activeLink, setActiveLink] = useState('Home');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const router = useRouter();
   const { toggleSidebar } = useLayout();
+  const {
+    isAnyWalletConnected,
+    getCurrentAccount,
+    getConnectedWalletType,
+    connectWallet,
+    disconnectAllWallets,
+    metamask,
+    walletConnect
+  } = useWallets();
 
-  // Dummy wallet data
+  // Mock data for demo - replace with real data later
   const walletData = {
     balance: '2,450',
     co2Saved: '23.4kg',
     notifications: 2,
-    userName: 'Adaora',
-    userAvatar: '/api/placeholder/32/32' // You can replace with actual avatar
+    userName: 'User',
+    userAvatar: '/api/placeholder/32/32'
   };
 
   const navLinks = [
@@ -63,12 +73,35 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
     document.documentElement.setAttribute('data-theme', theme);
   };
 
-  const handleConnectWallet = () => {
-    setIsWalletConnected(true);
+  const handleConnectWallet = (walletType?: WalletType) => {
+    if (walletType) {
+      connectWallet(walletType);
+      setShowWalletModal(false);
+    } else {
+      setShowWalletModal(true);
+    }
   };
 
   const handleDisconnectWallet = () => {
-    setIsWalletConnected(false);
+    disconnectAllWallets();
+  };
+
+  const getDisplayAddress = () => {
+    const account = getCurrentAccount();
+    if (!account) return '';
+    
+    // Shorten the address for display
+    if (account.length > 10) {
+      return `${account.slice(0, 6)}...${account.slice(-4)}`;
+    }
+    return account;
+  };
+
+  const getWalletTypeDisplay = () => {
+    const walletType = getConnectedWalletType();
+    if (walletType === WalletType.METAMASK) return 'MetaMask';
+    if (walletType === WalletType.WALLETCONNECT) return 'WalletConnect';
+    return '';
   };
 
   const handleLinkClick = (link: string) => {
@@ -112,11 +145,14 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
       if (isMobileMenuOpen && !target.closest('.mobile-menu-container')) {
         setIsMobileMenuOpen(false);
       }
+      if (showWalletModal && !target.closest('.wallet-modal-container')) {
+        setShowWalletModal(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobileMenuOpen]);
+  }, [isMobileMenuOpen, showWalletModal]);
 
   return (
     <>
@@ -150,11 +186,8 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
               </div>
             </div>
 
-            {/* Center - Navigation Links (Desktop - always show, but hide on mobile when sidebar is present) */}
-            <nav className={`
-              hidden lg:flex gap-1 xl:gap-3 items-center space-x-2
-              ${showSidebarToggle ? 'lg:flex' : 'lg:flex'}
-            `}>
+            {/* Center - Navigation Links */}
+            <nav className={`hidden lg:flex gap-1 xl:gap-3 items-center space-x-2`}>
               {navLinks.map((link) => (
                 <button
                   key={link}
@@ -188,7 +221,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
               </button>
 
               {/* Wallet Connected State */}
-              {isWalletConnected ? (
+              {isAnyWalletConnected ? (
                 <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                   {/* Token Balance */}
                   <div className="hidden sm:flex items-center gap-1 bg-green-500/20 border border-green-500/30 rounded-lg px-2 py-1 flex-shrink-0">
@@ -216,25 +249,38 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
                     )}
                   </button>
 
-                  {/* User Profile */}
-                  <div className="flex items-center gap-1 sm:gap-2 cursor-pointer hover:bg-white/10 rounded-lg p-1 transition-colors duration-200 flex-shrink-0 max-w-[120px]"
-                       onClick={handleDisconnectWallet}>
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-300 rounded-full overflow-hidden flex-shrink-0">
-                      <img 
-                        src={walletData.userAvatar} 
-                        alt="User Avatar"
-                        className="w-full h-full object-cover"
-                      />
+                  {/* User Profile / Wallet Info */}
+                  <div className="relative group">
+                    <div className="flex items-center gap-1 sm:gap-2 cursor-pointer hover:bg-white/10 rounded-lg p-1 transition-colors duration-200 flex-shrink-0 max-w-[120px]">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        <Wallet className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="hidden sm:block text-left">
+                        <div className="text-white text-xs font-medium truncate">
+                          {getWalletTypeDisplay()}
+                        </div>
+                        <div className="text-white/70 text-xs truncate">
+                          {getDisplayAddress()}
+                        </div>
+                      </div>
                     </div>
-                    <span className="hidden sm:block text-white text-sm font-medium truncate">
-                      {walletData.userName}
-                    </span>
+                    
+                    {/* Disconnect Dropdown */}
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                      <button
+                        onClick={handleDisconnectWallet}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-white hover:bg-white/10 rounded-lg text-sm transition-colors duration-200"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Disconnect
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
                 /* Connect Wallet Button */
                 <button 
-                  onClick={handleConnectWallet}
+                  onClick={() => handleConnectWallet()}
                   className="gradient-button font-semibold px-2 sm:px-3 py-1 sm:py-1.5 
                     rounded-lg hover:shadow-lg transition-all duration-200 focus-visible 
                     text-xs sm:text-sm lg:text-base whitespace-nowrap flex-shrink-0"
@@ -261,7 +307,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
           </div>
         </div>
 
-        {/* Mobile Menu Overlay (only show when no sidebar) */}
+        {/* Mobile Menu Overlay */}
         {!showSidebarToggle && isMobileMenuOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden">
             <div className="flex justify-end p-4">
@@ -281,6 +327,49 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
         )}
       </header>
 
+      {/* Wallet Selection Modal */}
+      {showWalletModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="wallet-modal-container bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="text-white text-xl font-semibold mb-4 text-center">Connect Wallet</h3>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleConnectWallet(WalletType.METAMASK)}
+                className="w-full flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200 text-white"
+              >
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">M</span>
+                </div>
+                <div className="text-left">
+                  <div className="font-medium">MetaMask</div>
+                  <div className="text-sm text-white/70">Connect using browser extension</div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => handleConnectWallet(WalletType.WALLETCONNECT)}
+                className="w-full flex items-center gap-3 p-3 bg-white/10 hover:bg-white/20 rounded-lg transition-colors duration-200 text-white"
+              >
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">W</span>
+                </div>
+                <div className="text-left">
+                  <div className="font-medium">WalletConnect</div>
+                  <div className="text-sm text-white/70">Scan with mobile wallet</div>
+                </div>
+              </button>
+            </div>
+            
+            <button
+              onClick={() => setShowWalletModal(false)}
+              className="mt-4 w-full py-2 text-white/70 hover:text-white transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Menu (only show when no sidebar) */}
       {!showSidebarToggle && (
         <div className={`
@@ -295,16 +384,14 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
             <nav className="max-w-[90vw] mx-auto px-4 py-4">
               <div className="flex flex-col space-y-2">
                 {/* Mobile Wallet Info (when connected) */}
-                {isWalletConnected && (
+                {isAnyWalletConnected && (
                   <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg mb-2">
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={walletData.userAvatar} 
-                        alt="User Avatar"
-                        className="w-8 h-8 bg-gray-300 rounded-full object-cover"
-                      />
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center">
+                        <Wallet className="w-4 h-4 text-white" />
+                      </div>
                       <div>
-                        <p className="text-white text-sm font-medium">{walletData.userName}</p>
+                        <p className="text-white text-sm font-medium">{getWalletTypeDisplay()}</p>
                         <div className="flex items-center gap-3 text-xs">
                           <span className="text-green-400">{walletData.balance}ECO</span>
                           <span className="text-blue-400">{walletData.co2Saved}CO₂</span>
@@ -341,9 +428,6 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
           </div>
         </div>
       )}
-
-      {/* Spacer to prevent content overlap */}
-      {/* <div className="h-14 sm:h-16 lg:h-20"></div> */}
     </>
   );
 };
