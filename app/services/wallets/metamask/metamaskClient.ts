@@ -46,14 +46,31 @@ export const switchToHederaNetwork = async (ethereum: any) => {
 // Safe way to access window.ethereum in Next.js
 const getEthereum = () => {
   if (typeof window === 'undefined') return null;
-  return (window as any).ethereum;
+  
+  const ethereum = (window as any).ethereum;
+  
+  // Handle multiple wallet extensions
+  if (ethereum?.providers) {
+    // Multiple wallets detected, find MetaMask
+    const metamaskProvider = ethereum.providers.find((provider: any) => provider.isMetaMask);
+    return metamaskProvider || ethereum.providers[0];
+  }
+  
+  // Single wallet or no providers array
+  return ethereum;
 }
 
 const getProvider = () => {
   const ethereum = getEthereum();
   if (!ethereum) {
-    throw new Error("Metamask is not installed! Go install the extension!");
+    throw new Error("MetaMask is not installed! Please install the MetaMask extension.");
   }
+  
+  // Check if it's actually MetaMask
+  if (!ethereum.isMetaMask) {
+    console.warn("Detected wallet is not MetaMask. This might cause issues.");
+  }
+  
   return new ethers.providers.Web3Provider(ethereum);
 }
 
