@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { AllWalletsProvider } from '../../services/wallets/AllWalletsProvider';
 
 interface LayoutContextType {
   isSidebarOpen: boolean;
@@ -37,8 +38,10 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   return (
-    <LayoutContext.Provider value={{ isSidebarOpen, setSidebarOpen, toggleSidebar }}>
-      {children}
-    </LayoutContext.Provider>
+    <AllWalletsProvider>
+      <LayoutContext.Provider value={{ isSidebarOpen, setSidebarOpen, toggleSidebar }}>
+        {children}
+      </LayoutContext.Provider>
+    </AllWalletsProvider>
   );
 };
