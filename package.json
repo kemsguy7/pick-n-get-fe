@@ -2,23 +2,25 @@
   "name": "hedera-fe",
   "version": "0.1.0",
   "private": true,
-  
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "clean": "rm -rf .next node_modules/.cache",
     "restart": "npm run clean && npm install && npm run dev"
   },
   "dependencies": {
     "@hashgraph/hedera-wallet-connect": "^1.5.1",
-    "@hashgraph/proto": "^2.23.0",
+    "@hashgraph/proto": "^2.18.5",
     "@hashgraph/sdk": "^2.73.1",
     "@tailwindcss/postcss": "^4.1.12",
     "@transak/transak-sdk": "^3.2.2",
     "@walletconnect/modal": "^2.7.0",
+    "@walletconnect/types": "^2.21.9",
     "assert": "^2.1.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
@@ -42,13 +44,15 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
     "prettier": "^3.6.2",
     "tsx": "^4.20.5",
-    "typescript": "^5"
+    "typescript": "^5",
+    "webpack": "^5.101.3"
   }
 }

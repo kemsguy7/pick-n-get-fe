@@ -1,96 +1,55 @@
+// Reason: We need to build HAPI contract functions params
+// And we want the string contract function params that ethers exepects
+// This is an opportunity for the adapter pattern.
+
 import { ContractFunctionParameters } from "@hashgraph/sdk";
 
-// Contract function parameter builder for Hedera smart contracts
-export interface ContractFunctionParameter {
+export interface ContractFunctionParameterBuilderParam {
   type: string;
   name: string;
   value: any;
 }
 
 export class ContractFunctionParameterBuilder {
-  private parameters: ContractFunctionParameter[] = [];
+  private params: ContractFunctionParameterBuilderParam[] = [];
 
-  addParam(param: ContractFunctionParameter): ContractFunctionParameterBuilder {
-    this.parameters.push(param);
+  public addParam(param: ContractFunctionParameterBuilderParam): ContractFunctionParameterBuilder {
+    this.params.push(param);
     return this;
   }
 
-  // Build ABI function parameters for contract interface
-  buildAbiFunctionParams(): string {
-    return this.parameters.map(param => `${param.type} ${param.name}`).join(', ');
+  // Purpose: Build the ABI function parameters
+  // Reason: The abi function parameters are required to construct the ethers.Contract object for calling a contract function using ethers
+  public buildAbiFunctionParams(): string {
+    return this.params.map(param => `${param.type} ${param.name}`).join(', ');
   }
 
-  // Build ethers.js compatible parameters
-  buildEthersParams(): any[] {
-    return this.parameters.map(param => param.value);
+  // Purpose: Build the ethers compatible contract function call params
+  // Reason: An array of strings is required to call a contract function using ethers
+  public buildEthersParams(): string[] {
+    return this.params.map(param => param.value.toString());
   }
 
-  // Build Hedera API (HAPI) compatible parameters for WalletConnect
-  buildHAPIParams(): ContractFunctionParameters {
-    const contractParams = new ContractFunctionParameters();
-    
-    this.parameters.forEach(param => {
-      switch (param.type.toLowerCase()) {
-        case 'string':
-          contractParams.addString(param.value);
-          break;
-        case 'uint256':
-        case 'uint':
-          contractParams.addUint256(param.value);
-          break;
-        case 'int256':
-        case 'int':
-          contractParams.addInt256(param.value);
-          break;
-        case 'address':
-          contractParams.addAddress(param.value);
-          break;
-        case 'bool':
-          contractParams.addBool(param.value);
-          break;
-        case 'bytes':
-          contractParams.addBytes(param.value);
-          break;
-        case 'bytes32':
-          contractParams.addBytes32(param.value);
-          break;
-        case 'uint8':
-          contractParams.addUint8(param.value);
-          break;
-        case 'uint32':
-          contractParams.addUint32(param.value);
-          break;
-        case 'uint64':
-          contractParams.addUint64(param.value);
-          break;
-        case 'int8':
-          contractParams.addInt8(param.value);
-          break;
-        case 'int32':
-          contractParams.addInt32(param.value);
-          break;
-        case 'int64':
-          contractParams.addInt64(param.value);
-          break;
-        default:
-          // For unknown types, try to add as string
-          console.warn(`Unknown parameter type: ${param.type}, adding as string`);
-          contractParams.addString(param.value.toString());
-          break;
+  // Purpose: Build the HAPI compatible contract function params
+  // Reason: An instance of ContractFunctionParameters is required to call a contract function using Hedera wallets
+  public buildHAPIParams(): ContractFunctionParameters {
+    const contractFunctionParams = new ContractFunctionParameters();
+    for (const param of this.params) {
+      // make sure type only contains alphanumeric characters (no spaces, no special characters, no whitespace), make sure it does not start with a number
+      const alphanumericIdentifier: RegExp = /^[a-zA-Z][a-zA-Z0-9]*$/;
+      if (!param.type.match(alphanumericIdentifier)) {
+        throw new Error(`Invalid type: ${param.type}. Type must only contain alphanumeric characters.`);
       }
-    });
-    
-    return contractParams;
-  }
+      // captitalize the first letter of the type
+      const type = param.type.charAt(0).toUpperCase() + param.type.slice(1);
+      const functionName = `add${type}`;
+      if (functionName in contractFunctionParams) {
+        (contractFunctionParams as any)[functionName](param.value);
+      } else {
+        throw new Error(`Invalid type: ${param.type}. Could not find function ${functionName} in ContractFunctionParameters class.`);
+      }
+    }
 
-  // Get all parameters
-  getParameters(): ContractFunctionParameter[] {
-    return this.parameters;
-  }
-
-  // Clear all parameters
-  clear(): ContractFunctionParameterBuilder {
-    this.parameters = [];
-    return this;
+    return contractFunctionParams;
   }
 }
