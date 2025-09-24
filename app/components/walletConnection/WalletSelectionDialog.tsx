@@ -1,3 +1,5 @@
+"use client"
+
 import { connectToMetamask } from "../../../app/services/wallets/metamask/metamaskClient";
 import { openWalletConnectModal } from "../../../app/services/wallets/walletconnect/walletConnectClient";
 import Image from "next/image";
@@ -37,12 +39,18 @@ export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
           
           <button
             onClick={async () => {
-              console.log('MetaMask button clicked'); // Debug log
+              console.log('MetaMask button clicked');
               try {
                 const accounts = await connectToMetamask();
-                console.log('Connected accounts:', accounts); // Debug log
+                console.log('Connection result:', accounts);
+                
+                // Force close dialog on any successful interaction
+                // The state update will be handled by the MetaMaskClient
                 if (accounts && accounts.length > 0) {
-                  setOpen(false);
+                  // Add small delay to ensure state updates
+                  setTimeout(() => {
+                    setOpen(false);
+                  }, 100);
                 }
               } catch (error) {
                 console.error('Error connecting to MetaMask:', error);
@@ -69,7 +77,6 @@ export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
     </div>
   );
 };
-
 // export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
 //   const { onClose, open, setOpen } = props;
 
