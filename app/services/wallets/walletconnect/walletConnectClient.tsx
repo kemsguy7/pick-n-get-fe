@@ -5,7 +5,13 @@ import { AccountId, ContractExecuteTransaction, ContractId, LedgerId, TokenAssoc
 import { ContractFunctionParameterBuilder } from "../contractFunctionParameterBuilder";
 import { appConfig } from "../../../config";
 import { SignClientTypes } from "@walletconnect/types";
-import { DAppConnector, HederaJsonRpcMethod, HederaSessionEvent, HederaChainId, SignAndExecuteTransactionParams, transactionToBase64String } from "@hashgraph/hedera-wallet-connect";
+import { 
+  DAppConnector, 
+  HederaSessionEvent, 
+  HederaChainId, 
+  SignAndExecuteTransactionParams, 
+  transactionToBase64String 
+} from "@hashgraph/hedera-wallet-connect";
 import EventEmitter from "events";
 
 // Created refreshEvent because `dappConnector.walletConnectClient.on(eventName, syncWithWalletConnectContext)` would not call syncWithWalletConnectContext
@@ -26,11 +32,22 @@ const metadata: SignClientTypes.Metadata = {
   url: window.location.origin,
   icons: [window.location.origin + "/logo192.png"],
 }
+
+// Define supported Hedera JSON-RPC methods manually
+// Based on official Hedera JSON-RPC specification: https://docs.reown.com/advanced/multichain/rpc-reference/hedera-rpc
+const SUPPORTED_HEDERA_METHODS = [
+  'hedera_signAndExecuteTransaction',
+  'hedera_executeTransaction', 
+  'hedera_signTransaction',
+  'hedera_signMessage',
+  'hedera_getNodeAddresses'
+];
+
 const dappConnector = new DAppConnector(
   metadata,
   LedgerId.fromString(hederaNetwork),
   walletConnectProjectId,
-  Object.values(HederaJsonRpcMethod),
+  SUPPORTED_HEDERA_METHODS, // Use our defined methods array instead of Object.values(HederaJsonRpcMethod)
   [HederaSessionEvent.ChainChanged, HederaSessionEvent.AccountsChanged],
   [HederaChainId.Testnet],
 );
