@@ -23,6 +23,7 @@ const createWalletData = (accountId: string, walletInterface: any, network: stri
 export default function SignupPage(): React.JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(1)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [loadingMessage, setLoadingMessage] = useState<string>('')
   const [error, setError] = useState<string>('')
   const [success, setSuccess] = useState<string>('')
   const router = useRouter()
@@ -101,6 +102,7 @@ export default function SignupPage(): React.JSX.Element {
     setIsLoading(true)
     setError('')
     setSuccess('')
+    setLoadingMessage('Preparing transaction...')
 
     try {
       if (!isConnected || !accountId) {
@@ -113,6 +115,8 @@ export default function SignupPage(): React.JSX.Element {
         throw new Error(validationError)
       }
 
+      setLoadingMessage('Checking existing registration...')
+
       // Register user
       const userData: UserData = {
         name: userForm.name,
@@ -121,22 +125,28 @@ export default function SignupPage(): React.JSX.Element {
       }
 
       const walletData = createWalletData(accountId, walletInterface)
+      
+      setLoadingMessage('Submitting transaction to blockchain...')
       const result = await registerUser(walletData, userData)
 
       if (result.success) {
-        setSuccess(`Registration successful! Your user ID is: ${result.userId}`)
+        setLoadingMessage('')
+        setSuccess(`Registration successful! Your user ID is: ${result.userId}. Transaction: ${result.txHash}`)
         setTimeout(() => {
           router.push('/dashboard')
-        }, 3000)
+        }, 4000)
       } else {
         throw new Error(result.error || 'Registration failed')
       }
 
     } catch (error: any) {
       console.error('Registration error:', error)
+      setLoadingMessage('')
       setError(error.message)
     } finally {
-      setIsLoading(false)
+      if (!success) {
+        setIsLoading(false)
+      }
     }
   }
 
@@ -369,7 +379,7 @@ export default function SignupPage(): React.JSX.Element {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Registering on Blockchain...
+                      {loadingMessage || 'Registering on Blockchain...'}
                     </>
                   ) : (
                     'Complete Registration'
