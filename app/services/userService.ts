@@ -1,7 +1,6 @@
-// import abi from "../abis/abi";
 import { ContractId } from "@hashgraph/sdk";
 import { WalletInterface } from "./wallets/walletInterface";
-import { ContractFunctionParameterBuilder, ContractFunctionParameterBuilderParam } from "./wallets/contractFunctionParameterBuilder";
+import { ContractFunctionParameterBuilder } from "./wallets/contractFunctionParameterBuilder";
 
 // Contract address on Hedera testnet - update this to your actual contract address
 const CONTRACT_ADDRESS = "0.0.6879372";
@@ -337,25 +336,41 @@ export async function checkUserRegistration(walletData: WalletData): Promise<Che
         );
         
         if (successfulRegistrations.length > 0) {
-          console.log(`- Found existing registration for account: ${accountId}`);
+          console.log(`- Found existing successful registration for account: ${accountId}`);
+          // Get the userId from the most recent successful registration
+          const mostRecentTx = successfulRegistrations[0];
+          const userId = decodeUserIdFromTransaction(mostRecentTx);
+          
           return {
             isRegistered: true,
-            userId: 1 // We could decode this from the transaction if needed
+            ...(userId !== null ? { userId } : {})
           };
         }
         
-        // Also check for failed attempts with "user already have an id" error
-        const failedRegistrations = results.filter((tx: any) => 
-          tx.result === "CONTRACT_REVERT_EXECUTED" &&
-          tx.error_message && 
-          tx.error_message.includes("7573657220616c7265616479206861766520616e206964") // "user already have an id" in hex
-        );
+        // Check for failed attempts by decoding error messages dynamically
+        const failedRegistrations = results.filter((tx: any) => {
+          if (tx.result !== "CONTRACT_REVERT_EXECUTED" || !tx.error_message) {
+            return false;
+          }
+          
+          // Decode the error message and check if it contains registration-related errors
+          const decodedError = decodeContractError(tx.error_message);
+          return decodedError && (
+            decodedError.toLowerCase().includes("already") ||
+            decodedError.toLowerCase().includes("registered") ||
+            decodedError.toLowerCase().includes("have an id")
+          );
+        });
         
         if (failedRegistrations.length > 0) {
           console.log(`- Found failed registration attempts (user already registered): ${accountId}`);
+          // Try to get userId from the failed transaction parameters
+          const mostRecentFailedTx = failedRegistrations[0];
+          const userId = decodeUserIdFromTransaction(mostRecentFailedTx);
+          
           return {
             isRegistered: true,
-            userId: 1
+            ...(userId !== null ? { userId } : {})
           };
         }
       }
@@ -378,6 +393,45 @@ export async function checkUserRegistration(walletData: WalletData): Promise<Che
       isRegistered: false, 
       error: errorMessage 
     };
+  }
+}
+
+/**
+ * Decode userId (phoneNumber) from transaction parameters
+ * @param transaction - Transaction object from mirror node
+ * @returns userId or null if can't decode
+ */
+function decodeUserIdFromTransaction(transaction: any): number | null {
+  try {
+    if (!transaction.function_parameters) return null;
+    
+    const params = transaction.function_parameters;
+    // registerUser function parameters: string _address, uint8 _number, string _name
+    // The uint8 _number is our userId, it's the second parameter
+    
+    // Skip function selector (8 chars) and first parameter offset
+    // Look for the uint8 parameter (should be 64 characters in, representing the number)
+    const hex = params.startsWith("0x") ? params.slice(2) : params;
+    
+    // Function selector: a2b5e320 (8 chars)
+    // First param offset: 64 chars
+    // Second param (uint8): next 64 chars, but uint8 is just the last 2 chars
+    const selectorAndFirstParam = 8 + 64;
+    const uint8ParamHex = hex.slice(selectorAndFirstParam, selectorAndFirstParam + 64);
+    
+    // Extract the actual uint8 value (last 2 characters of the 64-char hex)
+    const uint8Hex = uint8ParamHex.slice(-2);
+    const userId = parseInt(uint8Hex, 16);
+    
+    // Validate it's within uint8 range
+    if (userId >= 0 && userId <= 255) {
+      return userId;
+    }
+    
+    return null;
+  } catch (error) {
+    console.log("Error decoding userId from transaction:", error);
+    return null;
   }
 }
 
