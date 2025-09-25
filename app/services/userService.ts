@@ -2,7 +2,7 @@ import { ContractId } from "@hashgraph/sdk";
 import { WalletInterface } from "./wallets/walletInterface";
 import { ContractFunctionParameterBuilder } from "./wallets/contractFunctionParameterBuilder";
 
-// Contract address on Hedera testnet - update this to your actual contract address
+
 const CONTRACT_ADDRESS = "0.0.6879372";
 
 // Type definitions

@@ -95,20 +95,23 @@ const availableDrivers: Driver[] = [
 
 export default function PickupSchedule({ formData, updateFormData, onSubmit, onBack }: PickupScheduleProps) {
   const [country, setCountry] = useState('Nigeria')
-  const [address, setAddress] = useState(formData.address)
-  const [date, setDate] = useState(formData.date)
-  const [time, setTime] = useState(formData.time)
-  const [selectedVehicle, setSelectedVehicle] = useState<"bike" | "car" | "truck" | undefined>(undefined)
-  const [selectedDriver, setSelectedDriver] = useState<string>('')
-  const [showDrivers, setShowDrivers] = useState(false)
+  const [address, setAddress] = useState(formData.address || 'Test Address, Lagos, Nigeria')
+  const [date, setDate] = useState(formData.date || new Date().toISOString().split('T')[0])
+  const [time, setTime] = useState(formData.time || '10:00')
+  const [selectedVehicle, setSelectedVehicle] = useState<"bike" | "car" | "truck" | undefined>(formData.selectedVehicle || 'car')
+  const [selectedDriver, setSelectedDriver] = useState<string>(formData.selectedDriver || '1')
+  const [showDrivers, setShowDrivers] = useState(true) // Always show for testing
 
   // Mock weight from category (in real app, this would come from previous step)
-  const estimatedWeight = 8.5 // kg
+  const estimatedWeight = parseFloat(formData.weight) || 2.5 // kg
 
   const handleVehicleSelect = (vehicleId: any) => {
     setSelectedVehicle(vehicleId)
     setShowDrivers(true)
-    setSelectedDriver('') // Reset driver selection
+    // Auto-select first driver for testing
+    if (!selectedDriver) {
+      setSelectedDriver('1')
+    }
   }
 
   const handleDriverSelect = (driverId: string) => {
@@ -126,7 +129,8 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
     onSubmit()
   }
 
-  const isFormValid = address && date && time && selectedVehicle && selectedDriver
+  // Relaxed validation for testing - only require basic selections
+  const isFormValid = selectedVehicle && selectedDriver
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -138,10 +142,20 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
           <h2 className="text-xl font-semibold text-blue-400 font-space-grotesk">Schedule Pickup</h2>
         </div>
 
+        {/* Testing Notice */}
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
+            <p className="text-blue-400 text-sm font-inter">
+              🧪 Testing Mode: Just select a vehicle and driver to proceed. Full pickup integration coming soon!
+            </p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Column - Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Country Selection */}
+            {/* Country Selection - Pre-filled for testing */}
             <div>
               <label className="block text-white font-medium mb-2 font-inter">Select Country *</label>
               <select
@@ -155,7 +169,7 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
               </select>
             </div>
 
-            {/* Address */}
+            {/* Address - Pre-filled for testing */}
             <div>
               <label className="block text-white font-medium mb-2 font-inter">Pickup Address *</label>
               <textarea
@@ -165,6 +179,29 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors resize-none"
               />
+              <p className="text-xs text-gray-400 mt-1">Pre-filled for testing. You can modify if needed.</p>
+            </div>
+
+            {/* Date & Time - Pre-filled for testing */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white font-medium mb-2 font-inter">Date</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-white font-medium mb-2 font-inter">Time</label>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors"
+                />
+              </div>
             </div>
 
             {/* Vehicle Selection */}
@@ -194,31 +231,21 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
                 })}
               </div>
 
-              {/* Warning for bike selection */}
-              {estimatedWeight > 10 && (
-                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                  <p className="text-red-400 text-sm font-inter">
-                    You can't pick a bike for items over 10kg. Please choose a Car, Van, or Truck.
-                  </p>
-                </div>
-              )}
-
               {/* Success message */}
               {selectedVehicle && (
                 <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2">
                   <Info className="w-5 h-5 text-green-400 flex-shrink-0" />
                   <p className="text-green-400 text-sm font-inter">
-                    Car selected successfully. Please choose pickup option and rider.
+                    {vehicles.find(v => v.id === selectedVehicle)?.name} selected successfully. Please choose a rider below.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Available Drivers */}
-            {showDrivers && (
+            {/* Available Drivers - Always show if vehicle selected */}
+            {selectedVehicle && (
               <div>
-                <h3 className="text-white font-medium mb-4 font-inter">Nearby Riders Available</h3>
+                <h3 className="text-white font-medium mb-4 font-inter">Available Riders (Demo)</h3>
                 <div className="bg-black/60 rounded-xl p-4 space-y-3">
                   {availableDrivers.map((driver) => (
                     <button
@@ -251,40 +278,6 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
                 </div>
               </div>
             )}
-
-            {/* Environmental Impact */}
-            {selectedDriver && (
-              <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2">
-                <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
-                <p className="text-blue-400 text-sm font-inter">
-                  Impact: You prevented 10.0kg of CO₂ emissions.
-                </p>
-              </div>
-            )}
-
-            {/* Photo Upload */}
-            <div>
-              <label className="block text-white font-medium mb-2 font-inter">Add Photos (Optional)</label>
-              <div className="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-green-500/50 transition-colors">
-                <div className="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </div>
-                <p className="text-gray-400 font-inter">Helps our agents verify and process faster</p>
-              </div>
-            </div>
           </div>
 
           {/* Right Column - Info */}
@@ -295,30 +288,36 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
                 <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mr-2">
                   <Info className="w-3 h-3 text-white" />
                 </div>
-                <h3 className="text-blue-400 font-semibold font-space-grotesk">Pickup Information</h3>
+                <h3 className="text-blue-400 font-semibold font-space-grotesk">Testing Information</h3>
               </div>
               <ul className="space-y-2 text-sm font-inter">
-                <li className="text-gray-300">• Free pickup for orders above 5kg</li>
-                <li className="text-gray-300">• Pickup fee: ₦200 for orders below 5kg</li>
-                <li className="text-gray-300">• Available: Monday - Saturday, 8AM - 6PM</li>
-                <li className="text-gray-300">• Agent will call 30 minutes before arrival</li>
+                <li className="text-gray-300">• This is demo pickup scheduling</li>
+                <li className="text-gray-300">• Just select any vehicle and driver</li>
+                <li className="text-gray-300">• Real pickup integration coming soon</li>
+                <li className="text-gray-300">• Focus is on blockchain recycling flow</li>
               </ul>
             </div>
 
-            {/* Preparation Tips */}
-            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center mr-2">
-                  <AlertTriangle className="w-3 h-3 text-white" />
+            {/* Current Selection Summary */}
+            {selectedVehicle && selectedDriver && (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6">
+                <h3 className="text-green-400 font-semibold font-space-grotesk mb-3">Selection Summary</h3>
+                <div className="space-y-2 text-sm font-inter">
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Vehicle:</span>
+                    <span className="text-white">{vehicles.find(v => v.id === selectedVehicle)?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Driver:</span>
+                    <span className="text-white">{availableDrivers.find(d => d.id === selectedDriver)?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Ready to submit:</span>
+                    <span className="text-green-400">✅ Yes</span>
+                  </div>
                 </div>
-                <h3 className="text-orange-400 font-semibold font-space-grotesk">Preparation Tips</h3>
               </div>
-              <ul className="space-y-2 text-sm font-inter">
-                <li className="text-gray-300">• Clean items before pickup</li>
-                <li className="text-gray-300">• Separate different material types</li>
-                <li className="text-gray-300">• Have items ready at pickup location</li>
-              </ul>
-            </div>
+            )}
           </div>
         </div>
 
@@ -333,7 +332,11 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
           <button
             onClick={handleSubmit}
             disabled={!isFormValid}
-            className="gradient-button px-6 py-3 rounded-lg text-black font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-inter flex items-center gap-2"
+            className={`px-6 py-3 rounded-lg font-semibold font-inter flex items-center gap-2 transition-all ${
+              isFormValid
+                ? 'gradient-button text-black hover:shadow-lg'
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
           >
             Submit Request
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
