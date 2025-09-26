@@ -62,7 +62,7 @@ const categories = [
   },
 ]
 
-export default function SelectCategory({ formData, updateFormData, onNext }: SelectCategoryProps) {
+export default function SelectCategory({  updateFormData, onNext }: SelectCategoryProps) {
   const handleCategorySelect = (category: (typeof categories)[0]) => {
     updateFormData({ category })
     setTimeout(onNext, 300) // Small delay for visual feedback

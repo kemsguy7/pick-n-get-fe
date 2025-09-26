@@ -1,4 +1,4 @@
-import {Transak} from '@transak/transak-sdk';
+// import {Transak} from '@transak/transak-sdk';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -72,9 +72,9 @@ export const getCountries = async () => {
             const result = json.response
             const countryName = []
             for(let i = 0; i < result.length; i++){
-                let c_name = result[i].name;
-                let c_code = result[i].currencyCode
-                countryName.push(c_name + " " + c_code)
+                const c_name = result[i].name;
+                const c_code = result[i].currencyCode;
+                countryName.push(c_name + " " + c_code);
             }
             console.log(countryName, result.length)
             })

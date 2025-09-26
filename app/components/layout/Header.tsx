@@ -1,10 +1,11 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Leaf, Sun, Moon, Menu } from 'lucide-react';
+import { Leaf, Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLayout } from './LayoutProvider';
+import { useWalletInterface } from '../../../app/services//wallets/useWalletInterface';
+import { WalletSelectionDialog } from '../walletConnection/WalletSelectionDialog'
 import Link from 'next/link';
 
 interface HeaderProps {
@@ -16,8 +17,19 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
   const [activeLink, setActiveLink] = useState('Home');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const router = useRouter();
   const { toggleSidebar } = useLayout();
+  const { accountId, walletInterface } = useWalletInterface();
+
+  // Mock data for demo - replace with real data later
+  const walletData = {
+    balance: '2,450',
+    co2Saved: '23.4kg',
+    notifications: 2,
+    userName: 'User',
+    userAvatar: '/api/placeholder/32/32'
+  };
 
   const navLinks = [
     'Home',
@@ -46,12 +58,37 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
     }
   }, []);
 
+  // Close wallet dialog when connected
+  useEffect(() => {
+    if (accountId) {
+      setOpen(false);
+    }
+  }, [accountId]);
+
   const toggleTheme = () => {
     const newTheme = !isDarkMode;
     setIsDarkMode(newTheme);
     const theme = newTheme ? 'dark' : 'light';
     localStorage.setItem('theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
+  };
+
+  const handleConnect = async () => {
+    if (accountId) {
+      walletInterface?.disconnect();
+    } else {
+      setOpen(true);
+    }
+  };
+
+  const getDisplayAddress = () => {
+    if (!accountId) return '';
+    
+    // Shorten the address for display
+    if (accountId.length > 10) {
+      return `${accountId.slice(0, 6)}...${accountId.slice(-4)}`;
+    }
+    return accountId;
   };
 
   const handleLinkClick = (link: string) => {
@@ -123,22 +160,18 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
               {/* Logo */}
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-green-500 rounded-lg flex items-center justify-center">
-
                   <Link href="/" passHref>
                     <Leaf className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-white" />
                   </Link>
                 </div>
                 <span className="text-white text-lg sm:text-xl lg:text-2xl font-semibold font-space-grotesk">
-                  Pick-n-get
+                  Pick'n'Get
                 </span>
               </div>
             </div>
 
-            {/* Center - Navigation Links (Desktop - always show, but hide on mobile when sidebar is present) */}
-            <nav className={`
-              hidden lg:flex gap-1 xl:gap-3 items-center space-x-2
-              ${showSidebarToggle ? 'lg:flex' : 'lg:flex'}
-            `}>
+            {/* Center - Navigation Links */}
+            <nav className={`hidden lg:flex gap-1 xl:gap-3 items-center space-x-2`}>
               {navLinks.map((link) => (
                 <button
                   key={link}
@@ -157,11 +190,11 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
             </nav>
 
             {/* Right Section */}
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-1.5 sm:p-2 rounded-full hover:bg-white/20 transition-colors duration-200 focus-visible"
+                className="p-1.5 sm:p-2 rounded-full hover:bg-white/20 transition-colors duration-200 focus-visible flex-shrink-0"
                 aria-label="Toggle theme"
               >
                 {isDarkMode ? (
@@ -171,13 +204,74 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
                 )}
               </button>
 
-              {/* Connect Wallet Button */}
-              <button className="gradient-button font-semibold px-2 sm:px-3 py-1 sm:py-1.5 
-                rounded-lg hover:shadow-lg transition-all duration-200 focus-visible 
-                text-xs sm:text-sm lg:text-base  whitespace-nowrap"
-              >
-                Connect Wallet
-              </button>
+              {/* Wallet Connected State */}
+              {accountId ? (
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                  {/* Token Balance */}
+                  <div className="hidden sm:flex items-center gap-1 bg-green-500/20 border border-green-500/30 rounded-lg px-2 py-1 flex-shrink-0">
+                    <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                    <span className="text-green-400 text-xs font-medium whitespace-nowrap">
+                      {walletData.balance}ECO
+                    </span>
+                  </div>
+
+                  {/* CO2 Saved */}
+                  <div className="hidden lg:flex items-center gap-1 bg-blue-500/20 border border-blue-500/30 rounded-lg px-2 py-1 flex-shrink-0">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
+                    <span className="text-blue-400 text-xs font-medium whitespace-nowrap">
+                      {walletData.co2Saved}CO₂
+                    </span>
+                  </div>
+
+                  {/* Notification Bell */}
+                  <button className="relative p-1.5 sm:p-2 rounded-full hover:bg-white/20 transition-colors duration-200 flex-shrink-0">
+                    <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    {walletData.notifications > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                        {walletData.notifications}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* User Profile / Wallet Info */}
+                  <div className="relative group">
+                    <div className="flex items-center gap-1 sm:gap-2 cursor-pointer hover:bg-white/10 rounded-lg p-1 transition-colors duration-200 flex-shrink-0 max-w-[120px]">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        <Wallet className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="hidden sm:block text-left">
+                        <div className="text-white text-xs font-medium truncate">
+                          Connected
+                        </div>
+                        <div className="text-white/70 text-xs truncate">
+                          {getDisplayAddress()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Disconnect Dropdown */}
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                      <button
+                        onClick={handleConnect}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-white hover:bg-white/10 rounded-lg text-sm transition-colors duration-200"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Disconnect
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Connect Wallet Button */
+                <button 
+                  onClick={handleConnect}
+                  className="gradient-button font-semibold px-2 sm:px-3 py-1 sm:py-1.5 
+                    rounded-lg hover:shadow-lg transition-all duration-200 focus-visible 
+                    text-xs sm:text-sm lg:text-base whitespace-nowrap flex-shrink-0"
+                >
+                  Connect Wallet
+                </button>
+              )}
 
               {/* Mobile Menu Toggle (only show when no sidebar) */}
               {!showSidebarToggle && (
@@ -197,7 +291,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
           </div>
         </div>
 
-        {/* Mobile Menu Overlay (only show when no sidebar) */}
+        {/* Mobile Menu Overlay */}
         {!showSidebarToggle && isMobileMenuOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden">
             <div className="flex justify-end p-4">
@@ -217,6 +311,9 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
         )}
       </header>
 
+      {/* Wallet Selection Dialog */}
+      <WalletSelectionDialog open={open} setOpen={setOpen} onClose={() => setOpen(false)} />
+
       {/* Mobile Menu (only show when no sidebar) */}
       {!showSidebarToggle && (
         <div className={`
@@ -230,6 +327,28 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
           <div className="header-gradient backdrop-blur-custom border-t border-white/10">
             <nav className="max-w-[90vw] mx-auto px-4 py-4">
               <div className="flex flex-col space-y-2">
+                {/* Mobile Wallet Info (when connected) */}
+                {accountId && (
+                  <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center">
+                        <Wallet className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white text-sm font-medium">Connected</p>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-white/70">{getDisplayAddress()}</span>
+                          <span className="text-green-400">{walletData.balance}ECO</span>
+                          <span className="text-blue-400">{walletData.co2Saved}CO₂</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={handleConnect} className="text-red-400 text-xs">
+                      Disconnect
+                    </button>
+                  </div>
+                )}
+
                 {navLinks.map((link, index) => (
                   <button
                     key={link}
@@ -254,9 +373,6 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
           </div>
         </div>
       )}
-
-      {/* Spacer to prevent content overlap */}
-      {/* <div className="h-14 sm:h-16 lg:h-20"></div> */}
     </>
   );
 };
