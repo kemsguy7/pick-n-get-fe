@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { Calendar, Bike, Car, Truck, MapPin, AlertTriangle, Info } from "lucide-react"
+import { Calendar, Bike, Car, Truck, Info } from "lucide-react"
 import type { RecycleFormData } from "../../recycle/page"
 
 interface PickupScheduleProps {

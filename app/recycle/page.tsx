@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useContext } from "react"
+import { useState } from "react"
 import { AlertCircle } from "lucide-react"
 import AppLayout from "../components/layout/AppLayout"
 import StepIndicator from "../components/recycle/step-indicator"
