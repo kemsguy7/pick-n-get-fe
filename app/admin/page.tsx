@@ -513,24 +513,7 @@ function UsersTab() {
   )
 }
   function ApprovalsTab() {
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'NEW':
-        return 'bg-orange-100 text-orange-800 border border-orange-200'
-      case 'PENDING':
-        return 'bg-orange-100 text-orange-800 border border-orange-200'
-      default:
-        return 'bg-gray-100 text-gray-600 border border-gray-200'
-    }
-  }
-
-  const getUserTypeColor = (email: string) => {
-    // Simple logic to determine user type based on email or other criteria
-    if (email.includes('greenproducts')) {
-      return 'bg-purple-100 text-purple-800 border border-purple-200'
-    }
-    return 'bg-orange-100 text-orange-800 border border-orange-200'
-  }
+ 
 
   return (
     <div className="space-y-6">

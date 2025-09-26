@@ -2,9 +2,9 @@ import { createContext, useState, ReactNode } from "react";
 
 const defaultValue = {
   accountId: '',
-  setAccountId: (newValue: string) => { },
+  setAccountId: (newValue: string) => { console.log(newValue) },
   isConnected: false,
-  setIsConnected: (newValue: boolean) => { },
+  setIsConnected: (newValue: boolean) => { console.log(newValue) }
 }
 
 export const WalletConnectContext = createContext(defaultValue);

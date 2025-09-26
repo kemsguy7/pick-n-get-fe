@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useContext } from "react"
+import React, { useContext } from "react"
 import { Check, Wallet } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { MetamaskContext } from "../../../contexts/MetamaskContext"
@@ -14,7 +14,7 @@ export default function AgentSignupStep1(): React.JSX.Element {
   // Get wallet contexts
   const metamaskCtx = useContext(MetamaskContext)
   const walletConnectCtx = useContext(WalletConnectContext)
-  const { accountId } = useWalletInterface()
+  // const { accountId } = useWalletInterface()
   
   const isConnected = !!(metamaskCtx.metamaskAccountAddress || walletConnectCtx.accountId)
 

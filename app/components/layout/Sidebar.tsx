@@ -30,6 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className = '' }) => {
   //state to track active link  
   const [isActive, setIsActive] = useState<string>('');
 
+  console.log(isActive);
   const router = useRouter();
   const pathname = usePathname();
   const { isSidebarOpen, setSidebarOpen } = useLayout();

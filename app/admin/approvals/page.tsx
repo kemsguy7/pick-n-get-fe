@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { Users, CheckCircle, BarChart3, Settings, Clock } from 'lucide-react'
+import { Users, CheckCircle, BarChart3, Settings } from 'lucide-react'
 import AppLayout from "../../components/layout/AppLayout"
 import StatCard, { StatCardProps } from "../../components/ui/statCard"
 

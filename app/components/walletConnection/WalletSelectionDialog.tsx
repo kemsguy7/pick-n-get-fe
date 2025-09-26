@@ -2,7 +2,7 @@
 
 import { connectToMetamask } from "../../../app/services/wallets/metamask/metamaskClient";
 import { openWalletConnectModal } from "../../../app/services/wallets/walletconnect/walletConnectClient";
-import Image from "next/image";
+
 import MetamaskLogo from "../../../public/metamask-logo.svg";
 import WalletConnectLogo from "../../../public/walletconnect-logo.svg";
 
@@ -13,7 +13,7 @@ interface WalletSelectionDialogProps {
 }
 
 export const WalletSelectionDialog = (props: WalletSelectionDialogProps) => {
-  const { onClose, open, setOpen } = props;
+  const {  open, setOpen } = props;
 
   if (!open) return null;
 

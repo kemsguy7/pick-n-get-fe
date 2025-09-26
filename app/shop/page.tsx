@@ -7,13 +7,11 @@ import ProductListCard from "../components/shop/ProductListCard"
 import ShoppingCart from "../components/shop/shoppingCart"
 import { 
   Search,
-  Filter,
-  Grid3X3,
-  List,
+  
   ChevronDown,
   ShoppingBag,
   Recycle,
-  Heart,
+  
   Star
 } from 'lucide-react'
 
@@ -33,7 +31,7 @@ export default function EcoShopPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [sortBy, setSortBy] = useState('featured')
-  const [showFilters, setShowFilters] = useState(false)
+  // const [showFilters, setShowFilters] = useState(false)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [showCart, setShowCart] = useState(false)
   const [favoriteItems, setFavoriteItems] = useState<string[]>([])
@@ -189,6 +187,7 @@ export default function EcoShopPage() {
   })
 
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+  console.log(cartItemCount); 
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>

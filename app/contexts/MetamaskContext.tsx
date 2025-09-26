@@ -7,7 +7,7 @@ interface MetamaskContextType {
 
 const defaultValue: MetamaskContextType = {
   metamaskAccountAddress: '',
-  setMetamaskAccountAddress: (newValue: string) => { },
+  setMetamaskAccountAddress: (newValue: string) => { console.log(newValue) }
 }
 
 export const MetamaskContext = createContext(defaultValue);

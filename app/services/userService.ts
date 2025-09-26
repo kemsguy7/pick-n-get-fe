@@ -190,7 +190,8 @@ async function checkTransactionStatus(
   const mirrorNodeUrl = network === "testnet" 
     ? "https://testnet.mirrornode.hedera.com" 
     : "https://mainnet.mirrornode.hedera.com";
-
+    
+ console.log(accountId);
   console.log(`- Checking transaction status for: ${evmTxHash}`);
 
   // Try multiple times to get transaction result

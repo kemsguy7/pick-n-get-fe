@@ -32,7 +32,7 @@ const refreshEvent = new EventEmitter();
 const walletConnectProjectId = "377d75bb6f86a2ffd427d032ff6ea7d3";
 const currentNetworkConfig = appConfig.networks.testnet;
 const hederaNetwork = currentNetworkConfig.network;
-const hederaClient = Client.forName(hederaNetwork);
+// const hederaClient = Client.forName(hederaNetwork);
 
 const metadata: SignClientTypes.Metadata = {
   name: "Pick'n'Get",
@@ -72,6 +72,8 @@ export const openWalletConnectModal = async () => {
   await initializeWalletConnect();
   await dappConnector.openModal().then((x) => {
     refreshEvent.emit("sync");
+    console.log(x);
+    
   });
 };
 
@@ -153,6 +155,8 @@ class WalletConnectWallet implements WalletInterface {
         .setFunction(functionName, functionParameters.buildHAPIParams());
 
       const signer = this.getSigner();
+      console.log('Query prepared:', query);
+      console.log('Executing view function with signer:', signer);
       
       // Execute the query - note that ContractCallQuery might not work directly with signer
       // This is a placeholder implementation that needs proper testing
@@ -160,6 +164,7 @@ class WalletConnectWallet implements WalletInterface {
       
       // For now, return null until proper implementation is tested
       return null;
+
     } catch (error) {
       console.error('Error executing view function:', error);
       throw new Error(`View function call failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -200,7 +205,9 @@ class WalletConnectWallet implements WalletInterface {
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
         console.log('Waiting for transaction consensus...');
+        
         await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log('Error while waiting for transaction:', error);
       }
     }
     

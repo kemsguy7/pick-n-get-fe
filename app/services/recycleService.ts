@@ -82,25 +82,25 @@ function mapCategoryToItemType(categoryId: string): { enumValue: ItemType; contr
 /**
  * Convert file to bytes for smart contract
  */
-async function fileToBytes(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const arrayBuffer = reader.result as ArrayBuffer;
-        const bytes = new Uint8Array(arrayBuffer);
-        const hexString = '0x' + Array.from(bytes)
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('');
-        resolve(hexString);
-      } catch (error) {
-        reject(error);
-      }
-    };
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsArrayBuffer(file);
-  });
-}
+// async function fileToBytes(file: File): Promise<string> {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.onload = () => {
+//       try {
+//         const arrayBuffer = reader.result as ArrayBuffer;
+//         const bytes = new Uint8Array(arrayBuffer);
+//         const hexString = '0x' + Array.from(bytes)
+//           .map(b => b.toString(16).padStart(2, '0'))
+//           .join('');
+//         resolve(hexString);
+//       } catch (error) {
+//         reject(error);
+//       }
+//     };
+//     reader.onerror = () => reject(new Error('Failed to read file'));
+//     reader.readAsArrayBuffer(file);
+//   });
+// }
 
 /**
  * Submit recycling item to blockchain
@@ -264,6 +264,7 @@ async function checkTransactionStatus(
     : "https://mainnet.mirrornode.hedera.com";
 
   console.log(`- Checking transaction status for: ${evmTxHash}`);
+  console.log(`- Account ID: ${accountId}`);
 
   for (let attempt = 0; attempt < 8; attempt++) {
     try {
@@ -287,8 +288,8 @@ async function checkTransactionStatus(
             try {
               const decoded = decodeContractError(txData.error_message);
               errorMessage = decoded || "Contract execution failed";
-            } catch (decodeErr) {
-              console.log(`- Could not decode error message`);
+            } catch (error) {
+              console.log(`- Could not decode error message:`, error);
             }
           }
           

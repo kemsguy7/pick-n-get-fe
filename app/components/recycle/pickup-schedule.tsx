@@ -102,6 +102,7 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
   const [selectedDriver, setSelectedDriver] = useState<string>(formData.selectedDriver || '1')
   const [showDrivers, setShowDrivers] = useState(true) // Always show for testing
 
+  console.log(showDrivers)
   // Mock weight from category (in real app, this would come from previous step)
   const estimatedWeight = parseFloat(formData.weight) || 2.5 // kg
 
