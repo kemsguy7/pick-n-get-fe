@@ -75,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
 
   const handleConnect = async () => {
     if (accountId) {
-      walletInterface.disconnect();
+      walletInterface?.disconnect();
     } else {
       setOpen(true);
     }

@@ -22,7 +22,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   showFooter = false,
   className = ''
 }) => {
-  const { isSidebarOpen } = useLayout();
+  // const { isSidebarOpen } = useLayout();
 
   return (
     <div className={`min-h-screen ${className}`}>

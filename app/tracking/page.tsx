@@ -9,7 +9,6 @@ import {
   Clock,
   CheckCircle,
   Phone,
-  Navigation,
   User,
   Package,
   Truck,

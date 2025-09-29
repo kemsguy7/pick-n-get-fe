@@ -255,7 +255,8 @@ export default function AgentDashboardPage() {
   )
 
   // Tab Components
-  function DashboardTab({ agentProfile }: { agentProfile: AgentProfileProps }) {
+  function DashboardTab({ agentProfile  }: { agentProfile: AgentProfileProps }) {
+          console.log(agentProfile);
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Weekly Progress */}
