@@ -18,7 +18,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
   // Set current step when component mounts
   useEffect(() => {
     setCurrentStep(3)
-  }, [setCurrentStep])
+  }, [])
 
   // Check if user can access this step
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
       console.log("Cannot proceed to step 3, redirecting...")
       router.push('/auth/signup/agent/personal-info')
     }
-  }, [canProceedToStep, router])
+  }, [])
 
   const vehicleTypes = [
     { value: 'bike', label: 'Bike', selected: signupData.vehicleInfo.vehicleType === 'bike' },
@@ -123,13 +123,24 @@ export default function AgentSignupStep3(): React.JSX.Element {
     return errors.find(error => error.toLowerCase().includes(fieldName.toLowerCase().replace(/([A-Z])/g, ' $1'))) || null
   }
 
-  const isFormValid = () => {
-    return validateForm().length === 0 && 
-           signupData.vehicleInfo.vehicleMakeModel.trim() &&
-           signupData.vehicleInfo.vehiclePlateNumber.trim() &&
-           signupData.vehicleInfo.vehicleColor.trim() &&
-           signupData.vehicleInfo.carryingCapacity &&
-           parseInt(signupData.vehicleInfo.carryingCapacity) > 0
+    const isFormValid = () => {
+      const data = signupData.vehicleInfo;
+      
+      // Check if all required fields are filled
+      const hasRequiredFields = data.vehicleMakeModel.trim() &&
+                              data.vehiclePlateNumber.trim() &&
+                              data.vehicleColor.trim() &&
+                              data.carryingCapacity;
+      
+      // Check field lengths without calling validateForm
+      const isValidLength = data.vehicleMakeModel.length >= 2 &&
+                          data.vehiclePlateNumber.length >= 3;
+      
+      // Check capacity is valid
+      const capacity = parseInt(data.carryingCapacity);
+      const isValidCapacity = !isNaN(capacity) && capacity > 0;
+      
+      return hasRequiredFields && isValidLength && isValidCapacity;
   }
 
   const getVehicleTypeEmoji = (type: string): string => {

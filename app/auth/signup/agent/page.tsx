@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useContext, useEffect, useState } from "react"
-import { Check, Wallet, AlertCircle, Loader2 } from "lucide-react"
+import { Check,  AlertCircle, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { MetamaskContext } from "../../../contexts/MetamaskContext"
 import { WalletConnectContext } from "../../../contexts/WalletConnectContext"
@@ -31,29 +31,58 @@ export default function AgentSignupStep1(): React.JSX.Element {
   const { accountId, walletInterface } = useWalletInterface()
   
   // Get signup context
-  const { updateWalletInfo, setCurrentStep } = useAgentSignup()
+  const { updateWalletInfo, setCurrentStep, signupData } = useAgentSignup()
   
   const [isCheckingRegistration, setIsCheckingRegistration] = useState(false)
   const [registrationError, setRegistrationError] = useState('')
   
-  const isConnected = !!(accountId && walletInterface)
+  // const isConnected = !!(accountId && walletInterface)
+
+  const isConnected = !!(
+  (accountId && walletInterface) || 
+  metamaskCtx.metamaskAccountAddress || 
+  walletConnectCtx.accountId
+)
+
+
+
 
   // Set current step when component mounts
+  // useEffect(() => {
+  //   setCurrentStep(1)
+  // }, [setCurrentStep])
+
   useEffect(() => {
-    setCurrentStep(1)
-  }, [setCurrentStep])
+  setCurrentStep(1)
+}, [])
 
   // Check if rider is already registered when wallet connects
+  // useEffect(() => {
+  //   if (isConnected && accountId && walletInterface) {
+  //     // Update wallet info in context
+  //     const walletType = metamaskCtx.metamaskAccountAddress ? 'MetaMask' : 'WalletConnect'
+  //     updateWalletInfo(accountId, walletType)
+      
+  //     // Check existing registration
+  //     checkExistingRegistration()
+  //   }
+  // }, [isConnected, accountId, walletInterface, metamaskCtx.metamaskAccountAddress, updateWalletInfo])
+
   useEffect(() => {
-    if (isConnected && accountId && walletInterface) {
-      // Update wallet info in context
+  if (isConnected && accountId && walletInterface) {
+    // Update wallet info in context only if it's not already set
+    const currentWalletAddress = signupData.walletAddress
+    if (!currentWalletAddress || currentWalletAddress !== accountId) {
       const walletType = metamaskCtx.metamaskAccountAddress ? 'MetaMask' : 'WalletConnect'
       updateWalletInfo(accountId, walletType)
-      
-      // Check existing registration
+    }
+    
+    // Only check registration once per wallet connection
+    if (!isCheckingRegistration && !registrationError) {
       checkExistingRegistration()
     }
-  }, [isConnected, accountId, walletInterface, metamaskCtx.metamaskAccountAddress, updateWalletInfo])
+  }
+}, [accountId, walletInterface])
 
   const checkExistingRegistration = async (): Promise<void> => {
     setIsCheckingRegistration(true)
@@ -90,67 +119,71 @@ export default function AgentSignupStep1(): React.JSX.Element {
     }
   }
 
-  const handleConnectWallet = async (walletType: 'metamask' | 'walletconnect' | 'embedded') => {
-    console.log(`Attempting to connect ${walletType} wallet...`);
-    
-    try {
-      if (walletType === 'metamask') {
-        if (!window.ethereum) {
-          throw new Error('MetaMask is not installed')
-        }
-        // Check if connectMetamask exists, if not use a fallback
-        if (metamaskCtx.connectMetamask) {
-          await metamaskCtx.connectMetamask()
-        } else {
-          // Fallback: request accounts directly
-          const accounts = await window.ethereum.request({ 
-            method: 'eth_requestAccounts' 
-          })
-          console.log("MetaMask connected:", accounts[0])
-        }
-      } else if (walletType === 'walletconnect') {
-        // Check if connectWallet exists, if not use a fallback
-        if (walletConnectCtx.connectWallet) {
-          await walletConnectCtx.connectWallet()
-        } else {
-          throw new Error('WalletConnect connection not available')
-        }
-      } else if (walletType === 'embedded') {
-        console.log("Embedded wallet creation not yet implemented");
-        throw new Error('Embedded wallet creation coming soon')
-      }
-    } catch (error: any) {
-      console.error(`Failed to connect ${walletType}:`, error);
-      setRegistrationError(error.message || `Failed to connect ${walletType}`)
-    }
-  }
-
   const handleContinue = () => {
-    if (isConnected && !isCheckingRegistration) {
-      router.push('/auth/signup/agent/personal-info')
-    }
+  console.log("Continue button clicked!");
+  console.log("Values:", {
+    isConnected,
+    isCheckingRegistration,
+    buttonDisabled: !isConnected || isCheckingRegistration
+  });
+  
+  if (isConnected && !isCheckingRegistration) {
+    console.log("Conditions met, navigating..."); // You should see this
+    console.log("About to call router.push");
+    router.push('/auth/signup/agent/personal-info');
+    console.log("router.push called");
+  } else {
+    console.log("Navigation blocked");
   }
+}
 
+
+  // const getWalletStatus = () => {
+  //   if (metamaskCtx.metamaskAccountAddress) {
+  //     return {
+  //       type: 'MetaMask',
+  //       address: metamaskCtx.metamaskAccountAddress,
+  //       connected: true
+  //     }
+  //   } else if (walletConnectCtx.accountId) {
+  //     return {
+  //       type: 'WalletConnect',
+  //       address: walletConnectCtx.accountId,
+  //       connected: walletConnectCtx.isConnected
+  //     }
+  //   }
+  //   return {
+  //     type: 'None',
+  //     address: '',
+  //     connected: false
+  //   }
+  // }
   const getWalletStatus = () => {
-    if (metamaskCtx.metamaskAccountAddress) {
-      return {
-        type: 'MetaMask',
-        address: metamaskCtx.metamaskAccountAddress,
-        connected: true
-      }
-    } else if (walletConnectCtx.accountId) {
-      return {
-        type: 'WalletConnect',
-        address: walletConnectCtx.accountId,
-        connected: walletConnectCtx.isConnected
-      }
-    }
+  if (metamaskCtx.metamaskAccountAddress) {
     return {
-      type: 'None',
-      address: '',
-      connected: false
+      type: 'MetaMask',
+      address: metamaskCtx.metamaskAccountAddress,
+      connected: true
+    }
+  } else if (walletConnectCtx.accountId) {
+    return {
+      type: 'WalletConnect',
+      address: walletConnectCtx.accountId,
+      connected: true  // ADD THIS LINE
+    }
+  } else if (accountId) {  // ADD THIS CONDITION
+    return {
+      type: 'Connected',
+      address: accountId,
+      connected: true
     }
   }
+  return {
+    type: 'None',
+    address: '',
+    connected: false
+  }
+}
 
   const walletStatus = getWalletStatus()
 

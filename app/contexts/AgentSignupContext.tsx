@@ -122,24 +122,24 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // Save data to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      // Don't save File objects to localStorage (they're not serializable)
-      const dataToSave = {
-        ...signupData,
-        documentInfo: Object.fromEntries(
-          Object.entries(signupData.documentInfo).map(([key, value]) => [
-            key,
-            value ? { cid: value.cid, url: value.url } : undefined
-          ])
-        )
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
-      console.log("💾 Saved signup data to localStorage")
-    } catch (error) {
-      console.error("❌ Failed to save signup data to localStorage:", error)
-    }
-  }, [signupData])
+  // useEffect(() => {
+  //   try {
+  //     // Don't save File objects to localStorage (they're not serializable)
+  //     const dataToSave = {
+  //       ...signupData,
+  //       documentInfo: Object.fromEntries(
+  //         Object.entries(signupData.documentInfo).map(([key, value]) => [
+  //           key,
+  //           value ? { cid: value.cid, url: value.url } : undefined
+  //         ])
+  //       )
+  //     }
+  //     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
+  //     console.log("💾 Saved signup data to localStorage")
+  //   } catch (error) {
+  //     console.error("❌ Failed to save signup data to localStorage:", error)
+  //   }
+  // }, [signupData])
 
   // Update wallet information
   const updateWalletInfo = (walletAddress: string, walletType: string) => {
@@ -180,13 +180,27 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
   }
 
   // Set current step
-  const setCurrentStep = (step: number) => {
-    console.log("📍 Setting current step:", step)
-    setSignupData(prev => ({
-      ...prev,
-      currentStep: step
-    }))
+  // const setCurrentStep = (step: number) => {
+  //   console.log("📍 Setting current step:", step)
+  //   setSignupData(prev => ({
+  //     ...prev,
+  //     currentStep: step
+  //   }))
+  // }
+
+  // Set current step
+const setCurrentStep = (step: number) => {
+  // Add this guard to prevent unnecessary updates
+  if (signupData.currentStep === step) {
+    return; // Don't update if it's already the same step
   }
+  
+  console.log("📍 Setting current step:", step)
+  setSignupData(prev => ({
+    ...prev,
+    currentStep: step
+  }))
+}
 
   // Mark step as completed
   const markStepCompleted = (step: number) => {

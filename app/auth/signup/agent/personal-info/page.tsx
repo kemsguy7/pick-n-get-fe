@@ -9,39 +9,51 @@ import AppLayout from "../../../../components/layout/AppLayout"
 export default function AgentSignupStep2(): React.JSX.Element {
   const router = useRouter()
   const { signupData, updatePersonalInfo, setCurrentStep, markStepCompleted, canProceedToStep } = useAgentSignup()
+ 
+console.log("🔄 Component re-render - Personal Info Page");
+console.log("📊 Current signup data:", signupData);
   
   const [errors, setErrors] = useState<string[]>([])
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
 
   // Set current step when component mounts
   useEffect(() => {
-    setCurrentStep(2)
-  }, [setCurrentStep])
+  setCurrentStep(2)
+}, []) // Empty dependency array
+
 
   // Check if user can access this step
-  useEffect(() => {
-    if (!canProceedToStep(2)) {
-      console.log("Cannot proceed to step 2, redirecting to step 1")
-      router.push('/auth/signup/agent')
-    }
-  }, [canProceedToStep, router])
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    
-    // Mark field as touched
-    setTouchedFields(prev => new Set([...prev, name]))
-    
-    // Update the context
-    updatePersonalInfo({ [name]: value })
-    
-    // Clear errors when user starts typing
-    if (errors.length > 0) {
-      validateForm({ ...signupData.personalInfo, [name]: value })
-    }
+ useEffect(() => {
+  if (!canProceedToStep(2)) {
+    console.log("Cannot proceed to step 2, redirecting to step 1")
+    router.push('/auth/signup/agent')
   }
+}, []) // Empty dependency array - only check once on mount
 
-  const validateForm = (data = signupData.personalInfo): string[] => {
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const { name, value } = e.target
+  
+  // Add this guard to prevent unnecessary updates
+  if (signupData.personalInfo[name as keyof typeof signupData.personalInfo] === value) {
+    return; // Don't update if value hasn't changed
+  }
+  
+  console.log(`🔄 Input changed: ${name} = ${value}`);
+  
+  // Mark field as touched
+  setTouchedFields(prev => new Set([...prev, name]))
+  
+  // Update the context
+  updatePersonalInfo({ [name]: value })
+  
+  // Clear errors when user starts typing
+  if (errors.length > 0) {
+    validateForm({ ...signupData.personalInfo, [name]: value })
+  }
+}
+
+  const validateForm:any = (data = signupData.personalInfo): string[] => {
     const newErrors: string[] = []
 
     if (!data.firstName.trim()) newErrors.push("First name is required")
@@ -95,12 +107,24 @@ export default function AgentSignupStep2(): React.JSX.Element {
   }
 
   const isFormValid = () => {
-    return validateForm().length === 0 && 
-           signupData.personalInfo.firstName.trim() &&
-           signupData.personalInfo.lastName.trim() &&
-           signupData.personalInfo.phoneNumber.trim() &&
-           signupData.personalInfo.homeAddress.trim() &&
-           signupData.personalInfo.nationalIdNumber.trim()
+    const data = signupData.personalInfo;
+    
+    // Check if all required fields are filled
+    const hasRequiredFields = data.firstName.trim() &&
+                            data.lastName.trim() &&
+                            data.phoneNumber.trim() &&
+                            data.homeAddress.trim(); 
+
+    // Fix the phone number validation logic
+    const phoneNum = parseInt(data.phoneNumber);
+    const isValidPhone = data.phoneNumber.trim() ? (!isNaN(phoneNum) && phoneNum >= 0 && phoneNum <= 255) : false;
+    
+    // Check minimum lengths
+    const isValidLength = (data.firstName.length >= 2) &&
+                        (data.lastName.length >= 2) &&
+                        (data.homeAddress.length >= 10);
+    
+    return hasRequiredFields && isValidPhone && isValidLength;
   }
 
   return (
@@ -148,7 +172,7 @@ export default function AgentSignupStep2(): React.JSX.Element {
             {signupData.walletConnected && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-500" />
-                <span className="text-green-700 text-sm">Wallet connected: {signupData.walletAddress?.substring(0, 6)}...{signupData.walletAddress?.substring(-4)}</span>
+                <span className="text-green-700 text-sm text-wrap">Wallet connected: {signupData.walletAddress?.substring(0, 6)}...{signupData.walletAddress?.substring(-4)}</span>
               </div>
             )}
 
@@ -246,6 +270,9 @@ export default function AgentSignupStep2(): React.JSX.Element {
                       }`}
                     />
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    This field must be at least 10 characters long.
+                  </p>
                   {getFieldError('homeAddress') && (
                     <p className="text-red-500 text-xs mt-1">{getFieldError('homeAddress')}</p>
                   )}
@@ -279,7 +306,7 @@ export default function AgentSignupStep2(): React.JSX.Element {
                 </div>
 
                 {/* National ID Number */}
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1 font-inter">
                     National ID Number <span className="text-red-500">*</span>
                   </label>
@@ -296,7 +323,7 @@ export default function AgentSignupStep2(): React.JSX.Element {
                   {getFieldError('nationalIdNumber') && (
                     <p className="text-red-500 text-xs mt-1">{getFieldError('nationalIdNumber')}</p>
                   )}
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -319,18 +346,18 @@ export default function AgentSignupStep2(): React.JSX.Element {
             </div>
 
             {/* Form Progress Indicator */}
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <div className="flex justify-between text-xs text-gray-600 mb-1">
-                <span>Progress</span>
-                <span>{Math.round((Object.values(signupData.personalInfo).filter(val => val.trim()).length / 5) * 100)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-1">
-                <div 
-                  className="bg-green-500 h-1 rounded-full transition-all duration-300" 
-                  style={{ width: `${(Object.values(signupData.personalInfo).filter(val => val.trim()).length / 5) * 100}%` }}
-                ></div>
-              </div>
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex justify-between text-xs text-gray-600 mb-1">
+              <span>Progress</span>
+              <span>{Math.round((Object.values(signupData.personalInfo).filter(val => val.trim()).length / 6) * 100)}%</span>
             </div>
+            <div className="w-full bg-gray-200 rounded-full h-1">
+              <div 
+                className="bg-green-500 h-1 rounded-full transition-all duration-300" 
+                style={{ width: `${Math.min((Object.values(signupData.personalInfo).filter(val => val.trim()).length / 6) * 100, 100)}%` }}
+              ></div>
+            </div>
+          </div>
           </div>
         </div>
       </div>

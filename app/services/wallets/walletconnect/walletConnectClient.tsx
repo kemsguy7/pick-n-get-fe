@@ -34,11 +34,17 @@ const currentNetworkConfig = appConfig.networks.testnet;
 const hederaNetwork = currentNetworkConfig.network;
 // const hederaClient = Client.forName(hederaNetwork);
 
+// const metadata: SignClientTypes.Metadata = {
+//   name: "Pick'n'Get",
+//   description: "Recycling Platform",
+//   url: window.location.origin,
+//   icons: [window.location.origin + "/logo192.png"],
+// }
 const metadata: SignClientTypes.Metadata = {
   name: "Pick'n'Get",
   description: "Recycling Platform",
-  url: window.location.origin,
-  icons: [window.location.origin + "/logo192.png"],
+  url: typeof window !== 'undefined' ? window.location.origin : 'https://localhost:3000',
+  icons: [typeof window !== 'undefined' ? window.location.origin + "/logo192.png" : '/logo192.png'],
 }
 
 // Define supported Hedera JSON-RPC methods manually
