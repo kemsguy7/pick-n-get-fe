@@ -60,7 +60,7 @@ console.log("📊 Current signup data:", signupData);
     if (!data.lastName.trim()) newErrors.push("Last name is required")
     if (!data.phoneNumber.trim()) newErrors.push("User ID number is required")
     if (!data.homeAddress.trim()) newErrors.push("Home address is required")
-    if (!data.nationalIdNumber.trim()) newErrors.push("National ID number is required")
+    // if (!data.nationalIdNumber.trim()) newErrors.push("National ID number is required")
     
     // Validate phone number range (0-255 for blockchain)
     const phoneNum = parseInt(data.phoneNumber)
@@ -87,7 +87,7 @@ console.log("📊 Current signup data:", signupData);
 
   const handleContinue = () => {
     // Mark all fields as touched for validation display
-    const allFields = new Set(['firstName', 'lastName', 'phoneNumber', 'homeAddress', 'nationalIdNumber'])
+    const allFields = new Set(['firstName', 'lastName', 'phoneNumber', 'homeAddress'])
     setTouchedFields(allFields)
     
     const validationErrors = validateForm()

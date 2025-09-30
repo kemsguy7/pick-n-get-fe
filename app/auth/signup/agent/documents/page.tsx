@@ -8,9 +8,10 @@ import { WalletConnectContext } from "../../../../contexts/WalletConnectContext"
 import { useAgentSignup  } from "../../../../contexts/AgentSignupContext"
 import { useWalletInterface } from "../../../../services/wallets/useWalletInterface"
 import { registerRider, validateRiderData, RiderData, VehicleType } from "../../../../services/riderService"
-import {  validateFile } from "../../../../apis/ipfsApi"
+ import {  validateFile, uploadToIPFS,testPinataConnection  } from "../../../../apis/ipfsApi"
+
+
 import AppLayout from "../../../../components/layout/AppLayout"
-import { testPinataConnection } from "../../../../apis/ipfsApi"
 
 interface DocumentUploadForm {
   driversLicense: File | null
@@ -97,118 +98,8 @@ export default function AgentSignupStep4(): React.JSX.Element {
   testConnection();
 }, []);
 
-  // const handleFileUpload = async (fieldName: keyof DocumentUploadForm, file: File | null) => {
-  //   console.log(`📁 File upload initiated for ${fieldName}:`, file?.name);
-    
-  //   if (!file) {
-  //     setFormData(prev => ({
-  //       ...prev,
-  //       [fieldName]: null
-  //     }))
-  //     setUploadProgress(prev => ({
-  //       ...prev,
-  //       [fieldName]: { uploading: false, progress: 0 }
-  //     }))
-      
-  //     // Remove from context as well
-  //     updateDocumentInfo({ [fieldName]: undefined })
-  //     return
-  //   }
 
-  //   // Validate file before upload
-  //   const validation = await validateFile(file, {
-  //     maxSize: 10 * 1024 * 1024, // 10MB
-  //     allowedTypes: ['image/*', 'application/pdf'],
-  //     requiredExtensions: ['jpg', 'jpeg', 'png', 'pdf']
-  //   })
-
-  //   if (!validation.isValid) {
-  //     console.error(`❌ File validation failed for ${fieldName}:`, validation.errors);
-  //     setUploadProgress(prev => ({
-  //       ...prev,
-  //       [fieldName]: { 
-  //         uploading: false, 
-  //         progress: 0, 
-  //         error: validation.errors?.[0] || 'File validation failed' 
-  //       }
-  //     }))
-  //     return
-  //   }
-
-  //   // Start upload process
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [fieldName]: file
-  //   }))
-
-  //   setUploadProgress(prev => ({
-  //     ...prev,
-  //     [fieldName]: { uploading: true, progress: 10 }
-  //   }))
-
-  //   try {
-  //     console.log(`🚀 Starting IPFS upload for ${fieldName}...`);
-      
-  //     // Simulate progress during upload
-  //     const progressInterval = setInterval(() => {
-  //       setUploadProgress(prev => ({
-  //         ...prev,
-  //         [fieldName]: { 
-  //           ...prev[fieldName], 
-  //           progress: Math.min(prev[fieldName].progress + 10, 90) 
-  //         }
-  //       }))
-  //     }, 500)
-
-  //     // Upload to IPFS
-  //     const uploadResult = await uploadToIPFS(file, `${fieldName}-${Date.now()}-${file.name}`)
-      
-  //     clearInterval(progressInterval)
-
-  //     if (uploadResult.success) {
-  //       console.log(`✅ IPFS upload successful for ${fieldName}:`, uploadResult.cid);
-  //       setUploadProgress(prev => ({
-  //         ...prev,
-  //         [fieldName]: { 
-  //           uploading: false, 
-  //           progress: 100, 
-  //           cid: uploadResult.cid 
-  //         }
-  //       }))
-        
-  //       // Update context with uploaded file info
-  //       updateDocumentInfo({ 
-  //         [fieldName]: {
-  //           file,
-  //           cid: uploadResult.cid!,
-  //           url: uploadResult.url!
-  //         }
-  //       })
-  //     } else {
-  //       console.error(`❌ IPFS upload failed for ${fieldName}:`, uploadResult.error);
-  //       setUploadProgress(prev => ({
-  //         ...prev,
-  //         [fieldName]: { 
-  //           uploading: false, 
-  //           progress: 0, 
-  //           error: uploadResult.error || 'Upload failed' 
-  //         }
-  //       }))
-  //     }
-
-  //   } catch (error: any) {
-  //     console.error(`💥 Upload error for ${fieldName}:`, error);
-  //     setUploadProgress(prev => ({
-  //       ...prev,
-  //       [fieldName]: { 
-  //         uploading: false, 
-  //         progress: 0, 
-  //         error: error.message || 'Upload failed' 
-  //       }
-  //     }))
-  //   }
-  // }
-  const handleFileUpload = async (fieldName: keyof DocumentUploadForm, file: File | null) => {
+const handleFileUpload = async (fieldName: keyof DocumentUploadForm, file: File | null) => {
   console.log(`📁 File upload initiated for ${fieldName}:`, file?.name);
   
   if (!file) {
@@ -226,40 +117,98 @@ export default function AgentSignupStep4(): React.JSX.Element {
     return
   }
 
-  try {
-    // Validate file before upload
-    const validation = await validateFile(file, {
-      maxSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'],
-    })
+  // Validate file before upload
+  const validation = await validateFile(file, {
+    maxSize: 10 * 1024 * 1024, // 10MB
+    allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'],
+  })
 
-    if (!validation.isValid) {
-      console.error(`❌ File validation failed for ${fieldName}:`, validation.errors);
-      setUploadProgress(prev => ({
-        ...prev,
-        [fieldName]: { 
-          uploading: false, 
-          progress: 0, 
-          error: validation.errors?.[0] || 'File validation failed' 
-        }
-      }))
-      return
-    }
-
-    // Rest of your upload logic...
-  } catch (error) {
-    console.error(`💥 Validation error for ${fieldName}:`, error);
+  if (!validation.isValid) {
+    console.error(`❌ File validation failed for ${fieldName}:`, validation.errors);
     setUploadProgress(prev => ({
       ...prev,
       [fieldName]: { 
         uploading: false, 
         progress: 0, 
-        error: 'File validation error' 
+        error: validation.errors?.[0] || 'File validation failed' 
+      }
+    }))
+    return
+  }
+
+  // Start upload process
+  setFormData(prev => ({
+    ...prev,
+    [fieldName]: file
+  }))
+
+  setUploadProgress(prev => ({
+    ...prev,
+    [fieldName]: { uploading: true, progress: 10 }
+  }))
+
+  try {
+    console.log(`🚀 Starting IPFS upload for ${fieldName}...`);
+    
+    // Simulate progress during upload
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => ({
+        ...prev,
+        [fieldName]: { 
+          ...prev[fieldName], 
+          progress: Math.min(prev[fieldName].progress + 10, 90) 
+        }
+      }))
+    }, 500)
+
+    // Upload to IPFS - THIS IS THE MISSING PART!
+    const uploadResult = await uploadToIPFS(file, `${fieldName}-${Date.now()}-${file.name}`)
+    
+    clearInterval(progressInterval)
+
+    if (uploadResult.success) {
+      console.log(`✅ IPFS upload successful for ${fieldName}:`, uploadResult.cid);
+      setUploadProgress(prev => ({
+        ...prev,
+        [fieldName]: { 
+          uploading: false, 
+          progress: 100, 
+          cid: uploadResult.cid 
+        }
+      }))
+      
+      // Update context with uploaded file info
+      updateDocumentInfo({ 
+        [fieldName]: {
+          file,
+          cid: uploadResult.cid!,
+          url: uploadResult.url!
+        }
+      })
+    } else {
+      console.error(`❌ IPFS upload failed for ${fieldName}:`, uploadResult.error);
+      setUploadProgress(prev => ({
+        ...prev,
+        [fieldName]: { 
+          uploading: false, 
+          progress: 0, 
+          error: uploadResult.error || 'Upload failed' 
+        }
+      }))
+    }
+
+  } catch (error: any) {
+    console.error(`💥 Upload error for ${fieldName}:`, error);
+    setUploadProgress(prev => ({
+      ...prev,
+      [fieldName]: { 
+        uploading: false, 
+        progress: 0, 
+        error: error.message || 'Upload failed' 
       }
     }))
   }
-};
-
+}
   const removeFile = (fieldName: keyof DocumentUploadForm) => {
     console.log(`🗑️ Removing file for ${fieldName}`);
     setFormData(prev => ({
@@ -272,18 +221,7 @@ export default function AgentSignupStep4(): React.JSX.Element {
     }))
   }
 
-  // const validateRequiredDocuments = (): string | null => {
-  //   const required = ['driversLicense', 'vehicleRegistration', 'vehiclePhotos', 'profilePhoto'] as const
-    
-  //   for (const field of required) {
-  //     // Check both upload progress and context data
-  //     if (!uploadProgress[field].cid && !signupData.documentInfo[field]?.cid) {
-  //       return `${field.replace(/([A-Z])/g, ' $1').toLowerCase()} is required`
-  //     }
-  //   }
-    
-  //   return null
-  // }
+ 
 const validateRequiredDocuments = (): string | null => {
   const required = ['driversLicense', 'vehicleRegistration', 'vehiclePhotos', 'profilePhoto'] as const
   
@@ -300,105 +238,237 @@ const validateRequiredDocuments = (): string | null => {
   return null;
 };
 
-  const handleCreateAccount = async () => {
-    console.log("🎯 Starting account creation process...");
+  // const handleCreateAccount = async () => {
+  //   console.log("🎯 Starting account creation process...");
     
-    setIsLoading(true)
-    setError('')
-    setSuccess('')
-    setLoadingMessage('Validating documents...')
+  //   setIsLoading(true)
+  //   setError('')
+  //   setSuccess('')
+  //   setLoadingMessage('Validating documents...')
 
-    try {
-      if (!isConnected || !accountId) {
-        throw new Error('Wallet not connected')
-      }
+  //   try {
+  //     if (!isConnected || !accountId) {
+  //       throw new Error('Wallet not connected')
+  //     }
 
-      // Validate required documents
-      const documentError = validateRequiredDocuments()
-      if (documentError) {
-        throw new Error(documentError)
-      }
+  //     // Validate required documents
+  //     const documentError = validateRequiredDocuments()
+  //     if (documentError) {
+  //       throw new Error(documentError)
+  //     }
 
-      setLoadingMessage('Preparing rider registration data...')
+  //     setLoadingMessage('Preparing rider registration data...')
 
-      // Get form data from context instead of localStorage
-      const { personalInfo, vehicleInfo, documentInfo } = signupData
+  //     // Get form data from context instead of localStorage
+  //     const { personalInfo, vehicleInfo, documentInfo } = signupData
       
-      // Validate all required data is present
-      if (!personalInfo.firstName || !personalInfo.lastName || !personalInfo.phoneNumber) {
-        throw new Error('Personal information is incomplete')
-      }
+  //     // Validate all required data is present
+  //     if (!personalInfo.firstName || !personalInfo.lastName || !personalInfo.phoneNumber) {
+  //       throw new Error('Personal information is incomplete')
+  //     }
       
-      if (!vehicleInfo.vehiclePlateNumber || !vehicleInfo.vehicleMakeModel) {
-        throw new Error('Vehicle information is incomplete')
-      }
+  //     if (!vehicleInfo.vehiclePlateNumber || !vehicleInfo.vehicleMakeModel) {
+  //       throw new Error('Vehicle information is incomplete')
+  //     }
       
-      if (!documentInfo.vehiclePhotos?.cid || !documentInfo.vehicleRegistration?.cid) {
-        throw new Error('Required documents are missing')
-      }
+  //     if (!documentInfo.vehiclePhotos?.cid || !documentInfo.vehicleRegistration?.cid) {
+  //       throw new Error('Required documents are missing')
+  //     }
       
-      // Prepare rider data for blockchain registration
-      const riderData: RiderData = {
-        name: `${personalInfo.firstName} ${personalInfo.lastName}`,
-        phoneNumber: parseInt(personalInfo.phoneNumber),
-        vehicleNumber: vehicleInfo.vehiclePlateNumber,
-        homeAddress: personalInfo.homeAddress,
-        country: personalInfo.country,
-        capacity: parseInt(vehicleInfo.carryingCapacity) || 10,
-        vehicleImage: documentInfo.vehiclePhotos.cid,
-        vehicleRegistration: documentInfo.vehicleRegistration.cid,
-        vehicleType: VehicleType[vehicleInfo.vehicleType as keyof typeof VehicleType]
-      }
+  //     // Prepare rider data for blockchain registration
+  //     const riderData: RiderData = {
+  //       name: `${personalInfo.firstName} ${personalInfo.lastName}`,
+  //       phoneNumber: parseInt(personalInfo.phoneNumber),
+  //       vehicleNumber: vehicleInfo.vehiclePlateNumber,
+  //       homeAddress: personalInfo.homeAddress,
+  //       country: personalInfo.country,
+  //       capacity: parseInt(vehicleInfo.carryingCapacity) || 10,
+  //       vehicleImage: documentInfo.vehiclePhotos.cid,
+  //       vehicleRegistration: documentInfo.vehicleRegistration.cid,
+  //       vehicleType: VehicleType[vehicleInfo.vehicleType as keyof typeof VehicleType]
+  //     }
 
-      console.log("📋 Rider data prepared:", {
-        name: riderData.name,
-        phoneNumber: riderData.phoneNumber,
-        vehicleNumber: riderData.vehicleNumber,
-        vehicleType: VehicleType[riderData.vehicleType],
-        capacity: riderData.capacity,
-        vehicleImageCID: riderData.vehicleImage,
-        vehicleRegistrationCID: riderData.vehicleRegistration
-      });
+  //     console.log("📋 Rider data prepared:", {
+  //       name: riderData.name,
+  //       phoneNumber: riderData.phoneNumber,
+  //       vehicleNumber: riderData.vehicleNumber,
+  //       vehicleType: VehicleType[riderData.vehicleType],
+  //       capacity: riderData.capacity,
+  //       vehicleImageCID: riderData.vehicleImage,
+  //       vehicleRegistrationCID: riderData.vehicleRegistration
+  //     });
 
-      // Validate rider data
-      const validation = validateRiderData(riderData)
-      if (!validation.isValid) {
-        throw new Error(validation.errors.join(', '))
-      }
+  //     // Validate rider data
+  //     const validation = validateRiderData(riderData)
+  //     if (!validation.isValid) {
+  //       throw new Error(validation.errors.join(', '))
+  //     }
 
-      setLoadingMessage('Submitting registration to blockchain...')
+  //     setLoadingMessage('Submitting registration to blockchain...')
 
-      // Register rider on blockchain
-      const walletData = createWalletData(accountId, walletInterface)
-      const result = await registerRider(walletData, riderData)
+  //     // Register rider on blockchain
+  //     const walletData = createWalletData(accountId, walletInterface)
+  //     const result = await registerRider(walletData, riderData)
 
-      if (result.success) {
-        console.log("🎉 Rider registration successful!");
+  //     if (result.success) {
+  //       console.log("🎉 Rider registration successful!");
         
-        // Mark step as completed
-        markStepCompleted(4)
+  //       // Mark step as completed
+  //       markStepCompleted(4)
         
-        setLoadingMessage('')
-        setSuccess(`Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`)
+  //       setLoadingMessage('')
+  //       setSuccess(`Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`)
         
-        setTimeout(() => {
-          router.push('/auth/signup/success')
-        }, 4000)
-      } else {
-        throw new Error(result.error || 'Registration failed')
-      }
+  //       setTimeout(() => {
+  //         router.push('/auth/signup/success')
+  //       }, 4000)
+  //     } else {
+  //       throw new Error(result.error || 'Registration failed')
+  //     }
 
-    } catch (error: any) {
-      console.error('💥 Account creation error:', error);
+  //   } catch (error: any) {
+  //     console.error('💥 Account creation error:', error);
+  //     setLoadingMessage('')
+  //     setError(error.message || 'Account creation failed')
+  //   } finally {
+  //     if (!success) {
+  //       setIsLoading(false)
+  //     }
+  //   }
+  // }
+  // Add this helper function above your component
+const getVehicleType = (vehicleType: string): VehicleType => {
+  console.log("🔧 Converting vehicle type:", vehicleType);
+  
+  // Convert to lowercase for consistent matching
+  const normalizedType = vehicleType.toLowerCase().trim();
+  
+  // Map form values to VehicleType enum
+  const typeMap: { [key: string]: VehicleType } = {
+    'bike': VehicleType.Bike,      // 0
+    'car': VehicleType.Car,        // 1
+    'truck': VehicleType.Truck,    // 2
+    'van': VehicleType.Van,        // 3
+  };
+  
+  const mappedType = typeMap[normalizedType];
+  
+  if (mappedType === undefined) {
+    console.error("❌ Invalid vehicle type:", vehicleType);
+    console.log("📋 Available vehicle types:", Object.keys(typeMap));
+    throw new Error(`Invalid vehicle type: ${vehicleType}. Must be one of: ${Object.keys(typeMap).join(', ')}`);
+  }
+  
+  console.log("✅ Vehicle type mapped to:", mappedType, `(${VehicleType[mappedType]})`);
+  return mappedType;
+};
+
+  const handleCreateAccount = async () => {
+  console.log("🎯 Starting account creation process...");
+  
+  setIsLoading(true)
+  setError('')
+  setSuccess('')
+  setLoadingMessage('Validating documents...')
+
+  try {
+    if (!isConnected || !accountId) {
+      throw new Error('Wallet not connected')
+    }
+
+    // Validate required documents
+    const documentError = validateRequiredDocuments()
+    if (documentError) {
+      throw new Error(documentError)
+    }
+
+    setLoadingMessage('Preparing rider registration data...')
+
+    // Get form data from context instead of localStorage
+    const { personalInfo, vehicleInfo, documentInfo } = signupData
+    
+    // Debug vehicle info
+    console.log("🚗 Vehicle Info from context:", vehicleInfo);
+    console.log("🔍 Raw vehicle type:", vehicleInfo.vehicleType);
+    
+    // Validate all required data is present
+    if (!personalInfo.firstName || !personalInfo.lastName || !personalInfo.phoneNumber) {
+      throw new Error('Personal information is incomplete')
+    }
+    
+    if (!vehicleInfo.vehiclePlateNumber || !vehicleInfo.vehicleMakeModel) {
+      throw new Error('Vehicle information is incomplete')
+    }
+    
+    if (!documentInfo.vehiclePhotos?.cid || !documentInfo.vehicleRegistration?.cid) {
+      throw new Error('Required documents are missing')
+    }
+    
+    // Map vehicle type safely using the helper function
+    const mappedVehicleType = getVehicleType(vehicleInfo.vehicleType);
+    
+    // Prepare rider data for blockchain registration
+    const riderData: RiderData = {
+      name: `${personalInfo.firstName} ${personalInfo.lastName}`,
+      phoneNumber: parseInt(personalInfo.phoneNumber),
+      vehicleNumber: vehicleInfo.vehiclePlateNumber,
+      homeAddress: personalInfo.homeAddress,
+      country: personalInfo.country,
+      capacity: parseInt(vehicleInfo.carryingCapacity) || 10,
+      vehicleImage: documentInfo.vehiclePhotos.cid,
+      vehicleRegistration: documentInfo.vehicleRegistration.cid,
+      vehicleType: mappedVehicleType
+    }
+
+    console.log("📋 Rider data prepared:", {
+      name: riderData.name,
+      phoneNumber: riderData.phoneNumber,
+      vehicleNumber: riderData.vehicleNumber,
+      vehicleType: riderData.vehicleType,
+      vehicleTypeName: VehicleType[riderData.vehicleType],
+      capacity: riderData.capacity,
+      vehicleImageCID: riderData.vehicleImage,
+      vehicleRegistrationCID: riderData.vehicleRegistration
+    });
+
+    // Validate rider data
+    const validation = validateRiderData(riderData)
+    if (!validation.isValid) {
+      throw new Error(validation.errors.join(', '))
+    }
+
+    setLoadingMessage('Submitting registration to blockchain...')
+
+    // Register rider on blockchain
+    const walletData = createWalletData(accountId, walletInterface)
+    const result = await registerRider(walletData, riderData)
+
+    if (result.success) {
+      console.log("🎉 Rider registration successful!");
+      
+      // Mark step as completed
+      markStepCompleted(4)
+      
       setLoadingMessage('')
-      setError(error.message || 'Account creation failed')
-    } finally {
-      if (!success) {
-        setIsLoading(false)
-      }
+      setSuccess(`Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`)
+      
+      setTimeout(() => {
+        router.push('/auth/signup/success')
+      }, 4000)
+    } else {
+      throw new Error(result.error || 'Registration failed')
+    }
+
+  } catch (error: any) {
+    console.error('💥 Account creation error:', error);
+    setLoadingMessage('')
+    setError(error.message || 'Account creation failed')
+  } finally {
+    if (!success) {
+      setIsLoading(false)
     }
   }
-
+}
   const handleBack = () => {
     router.back()
   }
