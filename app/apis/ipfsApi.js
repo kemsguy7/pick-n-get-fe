@@ -1,8 +1,6 @@
 // Browser-compatible IPFS API using Pinata
 console.log("Initializing IPFS API with Pinata...");
 
-// Note: Environment variables in Next.js client-side must be prefixed with NEXT_PUBLIC_
-// Make sure your .env.local has: NEXT_PUBLIC_IPFS_WRITE_JWT=your_jwt_here
 
 const PINATA_JWT = process.env.NEXT_PUBLIC_IPFS_WRITE_JWT;
 const PINATA_GATEWAY = process.env.NEXT_PUBLIC_GATEWAY_URL || "https://gateway.pinata.cloud";
@@ -19,6 +17,8 @@ if (!PINATA_JWT) {
  */
 export const uploadToIPFS = async (file, fileName = null) => {
   console.log("Starting IPFS upload...");
+    console.log("🚀 uploadToIPFS called with file:", file?.name);
+  console.log("🔑 PINATA_JWT exists:", !!PINATA_JWT);
   console.log("File details:", {
     name: file?.name,
     size: file?.size,
@@ -116,6 +116,54 @@ export const uploadToIPFS = async (file, fileName = null) => {
     return {
       success: false,
       error: errorMessage
+    };
+  }
+};
+
+/**
+ * Test Pinata connection by making a simple API call
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export const testPinataConnection = async () => {
+  try {
+    console.log("🔌 Testing Pinata connection...");
+    
+    // Test connection by making a simple request to Pinata
+    const response = await fetch('https://api.pinata.cloud/data/testAuthentication', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${PINATA_JWT}`
+      }
+    });
+
+    if (response.ok) {
+      console.log("✅ Pinata connection test successful");
+      return { success: true };
+    } else {
+      const errorText = await response.text();
+      console.error("❌ Pinata connection test failed:", response.status, errorText);
+      return { 
+        success: false, 
+        error: `Pinata API error: ${response.status}` 
+      };
+    }
+
+  } catch (error) {
+    console.error("❌ Pinata connection test failed:", error);
+    
+    let errorMessage = "Failed to connect to Pinata";
+    
+    if (error.message.includes('Network')) {
+      errorMessage = "Network error - please check your connection";
+    } else if (error.message.includes('401')) {
+      errorMessage = "Invalid Pinata API key";
+    } else {
+      errorMessage = error.message || "Connection failed";
+    }
+
+    return { 
+      success: false, 
+      error: errorMessage 
     };
   }
 };
