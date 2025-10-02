@@ -68,6 +68,35 @@ export type WalletData = [string, WalletInterface | null, string];
 const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms));
 
 /**
+ * Convert IPFS CID string to hex string for smart contract bytes parameter
+ * @param ipfsHash - IPFS CID string (e.g., "QmRWWCSnu3h3jC4DQB6193ZjWx6MDxKxZPDRFE1kysxfYy")
+ * @returns Hex string (0x...) that ethers.js can handle
+ */
+function ipfsHashToBytes(ipfsHash: string): string {
+  try {
+    if (!ipfsHash || ipfsHash.trim().length === 0) {
+      throw new Error("Empty IPFS hash provided");
+    }
+    
+    // Convert string to UTF-8 bytes first
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(ipfsHash);
+    
+    // Convert bytes to hex string with 0x prefix (ethers.js format)
+    const hexString = '0x' + Array.from(bytes)
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    
+    console.log(`  - Converted IPFS hash "${ipfsHash}" to hex (${bytes.length} bytes): ${hexString.substring(0, 20)}...`);
+    
+    return hexString;
+  } catch (error) {
+    console.error("Error converting IPFS hash to bytes:", error);
+    throw new Error(`Failed to convert IPFS hash to bytes: ${error}`);
+  }
+}
+
+/**
  * Register a new rider/agent on the blockchain
  * @param walletData - [accountId, walletInterface, network]
  * @param riderData - Rider registration data
@@ -116,9 +145,10 @@ export async function registerRider(
     console.log(`- Vehicle Image IPFS: ${riderData.vehicleImage}`);
     console.log(`- Vehicle Registration IPFS: ${riderData.vehicleRegistration}`);
 
-    // Convert IPFS hashes to bytes
-    const vehicleImageBytes = ipfsHashToBytes(riderData.vehicleImage);
-    const vehicleRegistrationBytes = ipfsHashToBytes(riderData.vehicleRegistration);
+    // Convert IPFS hashes to hex strings (ethers.js compatible format)
+    console.log(`- Converting IPFS hashes to hex strings...`);
+    const vehicleImageHex = ipfsHashToBytes(riderData.vehicleImage);
+    const vehicleRegistrationHex = ipfsHashToBytes(riderData.vehicleRegistration);
 
     // Build contract function parameters
     const functionParameters = new ContractFunctionParameterBuilder()
@@ -155,12 +185,12 @@ export async function registerRider(
       .addParam({
         type: "bytes",
         name: "_image",
-        value: vehicleImageBytes
+        value: vehicleImageHex  // Hex string: "0x516d61..."
       })
       .addParam({
         type: "bytes",
         name: "_vehicleRegistration",
-        value: vehicleRegistrationBytes
+        value: vehicleRegistrationHex  // Hex string: "0x516d54..."
       })
       .addParam({
         type: "uint8",
@@ -267,42 +297,44 @@ export async function checkRiderRegistration(walletData: WalletData): Promise<Ch
       : "https://mainnet.mirrornode.hedera.com";
 
     try {
-      // Convert account ID to EVM address format
-      const evmAddress = accountId.startsWith("0x") ? accountId : `0x${accountId.replace(/\./g, '')}`;
-      
-      // Check recent contract transactions from this account to our contract
+      // Use the correct API endpoint - get all contract results and filter client-side
       const response = await fetch(
-        `${mirrorNodeUrl}/api/v1/contracts/results?from=${evmAddress}&to=${CONTRACT_ADDRESS}&limit=10`
+        `${mirrorNodeUrl}/api/v1/contracts/${CONTRACT_ADDRESS}/results?limit=25&order=desc`
       );
       
       if (response.ok) {
         const data = await response.json();
         const results = data.results || [];
         
-        // Look for successful riderApplication transactions
-        const successfulRegistrations = results.filter((tx: any) => 
-          tx.result === "SUCCESS" && 
-          tx.function_parameters && 
-          tx.function_parameters.includes("riderApplication")
+        // Normalize account ID for comparison
+        const normalizedAccountId = accountId.toLowerCase();
+        
+        // Filter transactions from this account
+        const accountTransactions = results.filter((tx: any) => {
+          if (!tx.from) return false;
+          const txFrom = tx.from.toLowerCase();
+          return txFrom === normalizedAccountId || 
+                 txFrom === `0x${accountId.replace(/\./g, '')}`.toLowerCase();
+        });
+        
+        // Look for successful transactions
+        const successfulRegistrations = accountTransactions.filter((tx: any) => 
+          tx.result === "SUCCESS"
         );
         
         if (successfulRegistrations.length > 0) {
           console.log(`- Found existing rider registration for account: ${accountId}`);
-          const mostRecentTx = successfulRegistrations[0];
-          
-          // Get rider details from the transaction or blockchain state
-          const riderDetails = await getRiderDetailsFromBlockchain(accountId, network);
           
           return {
             isRegistered: true,
-            riderId: riderDetails?.id,
-            riderDetails: riderDetails || undefined,
-            riderStatus: riderDetails?.riderStatus
+            riderId: undefined, // Would need to query contract state
+            riderDetails: undefined,
+            riderStatus: RiderStatus.Pending
           };
         }
         
-        // Check for failed attempts indicating already registered
-        const failedRegistrations = results.filter((tx: any) => {
+        // Check for reverted transactions (already registered)
+        const failedRegistrations = accountTransactions.filter((tx: any) => {
           if (tx.result !== "CONTRACT_REVERT_EXECUTED" || !tx.error_message) {
             return false;
           }
@@ -313,13 +345,12 @@ export async function checkRiderRegistration(walletData: WalletData): Promise<Ch
         
         if (failedRegistrations.length > 0) {
           console.log(`- Found failed registration attempts (rider already registered): ${accountId}`);
-          const riderDetails = await getRiderDetailsFromBlockchain(accountId, network);
           
           return {
             isRegistered: true,
-            riderId: riderDetails?.id,
-            riderDetails: riderDetails || undefined,
-            riderStatus: riderDetails?.riderStatus
+            riderId: undefined,
+            riderDetails: undefined,
+            riderStatus: RiderStatus.Pending
           };
         }
       }
@@ -352,8 +383,6 @@ export async function checkRiderRegistration(walletData: WalletData): Promise<Ch
  */
 async function getRiderDetailsFromBlockchain(accountId: string, network: string): Promise<RiderDetails | null> {
   try {
-    // This would require additional contract view function calls
-    // For now, return null and implement when needed
     console.log(`- Getting rider details for ${accountId} from blockchain...`);
     return null;
   } catch (error) {
@@ -374,17 +403,13 @@ async function getRiderIdFromTransaction(txHash: string, network: string): Promi
       ? "https://testnet.mirrornode.hedera.com" 
       : "https://mainnet.mirrornode.hedera.com";
 
-    // Try to get rider ID from transaction logs/events
     const response = await fetch(`${mirrorNodeUrl}/api/v1/contracts/results/${txHash}`);
     
     if (response.ok) {
       const txData = await response.json();
       
-      // Look for logs/events that might contain the rider ID
       if (txData.logs && txData.logs.length > 0) {
-        // Parse logs for rider registration events
         console.log(`- Transaction logs:`, txData.logs);
-        // Implementation depends on your contract events
       }
     }
 
@@ -495,23 +520,6 @@ function decodeContractError(errorHex: string): string | null {
 }
 
 /**
- * Convert IPFS hash to bytes for smart contract
- * @param ipfsHash - IPFS hash string
- * @returns bytes representation
- */
-function ipfsHashToBytes(ipfsHash: string): Uint8Array {
-  try {
-    // For now, convert string to bytes
-    // You might want to implement proper IPFS hash encoding
-    const encoder = new TextEncoder();
-    return encoder.encode(ipfsHash);
-  } catch (error) {
-    console.error("Error converting IPFS hash to bytes:", error);
-    return new Uint8Array();
-  }
-}
-
-/**
  * Validate rider data before registration
  * @param riderData - Rider data to validate
  * @returns Validation result with errors if any
@@ -519,7 +527,6 @@ function ipfsHashToBytes(ipfsHash: string): Uint8Array {
 export function validateRiderData(riderData: RiderData): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  // Name validation
   if (!riderData.name || riderData.name.trim().length === 0) {
     errors.push("Name is required");
   } else if (riderData.name.trim().length < 2) {
@@ -528,32 +535,26 @@ export function validateRiderData(riderData: RiderData): { isValid: boolean; err
     errors.push("Name cannot exceed 100 characters");
   }
 
-  // Phone number validation (uint8 range)
   if (riderData.phoneNumber < 0 || riderData.phoneNumber > 255) {
     errors.push("Phone number must be between 0 and 255");
   }
 
-  // Vehicle number validation
   if (!riderData.vehicleNumber || riderData.vehicleNumber.trim().length === 0) {
     errors.push("Vehicle number is required");
   }
 
-  // Home address validation
   if (!riderData.homeAddress || riderData.homeAddress.trim().length === 0) {
     errors.push("Home address is required");
   }
 
-  // Country validation
   if (!riderData.country || riderData.country.trim().length === 0) {
     errors.push("Country is required");
   }
 
-  // Capacity validation
   if (riderData.capacity <= 0) {
     errors.push("Capacity must be greater than 0");
   }
 
-  // IPFS hash validation
   if (!riderData.vehicleImage || riderData.vehicleImage.trim().length === 0) {
     errors.push("Vehicle image is required");
   }
@@ -562,7 +563,6 @@ export function validateRiderData(riderData: RiderData): { isValid: boolean; err
     errors.push("Vehicle registration document is required");
   }
 
-  // Vehicle type validation
   if (!Object.values(VehicleType).includes(riderData.vehicleType)) {
     errors.push("Invalid vehicle type");
   }
