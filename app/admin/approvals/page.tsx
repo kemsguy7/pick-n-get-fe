@@ -35,8 +35,8 @@ export default function AdminApprovalsPage() {
   const [actionType, setActionType] = useState<'approve' | 'ban' | null>(null)
 
   // Get wallet contexts
-  const metamaskCtx = useContext(MetamaskContext)
-  const walletConnectCtx = useContext(WalletConnectContext)
+  // const metamaskCtx = useContext(MetamaskContext)
+  // const walletConnectCtx = useContext(WalletConnectContext)
   const { accountId, walletInterface } = useWalletInterface()
 
   // Determine connection status

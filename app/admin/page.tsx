@@ -1,9 +1,13 @@
 "use client"
-import { useState, useEffect } from "react"
-import { Users, CheckCircle, BarChart3, Settings, TrendingUp, AlertTriangle, Info, Clock, DollarSign, Search, Filter, X } from 'lucide-react'
+import { useState, useEffect, useContext } from "react"
+import { Users, CheckCircle, BarChart3, Settings, TrendingUp, AlertTriangle, Info, Clock, DollarSign, Search, Filter, X, Loader2, ChevronRight } from 'lucide-react'
 import AppLayout from "../components/layout/AppLayout"
 import StatCard, { StatCardProps } from "../components/ui/statCard"
 import { useRouter, useSearchParams } from "next/navigation"
+import { MetamaskContext } from "../contexts/MetamaskContext"
+import { WalletConnectContext } from "../contexts/WalletConnectContext"
+import { useWalletInterface } from "../services/wallets/useWalletInterface"
+import { approveRider, banRider } from "../services/adminService"
 
 
 interface User {
@@ -20,6 +24,7 @@ interface User {
 
 interface PendingApproval {
   id: string
+  riderId: number
   name: string
   email: string
   location: string
@@ -27,28 +32,38 @@ interface PendingApproval {
   submissionDate: string
   status: 'NEW' | 'PENDING'
   avatar: string
+  userType: 'agent' | 'vendor'
 }
 
+// Convert wallet interface data to format expected by adminService
+const createWalletData = (accountId: string, walletInterface: any, network: string = "testnet"): [string, any, string] => {
+  return [accountId, walletInterface, network];
+}
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
-   const router = useRouter()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedMaterial, setSelectedMaterial] = useState('Paper & Cardboard')
   const [pricePerKg, setPricePerKg] = useState('$10/kg')
   const [fundingAmount, setFundingAmount] = useState('$1000')
   
-  // Platform settings state
-  // const [maintenanceMode, setMaintenanceMode] = useState(false)
-  // const [autoApprovals, setAutoApprovals] = useState(true)
-  // const [emailNotifications, setEmailNotifications] = useState(true)
-  
-  // Security settings state
-  // const [twoFactorAuth, setTwoFactorAuth] = useState(true)
-  // const [apiRateLimiting, setApiRateLimiting] = useState(true)
-  // const [auditLogging, setAuditLogging] = useState(true)
+  // Approval state
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [processingId, setProcessingId] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [actionType, setActionType] = useState<'approve' | 'ban' | null>(null)
 
-   // Handle tab query parameter
+  // Get wallet contexts
+  const metamaskCtx = useContext(MetamaskContext)
+  const walletConnectCtx = useContext(WalletConnectContext)
+  const { accountId, walletInterface } = useWalletInterface()
+
+  // Determine connection status
+  const isConnected = !!(accountId && walletInterface)
+
+  // Handle tab query parameter
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab && ['overview', 'users', 'approvals', 'analytics', 'settings'].includes(tab)) {
@@ -56,9 +71,8 @@ export default function AdminDashboard() {
     }
   }, [searchParams])
 
-    const handleTabChange = (tabId: string) => {
+  const handleTabChange = (tabId: string) => {
     setActiveTab(tabId)
-    // Update URL without triggering a full page reload
     router.replace(`/admin?tab=${tabId}`, { scroll: false })
   }
 
@@ -149,7 +163,6 @@ export default function AdminDashboard() {
       icon: Clock
     }
   ]
-
   const users: User[] = [
     {
       id: '1',
@@ -189,33 +202,39 @@ export default function AdminDashboard() {
   const pendingApprovals: PendingApproval[] = [
     {
       id: '1',
+      riderId: 1,
       name: 'John Doe',
       email: 'john@example.com',
       location: 'Lagos, Nigeria',
       documents: 3,
       submissionDate: '2025-01-15',
       status: 'NEW',
-      avatar: '/api/placeholder/40/40'
+      avatar: '/api/placeholder/40/40',
+      userType: 'agent'
     },
     {
       id: '2',
+      riderId: 2,
       name: 'Green Products Ltd',
       email: 'info@greenproducts.com',
       location: 'Abuja, Nigeria',
       documents: 5,
       submissionDate: '2025-01-14',
       status: 'PENDING',
-      avatar: '/api/placeholder/40/40'
+      avatar: '/api/placeholder/40/40',
+      userType: 'vendor'
     },
     {
       id: '3',
+      riderId: 3,
       name: 'Emma Wilson',
       email: 'emma@example.com',
       location: 'Kano, Nigeria',
       documents: 4,
       submissionDate: '2025-01-13',
       status: 'NEW',
-      avatar: '/api/placeholder/40/40'
+      avatar: '/api/placeholder/40/40',
+      userType: 'agent'
     }
   ]
 
@@ -252,6 +271,78 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleApprove = async (approval: PendingApproval) => {
+    if (!isConnected) {
+      setErrorMessage("Please connect your wallet first")
+      return
+    }
+
+    console.log(`🎯 Starting approval process for rider ID: ${approval.riderId}`);
+    
+    setIsProcessing(true)
+    setProcessingId(approval.id)
+    setActionType('approve')
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      const walletData = createWalletData(accountId!, walletInterface!)
+      const result = await approveRider(walletData, approval.riderId)
+
+      if (result.success) {
+        setSuccessMessage(`✅ Successfully approved ${approval.name}! Transaction: ${result.txHash?.substring(0, 10)}...`)
+        console.log(`🎉 Approval successful for ${approval.name}`);
+        
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        throw new Error(result.error || 'Approval failed')
+      }
+    } catch (error: any) {
+      console.error('❌ Approval error:', error);
+      setErrorMessage(error.message || 'Failed to approve rider')
+    } finally {
+      setIsProcessing(false)
+      setProcessingId(null)
+      setActionType(null)
+    }
+  }
+
+  const handleReject = async (approval: PendingApproval) => {
+    if (!isConnected) {
+      setErrorMessage("Please connect your wallet first")
+      return
+    }
+
+    console.log(`🎯 Starting ban process for rider ID: ${approval.riderId}`);
+    
+    setIsProcessing(true)
+    setProcessingId(approval.id)
+    setActionType('ban')
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      const walletData = createWalletData(accountId!, walletInterface!)
+      const result = await banRider(walletData, approval.riderId)
+
+      if (result.success) {
+        setSuccessMessage(`✅ Successfully rejected ${approval.name}! Transaction: ${result.txHash?.substring(0, 10)}...`)
+        console.log(`🎉 Rejection successful for ${approval.name}`);
+        
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        throw new Error(result.error || 'Rejection failed')
+      }
+    } catch (error: any) {
+      console.error('❌ Rejection error:', error);
+      setErrorMessage(error.message || 'Failed to reject rider')
+    } finally {
+      setIsProcessing(false)
+      setProcessingId(null)
+      setActionType(null)
+    }
+  }
+  
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
       <div className="min-h-screen p-4 lg:p-6">
@@ -268,12 +359,17 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex gap-3">
-              <button className="px-6 py-2 bg-white/20 backdrop-blur-custom text-white rounded-lg hover:bg-white/30 transition-colors font-inter flex items-center gap-2">
-                Export Data
-              </button>
-              <button className="gradient-button px-6 py-2 rounded-lg text-black font-semibold hover:shadow-lg transition-all duration-200 font-inter">
-                Refresh
-              </button>
+              {!isConnected ? (
+                <div className="px-6 py-2 bg-orange-100 border border-orange-300 rounded-lg text-orange-700 text-sm font-medium flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  Connect wallet for admin actions
+                </div>
+              ) : (
+                <div className="px-6 py-2 bg-green-100 border border-green-300 rounded-lg text-green-700 text-sm font-medium flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Connected: {accountId?.substring(0, 8)}...
+                </div>
+              )}
             </div>
           </div>
 
@@ -283,6 +379,21 @@ export default function AdminDashboard() {
               <StatCard key={index} {...stat} />
             ))}
           </div>
+
+          {/* Success/Error Messages */}
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <span className="text-green-700 font-medium">{successMessage}</span>
+            </div>
+          )}
+
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              <span className="text-red-700 font-medium">{errorMessage}</span>
+            </div>
+          )}
 
           {/* System Alerts */}
           <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-200">
@@ -345,7 +456,6 @@ export default function AdminDashboard() {
       </div>
     </AppLayout>
   )
-
   // Tab Components
   function OverviewTab() {
     return (
@@ -426,381 +536,388 @@ export default function AdminDashboard() {
     )
   }
 
-function UsersTab() {
-  const router = useRouter()
-  const handleViewProfile = (userId: string) => {
-    // Navigate to user profile page
-    router.push(`/admin/users/${userId}/profile`)
-  }
+  function UsersTab() {
+    const handleViewProfile = (userId: string) => {
+      router.push(`/admin/users/${userId}/profile`)
+    }
 
-  const handleManageUser = (userId: string) => {
-    // Navigate to manage user page
-    router.push(`/admin/users/${userId}`)
-  }
+    const handleManageUser = (userId: string) => {
+      router.push(`/admin/users/${userId}`)
+    }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-white font-semibold font-space-grotesk text-2xl">User Management</h3>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-[#1a2928] border border-slate-600 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 min-w-[250px]"
-            />
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-black border border-slate-600 rounded-lg text-white hover:bg-slate-700 transition-colors">
-            <Filter className="w-4 h-4" />
-            Filter
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {users.map((user) => (
-          <div key={user.id} className="bg-black rounded-xl p-6 border border-slate-700/50 hover:border-green-500/30 transition-all">
-            <div className="flex items-start gap-3 mb-4">
-              <img 
-                src={user.avatar} 
-                alt={user.name}
-                className="w-12 h-12 rounded-full object-cover"
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-white font-semibold font-space-grotesk text-2xl">User Management</h3>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-[#1a2928] border border-slate-600 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 min-w-[250px]"
               />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="text-white font-semibold font-space-grotesk text-lg truncate">{user.name}</h4>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(user.status)}`}>
-                    {user.status}
-                  </span>
-                </div>
-                <p className="text-gray-400 text-sm font-inter">{user.location}</p>
-                <p className="text-gray-500 text-sm font-inter">{user.userId}</p>
-              </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
-              <div>
-                <span className="text-gray-400 block">Recycled:</span>
-                <span className="text-white font-semibold">{user.recycled}</span>
-              </div>
-              <div>
-                <span className="text-gray-400 block">{user.userType}</span>
-                <span className="text-green-400 font-semibold">Earned: {user.earned}</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => handleViewProfile(user.id)}
-                className="w-full py-2 px-4 bg-transparent border border-slate-600 rounded-lg text-white text-sm font-medium hover:bg-slate-700 transition-colors"
-              >
-                View Profile
-              </button>
-              <button 
-                onClick={() => handleManageUser(user.id)}
-                className="w-full py-2 px-4 bg-transparent border border-slate-600 rounded-lg text-white text-sm font-medium hover:bg-slate-700 transition-colors"
-              >
-                Manage
-              </button>
-            </div>
+            <button className="flex items-center gap-2 px-4 py-2 bg-black border border-slate-600 rounded-lg text-white hover:bg-slate-700 transition-colors">
+              <Filter className="w-4 h-4" />
+              Filter
+            </button>
           </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-  function ApprovalsTab() {
- 
+        </div>
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-white font-semibold font-space-grotesk text-2xl">Pending Approvals (23)</h3>
-        <button className="gradient-button px-6 py-3 rounded-lg text-black font-semibold hover:shadow-lg transition-all duration-200 font-inter flex items-center gap-2">
-          <CheckCircle className="w-4 h-4" />
-          Bulk Approve
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        {pendingApprovals.map((approval) => (
-          <div key={approval.id} className="bg-black rounded-xl p-6 border border-slate-700/50 hover:border-green-500/30 transition-all">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {users.map((user) => (
+            <div key={user.id} className="bg-black rounded-xl p-6 border border-slate-700/50 hover:border-green-500/30 transition-all">
+              <div className="flex items-start gap-3 mb-4">
                 <img 
-                  src={approval.avatar} 
-                  alt={approval.name}
+                  src={user.avatar} 
+                  alt={user.name}
                   className="w-12 h-12 rounded-full object-cover"
                 />
-                <div>
-                  <h4 className="text-white font-semibold font-space-grotesk text-lg mb-1">{approval.name}</h4>
-                  <p className="text-gray-400 text-sm font-inter mb-1">{approval.email}</p>
-                  <p className="text-gray-500 text-sm font-inter">{approval.location} • {approval.documents} documents</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="text-white font-semibold font-space-grotesk text-lg truncate">{user.name}</h4>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(user.status)}`}>
+                      {user.status}
+                    </span>
+                  </div>
+                  <p className="text-gray-400 text-sm font-inter">{user.location}</p>
+                  <p className="text-gray-500 text-sm font-inter">{user.userId}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="flex flex-col items-end gap-2">
-                  <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                    approval.email.includes('greenproducts') ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
-                  }`}>
-                    {approval.email.includes('greenproducts') ? 'vendor' : 'agent'}
-                  </span>
-                  <span className="text-gray-400 text-sm font-inter">{approval.submissionDate}</span>
+              <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                <div>
+                  <span className="text-gray-400 block">Recycled:</span>
+                  <span className="text-white font-semibold">{user.recycled}</span>
                 </div>
-                
-                <div className="flex gap-3">
-                  <button className="px-6 py-2 bg-gray-800 border border-slate-600 rounded-lg text-white text-sm font-medium hover:bg-slate-700 transition-colors min-w-[140px]">
-                    Review Documents
-                  </button>
-                  <button className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-white text-sm font-medium transition-colors flex items-center gap-1">
-                    <CheckCircle className="w-4 h-4" />
-                    Approve
-                  </button>
-                  <button className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white text-sm font-medium transition-colors flex items-center gap-1">
-                    <X className="w-4 h-4" />
-                    Reject
-                  </button>
+                <div>
+                  <span className="text-gray-400 block">{user.userType}</span>
+                  <span className="text-green-400 font-semibold">Earned: {user.earned}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => handleViewProfile(user.id)}
+                  className="w-full py-2 px-4 bg-transparent border border-slate-600 rounded-lg text-white text-sm font-medium hover:bg-slate-700 transition-colors"
+                >
+                  View Profile
+                </button>
+                <button 
+                  onClick={() => handleManageUser(user.id)}
+                  className="w-full py-2 px-4 bg-transparent border border-slate-600 rounded-lg text-white text-sm font-medium hover:bg-slate-700 transition-colors"
+                >
+                  Manage
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  function ApprovalsTab() {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-white font-semibold font-space-grotesk text-2xl">Pending Approvals ({pendingApprovals.length})</h3>
+          <button 
+            onClick={() => router.push('/admin/approvals')}
+            className="gradient-button px-6 py-3 rounded-lg text-black font-semibold hover:shadow-lg transition-all duration-200 font-inter flex items-center gap-2"
+          >
+            View All Approvals
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {pendingApprovals.map((approval) => (
+            <div key={approval.id} className="bg-black rounded-xl p-6 border border-slate-700/50 hover:border-green-500/30 transition-all">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <img 
+                    src={approval.avatar} 
+                    alt={approval.name}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="text-white font-semibold font-space-grotesk text-lg">{approval.name}</h4>
+                      <span className={`px-3 py-1 rounded-lg text-xs font-medium ${
+                        approval.userType === 'vendor' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {approval.userType}
+                      </span>
+                    </div>
+                    <p className="text-gray-400 text-sm font-inter mb-1">{approval.email}</p>
+                    <p className="text-gray-500 text-sm font-inter">{approval.location} • {approval.documents} documents • Rider #{approval.riderId}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-400 text-sm font-inter">{approval.submissionDate}</span>
+                  
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => handleApprove(approval)}
+                      disabled={isProcessing || !isConnected}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors flex items-center gap-1 min-w-[100px] justify-center"
+                    >
+                      {isProcessing && processingId === approval.id && actionType === 'approve' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Approving...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          Approve
+                        </>
+                      )}
+                    </button>
+                    <button 
+                      onClick={() => handleReject(approval)}
+                      disabled={isProcessing || !isConnected}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-lg text-white text-sm font-medium transition-colors flex items-center gap-1 min-w-[100px] justify-center"
+                    >
+                      {isProcessing && processingId === approval.id && actionType === 'ban' ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Rejecting...
+                        </>
+                      ) : (
+                        <>
+                          <X className="w-4 h-4" />
+                          Reject
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  )
-}
-
-  function AnalyticsTab() {
-  const revenueData = {
-    thisMonth: '$45,780',
-    thisWeek: '$12,450',
-    growthRate: '+15.2%'
+    )
   }
+  function AnalyticsTab() {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Revenue Analytics */}
+          <div className="bg-black rounded-xl p-6 border border-slate-700/50">
+            <div className="flex items-center gap-2 mb-6">
+              <BarChart3 className="w-5 h-5 text-green-400" />
+              <h3 className="text-green-400 font-semibold font-space-grotesk text-lg">Revenue Analytics</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-white rounded-lg p-6 text-center">
+                <p className="text-3xl font-bold text-green-600 font-space-grotesk mb-1">{revenueData.thisMonth}</p>
+                <p className="text-green-600 text-sm font-inter font-medium">This Month</p>
+              </div>
+              <div className="bg-white rounded-lg p-6 text-center">
+                <p className="text-3xl font-bold text-blue-600 font-space-grotesk mb-1">{revenueData.thisWeek}</p>
+                <p className="text-blue-600 text-sm font-inter font-medium">This Week</p>
+              </div>
+            </div>
 
-  const userDistribution = [
-    { label: 'Regular Users', percentage: 89 },
-    { label: 'Agents', percentage: 8 },
-    { label: 'Vendors', percentage: 3 }
-  ]
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-white font-medium font-inter">Growth Rate</span>
+                <span className="text-green-400 font-semibold text-lg">{revenueData.growthRate}</span>
+              </div>
+              <div className="w-full bg-white rounded-full h-3">
+                <div className="bg-green-500 h-3 rounded-full" style={{ width: '75%' }}></div>
+              </div>
+            </div>
+          </div>
 
-  return (
-    <div className="space-y-6">
+          {/* User Distribution */}
+          <div className="bg-black rounded-xl p-6 border border-slate-700/50">
+            <div className="flex items-center gap-2 mb-6">
+              <Users className="w-5 h-5 text-blue-400" />
+              <h3 className="text-blue-400 font-semibold font-space-grotesk text-lg">User Distribution</h3>
+            </div>
+            
+            <div className="space-y-6">
+              {Object.entries(userDistribution).map(([key, data]) => (
+                <div key={key} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-medium font-inter">{data.label}</span>
+                    <span className="text-white font-bold text-lg">{data.percentage}%</span>
+                  </div>
+                  <div className="w-full bg-slate-700 rounded-full h-2">
+                    <div 
+                      className="bg-white h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${data.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  function SettingsTab() {
+    return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Revenue Analytics */}
+        {/* Pricing & Contracts */}
         <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-          <div className="flex items-center gap-2 mb-6">
-            <BarChart3 className="w-5 h-5 text-green-400" />
-            <h3 className="text-green-400 font-semibold font-space-grotesk text-lg">Revenue Analytics</h3>
-          </div>
+          <h3 className="text-primary font-semibold mb-6 font-space-grotesk text-lg">Pricing & Contracts</h3>
           
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-lg p-6 text-center">
-              <p className="text-3xl font-bold text-green-600 font-space-grotesk mb-1">{revenueData.thisMonth}</p>
-              <p className="text-green-600 text-sm font-inter font-medium">This Month</p>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-gray-400 text-sm font-inter mb-2">Set Rate of Price:</label>
+              <select 
+                value={selectedMaterial}
+                onChange={(e) => setSelectedMaterial(e.target.value)}
+                className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 appearance-none cursor-pointer"
+              >
+                <option value="Paper & Cardboard">Paper & Cardboard</option>
+                <option value="Plastic">Plastic</option>
+                <option value="Metal">Metal</option>
+                <option value="Glass">Glass</option>
+              </select>
             </div>
-            <div className="bg-white rounded-lg p-6 text-center">
-              <p className="text-3xl font-bold text-blue-600 font-space-grotesk mb-1">{revenueData.thisWeek}</p>
-              <p className="text-blue-600 text-sm font-inter font-medium">This Week</p>
+            
+            <div>
+              <input
+                type="text"
+                placeholder="e.g., $10/kg"
+                value={pricePerKg}
+                onChange={(e) => setPricePerKg(e.target.value)}
+                className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
+              />
             </div>
+            
+            <button className="w-full gradient-button text-black font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-200 font-inter">
+              Update Price
+            </button>
           </div>
+        </div>
 
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-white font-medium font-inter">Growth Rate</span>
-              <span className="text-green-400 font-semibold text-lg">{revenueData.growthRate}</span>
+        {/* Contract Management */}
+        <div className="bg-black rounded-xl p-6 border border-slate-700/50">
+          <h3 className="text-primary font-semibold mb-6 font-space-grotesk text-lg">Contract Management</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-gray-400 text-sm font-inter mb-2">Amount to Fund:</label>
+              <input
+                type="text"
+                placeholder="e.g., $1000"
+                value={fundingAmount}
+                onChange={(e) => setFundingAmount(e.target.value)}
+                className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
+              />
             </div>
-            <div className="w-full bg-white rounded-full h-3">
-              <div className="bg-green-500 h-3 rounded-full" style={{ width: '75%' }}></div>
+            
+            <div className="grid grid-cols-1 gap-3">
+              <button className="w-full gradient-button text-black font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-200 font-inter">
+                Fund Contract
+              </button>
+              <button className="w-full bg-gray-800 hover:bg-gray-700 text-primary border border-slate-600 font-semibold py-3 px-4 rounded-lg transition-colors font-inter">
+                Get Contract Balance
+              </button>
             </div>
           </div>
         </div>
 
-        {/* User Distribution */}
+        {/* Platform Settings */}
         <div className="bg-black rounded-xl p-6 border border-slate-700/50">
           <div className="flex items-center gap-2 mb-6">
-            <Users className="w-5 h-5 text-blue-400" />
-            <h3 className="text-blue-400 font-semibold font-space-grotesk text-lg">User Distribution</h3>
+            <Settings className="w-5 h-5 text-primary" />
+            <h3 className="text-primary font-semibold font-space-grotesk text-lg">Platform Settings</h3>
           </div>
           
           <div className="space-y-6">
-            {userDistribution.map((item, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-white font-medium font-inter">{item.label}</span>
-                  <span className="text-white font-bold text-lg">{item.percentage}%</span>
-                </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
-                  <div 
-                    className="bg-white h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${item.percentage}%` }}
-                  />
-                </div>
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <p className="text-white font-medium font-inter">Maintenance Mode</p>
               </div>
-            ))}
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 text-sm font-inter min-w-[70px] text-right">
+                  Disabled
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <p className="text-white font-medium font-inter">Auto Approvals</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 text-sm font-inter min-w-[70px] text-right">
+                  Enabled
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <p className="text-white font-medium font-inter">Email Notifications</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 text-sm font-inter min-w-[70px] text-right">
+                  Enabled
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
 
- function SettingsTab() {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      
-      {/* Pricing & Contracts */}
-      <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-        <h3 className="text-primary font-semibold mb-6 font-space-grotesk text-lg">Pricing & Contracts</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-gray-400 text-sm font-inter mb-2">Set Rate of Price:</label>
-            <select 
-              value={selectedMaterial}
-              onChange={(e) => setSelectedMaterial(e.target.value)}
-              className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 appearance-none cursor-pointer"
-            >
-              <option value="Paper & Cardboard">Paper & Cardboard</option>
-              <option value="Plastic">Plastic</option>
-              <option value="Metal">Metal</option>
-              <option value="Glass">Glass</option>
-            </select>
+        {/* Security Settings */}
+        <div className="bg-black rounded-xl p-6 border border-slate-700/50">
+          <div className="flex items-center gap-2 mb-6">
+            <Settings className="w-5 h-5 text-red-400" />
+            <h3 className="text-red-400 font-semibold font-space-grotesk text-lg">Security Settings</h3>
           </div>
           
-          <div>
-            <input
-              type="text"
-              placeholder="e.g., $10/kg"
-              value={pricePerKg}
-              onChange={(e) => setPricePerKg(e.target.value)}
-              className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
-            />
-          </div>
-          
-          <button className="w-full gradient-button text-black font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-200 font-inter">
-            Update Price
-          </button>
-        </div>
-      </div>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <p className="text-white font-medium font-inter">Two-Factor Auth</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-sm font-medium font-inter">
+                  Enabled
+                </span>
+              </div>
+            </div>
 
-      {/* Contract Management */}
-      <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-        <h3 className="text-primary font-semibold mb-6 font-space-grotesk text-lg">Contract Management</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-gray-400 text-sm font-inter mb-2">Amount to Fund:</label>
-            <input
-              type="text"
-              placeholder="e.g., $1000"
-              value={fundingAmount}
-              onChange={(e) => setFundingAmount(e.target.value)}
-              className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 gap-3">
-            <button className="w-full gradient-button text-black font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-200 font-inter">
-              Fund Contract
-            </button>
-            <button className="w-full bg-gray-800 hover:bg-gray-700 text-primary border border-slate-600 font-semibold py-3 px-4 rounded-lg transition-colors font-inter">
-              Get Contract Balance
-            </button>
-          </div>
-        </div>
-      </div>
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <p className="text-white font-medium font-inter">API Rate Limiting</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-sm font-medium font-inter">
+                  Active
+                </span>
+              </div>
+            </div>
 
-      {/* Platform Settings */}
-      <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-        <div className="flex items-center gap-2 mb-6">
-          <Settings className="w-5 h-5 text-primary" />
-          <h3 className="text-primary font-semibold font-space-grotesk text-lg">Platform Settings</h3>
-        </div>
-        
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="flex-1">
-              <p className="text-white font-medium font-inter">Maintenance Mode</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-gray-400 text-sm font-inter min-w-[70px] text-right">
-                Disabled
-              </span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex-1">
-              <p className="text-white font-medium font-inter">Auto Approvals</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-gray-400 text-sm font-inter min-w-[70px] text-right">
-                Enabled
-              </span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex-1">
-              <p className="text-white font-medium font-inter">Email Notifications</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-gray-400 text-sm font-inter min-w-[70px] text-right">
-                Enabled
-              </span>
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <p className="text-white font-medium font-inter">Audit Logging</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-sm font-medium font-inter">
+                  Active
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Security Settings */}
-      <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-        <div className="flex items-center gap-2 mb-6">
-          <Settings className="w-5 h-5 text-red-400" />
-          <h3 className="text-red-400 font-semibold font-space-grotesk text-lg">Security Settings</h3>
-        </div>
-        
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="flex-1">
-              <p className="text-white font-medium font-inter">Two-Factor Auth</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-sm font-medium font-inter">
-                Enabled
-              </span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex-1">
-              <p className="text-white font-medium font-inter">API Rate Limiting</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-sm font-medium font-inter">
-                Active
-              </span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex-1">
-              <p className="text-white font-medium font-inter">Audit Logging</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="bg-green-500 text-black px-3 py-1 rounded-lg text-sm font-medium font-inter">
-                Active
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+    )
+  }
 }
