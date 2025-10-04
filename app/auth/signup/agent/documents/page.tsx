@@ -1,534 +1,546 @@
-"use client"
+'use client';
 
-import React, { useState, useContext, useEffect } from "react"
-import { Check, Loader2, AlertCircle, Upload, X } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { MetamaskContext } from "../../../../contexts/MetamaskContext"
-import { WalletConnectContext } from "../../../../contexts/WalletConnectContext"
-import { useAgentSignup  } from "../../../../contexts/AgentSignupContext"
-import { useWalletInterface } from "../../../../services/wallets/useWalletInterface"
-import { registerRider, validateRiderData, RiderData, VehicleType } from "../../../../services/riderService"
- import {  validateFile, uploadToIPFS,testPinataConnection  } from "../../../../apis/ipfsApi"
+import React, { useState, useEffect } from 'react';
+import { Check, Loader2, AlertCircle, Upload, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAgentSignup } from '../../../../contexts/AgentSignupContext';
+import { useWalletInterface } from '../../../../services/wallets/useWalletInterface';
+import { WalletInterface } from '../../../../services/wallets/walletInterface';
 
+import {
+  registerRider,
+  validateRiderData,
+  RiderData,
+  VehicleType,
+} from '../../../../services/riderService';
+import { validateFile, uploadToIPFS, testPinataConnection } from '../../../../apis/ipfsApi';
 
-import AppLayout from "../../../../components/layout/AppLayout"
+import AppLayout from '../../../../components/layout/AppLayout';
 
 interface DocumentUploadForm {
-  driversLicense: File | null
-  vehicleRegistration: File | null
-  insuranceCertificate: File | null
-  vehiclePhotos: File | null
-  profilePhoto: File | null
+  driversLicense: File | null;
+  vehicleRegistration: File | null;
+  insuranceCertificate: File | null;
+  vehiclePhotos: File | null;
+  profilePhoto: File | null;
 }
 
 interface UploadProgress {
-  driversLicense: { uploading: boolean; progress: number; cid?: string; error?: string }
-  vehicleRegistration: { uploading: boolean; progress: number; cid?: string; error?: string }
-  insuranceCertificate: { uploading: boolean; progress: number; cid?: string; error?: string }
-  vehiclePhotos: { uploading: boolean; progress: number; cid?: string; error?: string }
-  profilePhoto: { uploading: boolean; progress: number; cid?: string; error?: string }
+  driversLicense: { uploading: boolean; progress: number; cid?: string; error?: string };
+  vehicleRegistration: { uploading: boolean; progress: number; cid?: string; error?: string };
+  insuranceCertificate: { uploading: boolean; progress: number; cid?: string; error?: string };
+  vehiclePhotos: { uploading: boolean; progress: number; cid?: string; error?: string };
+  profilePhoto: { uploading: boolean; progress: number; cid?: string; error?: string };
 }
 
 // Convert wallet interface data to format expected by riderService
-const createWalletData = (accountId: string, walletInterface: any, network: string = "testnet"): [string, any, string] => {
+const createWalletData = (
+  accountId: string,
+  walletInterface: WalletInterface | null,
+  network: string = 'testnet',
+): [string, WalletInterface | null, string] => {
   return [accountId, walletInterface, network];
-}
+};
 
 export default function AgentSignupStep4(): React.JSX.Element {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState<DocumentUploadForm>({
     driversLicense: null,
     vehicleRegistration: null,
     insuranceCertificate: null,
     vehiclePhotos: null,
-    profilePhoto: null
-  })
-  
+    profilePhoto: null,
+  });
+
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
     driversLicense: { uploading: false, progress: 0 },
     vehicleRegistration: { uploading: false, progress: 0 },
     insuranceCertificate: { uploading: false, progress: 0 },
     vehiclePhotos: { uploading: false, progress: 0 },
-    profilePhoto: { uploading: false, progress: 0 }
-  })
-  
-  const [isLoading, setIsLoading] = useState(false)
-  const [loadingMessage, setLoadingMessage] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+    profilePhoto: { uploading: false, progress: 0 },
+  });
 
-  // Get wallet contexts
-  const metamaskCtx = useContext(MetamaskContext)
-  const walletConnectCtx = useContext(WalletConnectContext)
-  const { accountId, walletInterface } = useWalletInterface()
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const { accountId, walletInterface } = useWalletInterface();
 
   // Determine connection status
-  const isConnected = !!(accountId && walletInterface)
+  const isConnected = !!(accountId && walletInterface);
 
   // Get signup context
-  const { signupData, updateDocumentInfo, setCurrentStep, markStepCompleted, canProceedToStep } = useAgentSignup()
+  const { signupData, updateDocumentInfo, setCurrentStep, markStepCompleted, canProceedToStep } =
+    useAgentSignup();
 
   // Set current step when component mounts
   useEffect(() => {
-    setCurrentStep(4)
-  }, [setCurrentStep])
+    setCurrentStep(4);
+  }, [setCurrentStep]);
 
   // Check if user can access this step
   useEffect(() => {
     if (!canProceedToStep(4)) {
-      console.log("Cannot proceed to step 4, redirecting...")
-      router.push('/auth/signup/agent/vehicle')
+      console.log('Cannot proceed to step 4, redirecting...');
+      router.push('/auth/signup/agent/vehicle');
     }
-  }, [canProceedToStep, router])
+  }, [canProceedToStep, router]);
 
   useEffect(() => {
-  // Test IPFS connection when component mounts
-  const testConnection = async () => {
-    try {
-      const connection = await testPinataConnection();
-      if (!connection.success) {
-        console.error('❌ IPFS connection failed:', connection.error);
-        setError('IPFS service unavailable. Please try again later.');
+    // Test IPFS connection when component mounts
+    const testConnection = async () => {
+      try {
+        const connection = await testPinataConnection();
+        if (!connection.success) {
+          console.error('❌ IPFS connection failed:', connection.error);
+          setError('IPFS service unavailable. Please try again later.');
+        }
+      } catch (error) {
+        console.error('❌ IPFS connection test error:', error);
       }
-    } catch (error) {
-      console.error('❌ IPFS connection test error:', error);
-    }
-  };
-  
-  testConnection();
-}, []);
+    };
 
+    testConnection();
+  }, []);
 
-const handleFileUpload = async (fieldName: keyof DocumentUploadForm, file: File | null) => {
-  console.log(`📁 File upload initiated for ${fieldName}:`, file?.name);
-  
-  if (!file) {
-    setFormData(prev => ({
-      ...prev,
-      [fieldName]: null
-    }))
-    setUploadProgress(prev => ({
-      ...prev,
-      [fieldName]: { uploading: false, progress: 0 }
-    }))
-    
-    // Remove from context as well
-    updateDocumentInfo({ [fieldName]: undefined })
-    return
-  }
+  const handleFileUpload = async (fieldName: keyof DocumentUploadForm, file: File | null) => {
+    console.log(`📁 File upload initiated for ${fieldName}:`, file?.name);
 
-  // Validate file before upload
-  const validation = await validateFile(file, {
-    maxSize: 10 * 1024 * 1024, // 10MB
-    allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'],
-  })
-
-  if (!validation.isValid) {
-    console.error(`❌ File validation failed for ${fieldName}:`, validation.errors);
-    setUploadProgress(prev => ({
-      ...prev,
-      [fieldName]: { 
-        uploading: false, 
-        progress: 0, 
-        error: validation.errors?.[0] || 'File validation failed' 
-      }
-    }))
-    return
-  }
-
-  // Start upload process
-  setFormData(prev => ({
-    ...prev,
-    [fieldName]: file
-  }))
-
-  setUploadProgress(prev => ({
-    ...prev,
-    [fieldName]: { uploading: true, progress: 10 }
-  }))
-
-  try {
-    console.log(`🚀 Starting IPFS upload for ${fieldName}...`);
-    
-    // Simulate progress during upload
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => ({
+    if (!file) {
+      setFormData((prev) => ({
         ...prev,
-        [fieldName]: { 
-          ...prev[fieldName], 
-          progress: Math.min(prev[fieldName].progress + 10, 90) 
-        }
-      }))
-    }, 500)
-
-    // Upload to IPFS - THIS IS THE MISSING PART!
-    const uploadResult = await uploadToIPFS(file, `${fieldName}-${Date.now()}-${file.name}`)
-    
-    clearInterval(progressInterval)
-
-    if (uploadResult.success) {
-      console.log(`✅ IPFS upload successful for ${fieldName}:`, uploadResult.cid);
-      setUploadProgress(prev => ({
+        [fieldName]: null,
+      }));
+      setUploadProgress((prev) => ({
         ...prev,
-        [fieldName]: { 
-          uploading: false, 
-          progress: 100, 
-          cid: uploadResult.cid 
-        }
-      }))
-      
-      // Update context with uploaded file info
-      updateDocumentInfo({ 
-        [fieldName]: {
-          file,
-          cid: uploadResult.cid!,
-          url: uploadResult.url!
-        }
-      })
-    } else {
-      console.error(`❌ IPFS upload failed for ${fieldName}:`, uploadResult.error);
-      setUploadProgress(prev => ({
-        ...prev,
-        [fieldName]: { 
-          uploading: false, 
-          progress: 0, 
-          error: uploadResult.error || 'Upload failed' 
-        }
-      }))
+        [fieldName]: { uploading: false, progress: 0 },
+      }));
+
+      // Remove from context as well
+      updateDocumentInfo({ [fieldName]: undefined });
+      return;
     }
 
-  } catch (error: any) {
-    console.error(`💥 Upload error for ${fieldName}:`, error);
-    setUploadProgress(prev => ({
-      ...prev,
-      [fieldName]: { 
-        uploading: false, 
-        progress: 0, 
-        error: error.message || 'Upload failed' 
-      }
-    }))
-  }
-}
-  const removeFile = (fieldName: keyof DocumentUploadForm) => {
-    console.log(`🗑️ Removing file for ${fieldName}`);
-    setFormData(prev => ({
-      ...prev,
-      [fieldName]: null
-    }))
-    setUploadProgress(prev => ({
-      ...prev,
-      [fieldName]: { uploading: false, progress: 0 }
-    }))
-  }
-
- 
-const validateRequiredDocuments = (): string | null => {
-  const required = ['driversLicense', 'vehicleRegistration', 'vehiclePhotos', 'profilePhoto'] as const
-  
-  for (const field of required) {
-    // Check both current upload progress and context data
-    const hasCID = uploadProgress[field].cid || signupData.documentInfo?.[field]?.cid;
-    
-    if (!hasCID) {
-      const fieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
-      return `${fieldName} is required`;
-    }
-  }
-  
-  return null;
-};
-
-  
-  // Add this helper function above your component
-const getVehicleType = (vehicleType: string): VehicleType => {
-  console.log("🔧 Converting vehicle type:", vehicleType);
-  
-  // Convert to lowercase for consistent matching
-  const normalizedType = vehicleType.toLowerCase().trim();
-  
-  // Map form values to VehicleType enum
-  const typeMap: { [key: string]: VehicleType } = {
-    'bike': VehicleType.Bike,      // 0
-    'car': VehicleType.Car,        // 1
-    'truck': VehicleType.Truck,    // 2
-    'van': VehicleType.Van,        // 3
-  };
-  
-  const mappedType = typeMap[normalizedType];
-  
-  if (mappedType === undefined) {
-    console.error("❌ Invalid vehicle type:", vehicleType);
-    console.log("📋 Available vehicle types:", Object.keys(typeMap));
-    throw new Error(`Invalid vehicle type: ${vehicleType}. Must be one of: ${Object.keys(typeMap).join(', ')}`);
-  }
-  
-  console.log("✅ Vehicle type mapped to:", mappedType, `(${VehicleType[mappedType]})`);
-  return mappedType;
-};
-
-  const handleCreateAccount = async () => {
-  console.log("🎯 Starting account creation process...");
-  
-  setIsLoading(true)
-  setError('')
-  setSuccess('')
-  setLoadingMessage('Validating documents...')
-
-  try {
-    if (!isConnected || !accountId) {
-      throw new Error('Wallet not connected')
-    }
-
-    // Validate required documents
-    const documentError = validateRequiredDocuments()
-    if (documentError) {
-      throw new Error(documentError)
-    }
-
-    setLoadingMessage('Preparing rider registration data...')
-
-    // Get form data from context instead of localStorage
-    const { personalInfo, vehicleInfo, documentInfo } = signupData
-    
-    // Debug vehicle info
-    console.log("🚗 Vehicle Info from context:", vehicleInfo);
-    console.log("🔍 Raw vehicle type:", vehicleInfo.vehicleType);
-    
-    // Validate all required data is present
-    if (!personalInfo.firstName || !personalInfo.lastName || !personalInfo.phoneNumber) {
-      throw new Error('Personal information is incomplete')
-    }
-    
-    if (!vehicleInfo.vehiclePlateNumber || !vehicleInfo.vehicleMakeModel) {
-      throw new Error('Vehicle information is incomplete')
-    }
-    
-    if (!documentInfo.vehiclePhotos?.cid || !documentInfo.vehicleRegistration?.cid) {
-      throw new Error('Required documents are missing')
-    }
-    
-    // Map vehicle type safely using the helper function
-    const mappedVehicleType = getVehicleType(vehicleInfo.vehicleType);
-    
-    // Prepare rider data for blockchain registration
-    const riderData: RiderData = {
-      name: `${personalInfo.firstName} ${personalInfo.lastName}`,
-      phoneNumber: parseInt(personalInfo.phoneNumber),
-      vehicleNumber: vehicleInfo.vehiclePlateNumber,
-      homeAddress: personalInfo.homeAddress,
-      country: personalInfo.country,
-      capacity: parseInt(vehicleInfo.carryingCapacity) || 10,
-      vehicleImage: documentInfo.vehiclePhotos.cid,
-      vehicleRegistration: documentInfo.vehicleRegistration.cid,
-      vehicleType: mappedVehicleType
-    }
-
-    console.log("📋 Rider data prepared:", {
-      name: riderData.name,
-      phoneNumber: riderData.phoneNumber,
-      vehicleNumber: riderData.vehicleNumber,
-      vehicleType: riderData.vehicleType,
-      vehicleTypeName: VehicleType[riderData.vehicleType],
-      capacity: riderData.capacity,
-      vehicleImageCID: riderData.vehicleImage,
-      vehicleRegistrationCID: riderData.vehicleRegistration
+    // Validate file before upload
+    const validation = await validateFile(file, {
+      maxSize: 10 * 1024 * 1024, // 10MB
+      allowedTypes: ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'],
     });
 
-    // Validate rider data
-    const validation = validateRiderData(riderData)
     if (!validation.isValid) {
-      throw new Error(validation.errors.join(', '))
+      console.error(`❌ File validation failed for ${fieldName}:`, validation.errors);
+      setUploadProgress((prev) => ({
+        ...prev,
+        [fieldName]: {
+          uploading: false,
+          progress: 0,
+          error: validation.errors?.[0] || 'File validation failed',
+        },
+      }));
+      return;
     }
 
-    setLoadingMessage('Submitting registration to blockchain...')
+    // Start upload process
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: file,
+    }));
 
-    // Register rider on blockchain
-    const walletData = createWalletData(accountId, walletInterface)
-    const result = await registerRider(walletData, riderData)
+    setUploadProgress((prev) => ({
+      ...prev,
+      [fieldName]: { uploading: true, progress: 10 },
+    }));
 
-    if (result.success) {
-      console.log("🎉 Rider registration successful!");
-      
-      // Mark step as completed
-      markStepCompleted(4)
-      
-      setLoadingMessage('')
-      setSuccess(`Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`)
-      
-      setTimeout(() => {
-        router.push('/auth/signup/success')
-      }, 4000)
-    } else {
-      throw new Error(result.error || 'Registration failed')
+    try {
+      console.log(`🚀 Starting IPFS upload for ${fieldName}...`);
+
+      // Simulate progress during upload
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => ({
+          ...prev,
+          [fieldName]: {
+            ...prev[fieldName],
+            progress: Math.min(prev[fieldName].progress + 10, 90),
+          },
+        }));
+      }, 500);
+
+      // Upload to IPFS - THIS IS THE MISSING PART!
+      const uploadResult = await uploadToIPFS(file, `${fieldName}-${Date.now()}-${file.name}`);
+
+      clearInterval(progressInterval);
+
+      if (uploadResult.success) {
+        console.log(`✅ IPFS upload successful for ${fieldName}:`, uploadResult.cid);
+        setUploadProgress((prev) => ({
+          ...prev,
+          [fieldName]: {
+            uploading: false,
+            progress: 100,
+            cid: uploadResult.cid,
+          },
+        }));
+
+        // Update context with uploaded file info
+        updateDocumentInfo({
+          [fieldName]: {
+            file,
+            cid: uploadResult.cid!,
+            url: uploadResult.url!,
+          },
+        });
+      } else {
+        console.error(`❌ IPFS upload failed for ${fieldName}:`, uploadResult.error);
+        setUploadProgress((prev) => ({
+          ...prev,
+          [fieldName]: {
+            uploading: false,
+            progress: 0,
+            error: uploadResult.error || 'Upload failed',
+          },
+        }));
+      }
+    } catch (error) {
+      console.error(`💥 Upload error for ${fieldName}:`, error);
+      const ErrorMessage = error instanceof Error ? error.message : 'Upload failed';
+      setUploadProgress((prev) => ({
+        ...prev,
+        [fieldName]: {
+          uploading: false,
+          progress: 0,
+          error: ErrorMessage,
+        },
+      }));
+    }
+  };
+  const removeFile = (fieldName: keyof DocumentUploadForm) => {
+    console.log(`🗑️ Removing file for ${fieldName}`);
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: null,
+    }));
+    setUploadProgress((prev) => ({
+      ...prev,
+      [fieldName]: { uploading: false, progress: 0 },
+    }));
+  };
+
+  const validateRequiredDocuments = (): string | null => {
+    const required = [
+      'driversLicense',
+      'vehicleRegistration',
+      'vehiclePhotos',
+      'profilePhoto',
+    ] as const;
+
+    for (const field of required) {
+      // Check both current upload progress and context data
+      const hasCID = uploadProgress[field].cid || signupData.documentInfo?.[field]?.cid;
+
+      if (!hasCID) {
+        const fieldName = field.replace(/([A-Z])/g, ' $1').toLowerCase();
+        return `${fieldName} is required`;
+      }
     }
 
-  } catch (error: any) {
-    console.error('💥 Account creation error:', error);
-    setLoadingMessage('')
-    setError(error.message || 'Account creation failed')
-  } finally {
-    if (!success) {
-      setIsLoading(false)
+    return null;
+  };
+
+  // Add this helper function above your component
+  const getVehicleType = (vehicleType: string): VehicleType => {
+    console.log('🔧 Converting vehicle type:', vehicleType);
+
+    // Convert to lowercase for consistent matching
+    const normalizedType = vehicleType.toLowerCase().trim();
+
+    // Map form values to VehicleType enum
+    const typeMap: { [key: string]: VehicleType } = {
+      bike: VehicleType.Bike, // 0
+      car: VehicleType.Car, // 1
+      truck: VehicleType.Truck, // 2
+      van: VehicleType.Van, // 3
+    };
+
+    const mappedType = typeMap[normalizedType];
+
+    if (mappedType === undefined) {
+      console.error('❌ Invalid vehicle type:', vehicleType);
+      console.log('📋 Available vehicle types:', Object.keys(typeMap));
+      throw new Error(
+        `Invalid vehicle type: ${vehicleType}. Must be one of: ${Object.keys(typeMap).join(', ')}`,
+      );
     }
-  }
-}
+
+    console.log('✅ Vehicle type mapped to:', mappedType, `(${VehicleType[mappedType]})`);
+    return mappedType;
+  };
+
+  const handleCreateAccount = async () => {
+    console.log('🎯 Starting account creation process...');
+
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+    setLoadingMessage('Validating documents...');
+
+    try {
+      if (!isConnected || !accountId) {
+        throw new Error('Wallet not connected');
+      }
+
+      // Validate required documents
+      const documentError = validateRequiredDocuments();
+      if (documentError) {
+        throw new Error(documentError);
+      }
+
+      setLoadingMessage('Preparing rider registration data...');
+
+      // Get form data from context instead of localStorage
+      const { personalInfo, vehicleInfo, documentInfo } = signupData;
+
+      // Debug vehicle info
+      console.log('🚗 Vehicle Info from context:', vehicleInfo);
+      console.log('🔍 Raw vehicle type:', vehicleInfo.vehicleType);
+
+      // Validate all required data is present
+      if (!personalInfo.firstName || !personalInfo.lastName || !personalInfo.phoneNumber) {
+        throw new Error('Personal information is incomplete');
+      }
+
+      if (!vehicleInfo.vehiclePlateNumber || !vehicleInfo.vehicleMakeModel) {
+        throw new Error('Vehicle information is incomplete');
+      }
+
+      if (!documentInfo.vehiclePhotos?.cid || !documentInfo.vehicleRegistration?.cid) {
+        throw new Error('Required documents are missing');
+      }
+
+      // Map vehicle type safely using the helper function
+      const mappedVehicleType = getVehicleType(vehicleInfo.vehicleType);
+
+      // Prepare rider data for blockchain registration
+      const riderData: RiderData = {
+        name: `${personalInfo.firstName} ${personalInfo.lastName}`,
+        phoneNumber: parseInt(personalInfo.phoneNumber),
+        vehicleNumber: vehicleInfo.vehiclePlateNumber,
+        homeAddress: personalInfo.homeAddress,
+        country: personalInfo.country,
+        capacity: parseInt(vehicleInfo.carryingCapacity) || 10,
+        vehicleImage: documentInfo.vehiclePhotos.cid,
+        vehicleRegistration: documentInfo.vehicleRegistration.cid,
+        vehicleType: mappedVehicleType,
+      };
+
+      console.log('📋 Rider data prepared:', {
+        name: riderData.name,
+        phoneNumber: riderData.phoneNumber,
+        vehicleNumber: riderData.vehicleNumber,
+        vehicleType: riderData.vehicleType,
+        vehicleTypeName: VehicleType[riderData.vehicleType],
+        capacity: riderData.capacity,
+        vehicleImageCID: riderData.vehicleImage,
+        vehicleRegistrationCID: riderData.vehicleRegistration,
+      });
+
+      // Validate rider data
+      const validation = validateRiderData(riderData);
+      if (!validation.isValid) {
+        throw new Error(validation.errors.join(', '));
+      }
+
+      setLoadingMessage('Submitting registration to blockchain...');
+
+      // Register rider on blockchain
+      const walletData = createWalletData(accountId, walletInterface);
+      const result = await registerRider(walletData, riderData);
+
+      if (result.success) {
+        console.log('🎉 Rider registration successful!');
+
+        // Mark step as completed
+        markStepCompleted(4);
+
+        setLoadingMessage('');
+        setSuccess(
+          `Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`,
+        );
+
+        setTimeout(() => {
+          router.push('/auth/signup/success');
+        }, 4000);
+      } else {
+        throw new Error(result.error || 'Registration failed');
+      }
+    } catch (error: any) {
+      console.error('💥 Account creation error:', error);
+      const ErrorMessage = error instanceof Error ? error.message : 'Account creation failed';
+      setLoadingMessage('');
+      setError(ErrorMessage);
+    } finally {
+      if (!success) {
+        setIsLoading(false);
+      }
+    }
+  };
   const handleBack = () => {
-    router.back()
-  }
+    router.back();
+  };
 
-  const FileUploadField = ({ 
-    label, 
-    fieldName, 
-    required = false, 
+  const FileUploadField = ({
+    label,
+    fieldName,
+    required = false,
     file,
     progress,
-    description
-  }: { 
-    label: string
-    fieldName: keyof DocumentUploadForm
-    required?: boolean
-    file: File | null
-    progress: UploadProgress[keyof UploadProgress]
-    description?: string
+    description,
+  }: {
+    label: string;
+    fieldName: keyof DocumentUploadForm;
+    required?: boolean;
+    file: File | null;
+    progress: UploadProgress[keyof UploadProgress];
+    description?: string;
   }) => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2 font-inter">
+      <label className="font-inter mb-2 block text-sm font-medium text-gray-700">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
-      {description && (
-        <p className="text-xs text-gray-500 mb-2 font-inter">{description}</p>
-      )}
-      
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors">
+      {description && <p className="font-inter mb-2 text-xs text-gray-500">{description}</p>}
+
+      <div className="rounded-lg border-2 border-dashed border-gray-300 p-4 transition-colors hover:border-gray-400">
         <input
           type="file"
           id={fieldName}
           accept="image/*,.pdf"
           onChange={(e) => {
-            const selectedFile = e.target.files?.[0] || null
-            handleFileUpload(fieldName, selectedFile)
+            const selectedFile = e.target.files?.[0] || null;
+            handleFileUpload(fieldName, selectedFile);
           }}
           className="hidden"
           disabled={progress.uploading || isLoading}
         />
-        
+
         {progress.uploading ? (
           <div className="text-center">
-            <div className="w-8 h-8 bg-blue-100 rounded-full mx-auto mb-2 flex items-center justify-center">
-              <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+            <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+              <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
             </div>
-            <p className="text-sm text-blue-600 font-medium font-inter">Uploading...</p>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+            <p className="font-inter text-sm font-medium text-blue-600">Uploading...</p>
+            <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
+              <div
+                className="h-2 rounded-full bg-blue-500 transition-all duration-300"
                 style={{ width: `${progress.progress}%` }}
               ></div>
             </div>
-            <p className="text-xs text-gray-500 mt-1 font-inter">{progress.progress}%</p>
+            <p className="font-inter mt-1 text-xs text-gray-500">{progress.progress}%</p>
           </div>
         ) : progress.cid ? (
           <div className="text-center">
-            <div className="w-8 h-8 bg-green-100 rounded-full mx-auto mb-2 flex items-center justify-center">
-              <Check className="w-4 h-4 text-green-500" />
+            <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+              <Check className="h-4 w-4 text-green-500" />
             </div>
-            <p className="text-sm text-green-600 font-medium font-inter">{file?.name}</p>
-            <p className="text-xs text-gray-500 font-inter">Uploaded to IPFS</p>
-            <p className="text-xs text-green-500 font-mono break-all mt-1">{progress.cid.substring(0, 20)}...</p>
+            <p className="font-inter text-sm font-medium text-green-600">{file?.name}</p>
+            <p className="font-inter text-xs text-gray-500">Uploaded to IPFS</p>
+            <p className="mt-1 font-mono text-xs break-all text-green-500">
+              {progress.cid.substring(0, 20)}...
+            </p>
             <button
               onClick={() => removeFile(fieldName)}
-              className="mt-2 text-xs text-red-500 hover:text-red-700 flex items-center gap-1 mx-auto"
+              className="mx-auto mt-2 flex items-center gap-1 text-xs text-red-500 hover:text-red-700"
               disabled={isLoading}
             >
-              <X className="w-3 h-3" />
+              <X className="h-3 w-3" />
               Remove
             </button>
           </div>
         ) : progress.error ? (
           <div className="text-center">
-            <div className="w-8 h-8 bg-red-100 rounded-full mx-auto mb-2 flex items-center justify-center">
-              <AlertCircle className="w-4 h-4 text-red-500" />
+            <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
+              <AlertCircle className="h-4 w-4 text-red-500" />
             </div>
-            <p className="text-sm text-red-600 font-medium font-inter">Upload Failed</p>
-            <p className="text-xs text-red-500 font-inter">{progress.error}</p>
+            <p className="font-inter text-sm font-medium text-red-600">Upload Failed</p>
+            <p className="font-inter text-xs text-red-500">{progress.error}</p>
             <label
               htmlFor={fieldName}
-              className="mt-2 inline-block bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium py-1 px-3 rounded-lg transition-colors font-inter cursor-pointer"
+              className="font-inter mt-2 inline-block cursor-pointer rounded-lg bg-red-100 px-3 py-1 text-xs font-medium text-red-700 transition-colors hover:bg-red-200"
             >
               Try Again
             </label>
           </div>
         ) : (
-          <label
-            htmlFor={fieldName}
-            className="cursor-pointer block"
-          >
+          <label htmlFor={fieldName} className="block cursor-pointer">
             <div className="text-center">
-              <div className="w-8 h-8 bg-gray-100 rounded-full mx-auto mb-2 flex items-center justify-center">
-                <Upload className="w-4 h-4 text-gray-400" />
+              <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+                <Upload className="h-4 w-4 text-gray-400" />
               </div>
-              <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium py-2 px-4 rounded-lg transition-colors font-inter">
+              <button className="font-inter rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200">
                 Choose File
               </button>
-              <p className="text-xs text-gray-500 mt-1 font-inter">
+              <p className="font-inter mt-1 text-xs text-gray-500">
                 {file ? file.name : 'No file chosen'}
               </p>
-              <p className="text-xs text-gray-400 mt-1 font-inter">
-                Max 10MB • JPG, PNG, PDF
-              </p>
+              <p className="font-inter mt-1 text-xs text-gray-400">Max 10MB • JPG, PNG, PDF</p>
             </div>
           </label>
         )}
       </div>
     </div>
-  )
+  );
 
   return (
     <AppLayout showHeader={true} showFooter={false} showSidebar={false}>
-      <div className="min-h-screen body-gradient flex items-center justify-center p-4">
+      <div className="body-gradient flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-md">
           {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-              <div className="w-8 h-8 bg-white rounded-lg"></div>
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500">
+              <div className="h-8 w-8 rounded-lg bg-white"></div>
             </div>
-            <h1 className="text-2xl font-bold text-white font-space-grotesk">Join Pick'n'Get</h1>
-            <p className="text-gray-300 font-inter">Start your sustainable journey today</p>
+            <h1 className="font-space-grotesk text-2xl font-bold text-white">Join Pick'n'Get</h1>
+            <p className="font-inter text-gray-300">Start your sustainable journey today</p>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-2xl p-6">
+          <div className="rounded-2xl bg-white p-6">
             {/* Progress Header */}
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-black font-space-grotesk">Create Account</h2>
-                <span className="text-sm text-gray-500 font-inter">Step 4 of 4</span>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="font-space-grotesk text-xl font-bold text-black">Create Account</h2>
+                <span className="font-inter text-sm text-gray-500">Step 4 of 4</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full w-full"></div>
+              <div className="h-2 w-full rounded-full bg-gray-200">
+                <div className="h-2 w-full rounded-full bg-green-500"></div>
               </div>
             </div>
 
             {/* Error Display */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500" />
-                <span className="text-red-700 text-sm">{error}</span>
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <span className="text-sm text-red-700">{error}</span>
               </div>
             )}
 
             {/* Success Display */}
             {success && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                <Check className="w-4 h-4 text-green-500" />
-                <span className="text-green-700 text-sm">{success}</span>
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 p-3">
+                <Check className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-green-700">{success}</span>
               </div>
             )}
 
             {/* Document Upload Content */}
             <div className="space-y-6">
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-black font-space-grotesk mb-2">Upload Documents</h3>
-                <p className="text-gray-600 text-sm font-inter">Provide valid documents to become a verified agent. Files will be securely stored on IPFS.</p>
+                <h3 className="font-space-grotesk mb-2 text-lg font-semibold text-black">
+                  Upload Documents
+                </h3>
+                <p className="font-inter text-sm text-gray-600">
+                  Provide valid documents to become a verified agent. Files will be securely stored
+                  on IPFS.
+                </p>
               </div>
 
               <div className="space-y-4">
@@ -583,16 +595,16 @@ const getVehicleType = (vehicleType: string): VehicleType => {
               <button
                 onClick={handleCreateAccount}
                 disabled={isLoading || !isConnected || !!validateRequiredDocuments()}
-                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-xl transition-colors font-space-grotesk flex items-center justify-center gap-2"
+                className="font-space-grotesk flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:bg-gray-400"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     {loadingMessage || 'Creating Account...'}
                   </>
                 ) : (
                   <>
-                    <Check className="w-4 h-4" />
+                    <Check className="h-4 w-4" />
                     Create Account
                   </>
                 )}
@@ -601,21 +613,31 @@ const getVehicleType = (vehicleType: string): VehicleType => {
               <button
                 onClick={handleBack}
                 disabled={isLoading}
-                className="w-full border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-xl transition-colors font-space-grotesk"
+                className="font-space-grotesk w-full rounded-xl border border-gray-300 px-4 py-3 font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:bg-gray-100"
               >
                 ← Back
               </button>
             </div>
 
             {/* Upload Status Summary */}
-            {Object.values(uploadProgress).some(p => p.cid || p.error) && (
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm font-medium text-gray-700 mb-2">Upload Status:</p>
+            {Object.values(uploadProgress).some((p) => p.cid || p.error) && (
+              <div className="mt-4 rounded-lg bg-gray-50 p-3">
+                <p className="mb-2 text-sm font-medium text-gray-700">Upload Status:</p>
                 <div className="space-y-1 text-xs">
                   {Object.entries(uploadProgress).map(([key, progress]) => (
                     <div key={key} className="flex justify-between">
-                      <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                      <span className={progress.cid ? 'text-green-600' : progress.error ? 'text-red-600' : 'text-gray-500'}>
+                      <span className="capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').toLowerCase()}:
+                      </span>
+                      <span
+                        className={
+                          progress.cid
+                            ? 'text-green-600'
+                            : progress.error
+                              ? 'text-red-600'
+                              : 'text-gray-500'
+                        }
+                      >
                         {progress.cid ? '✓ Uploaded' : progress.error ? '✗ Failed' : '○ Pending'}
                       </span>
                     </div>
@@ -627,5 +649,5 @@ const getVehicleType = (vehicleType: string): VehicleType => {
         </div>
       </div>
     </AppLayout>
-  )
+  );
 }
