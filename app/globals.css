@@ -159,6 +159,9 @@ a {
   .bg-light-green {
     background-color: var(--bg-light-green);
   }
+  .bg-inactive {
+    background-color: var(--text-inactive);
+  }
 
   /* Text Colors */
   .text-primary {
