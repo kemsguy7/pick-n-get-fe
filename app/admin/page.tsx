@@ -19,8 +19,8 @@ import {
 import AppLayout from '../components/layout/AppLayout';
 import StatCard, { StatCardProps } from '../components/ui/statCard';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { MetamaskContext } from '../contexts/MetamaskContext';
-import { WalletConnectContext } from '../contexts/WalletConnectContext';
+// import { MetamaskContext } from '../contexts/MetamaskContext';
+// import { WalletConnectContext } from '../contexts/WalletConnectContext';
 import { useWalletInterface } from '../services/wallets/useWalletInterface';
 import { approveRider, banRider } from '../services/adminService';
 
@@ -274,6 +274,21 @@ export default function AdminDashboard() {
       time: '10 minutes ago',
     },
     vendors: { notification: 'Vendor Approved', name: 'EcoGreen Solutions', time: '5 minutes ago' },
+  };
+
+  const userDistribution = {
+    recyclers: {
+      label: 'Regular Users',
+      percentage: 65,
+    },
+    agents: {
+      label: 'Active Agents',
+      percentage: 25,
+    },
+    vendors: {
+      label: 'Verified Vendors',
+      percentage: 10,
+    },
   };
 
   const performanceMetrics = [
@@ -675,12 +690,12 @@ export default function AdminDashboard() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h3 className="font-space-grotesk text-2xl font-semibold text-white">
+          <h3 className="font-space-grotesk text-2xl font-bold text-white">
             Pending Approvals ({pendingApprovals.length})
           </h3>
           <button
             onClick={() => router.push('/admin/approvals')}
-            className="gradient-button font-inter flex items-center gap-2 rounded-lg px-6 py-3 font-semibold text-black transition-all duration-200 hover:shadow-lg"
+            className="gradient-button font-space-grotesk font-inter flex items-center gap-2 rounded-lg px-6 py-3 font-semibold text-black transition-all duration-200 hover:shadow-lg"
           >
             View All Approvals
             <ChevronRight className="h-4 w-4" />
@@ -693,78 +708,91 @@ export default function AdminDashboard() {
               key={approval.id}
               className="rounded-xl border border-slate-700/50 bg-black p-6 transition-all hover:border-green-500/30"
             >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={approval.avatar}
-                    alt={approval.name}
-                    className="h-12 w-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <div className="mb-1 flex items-center gap-2">
-                      <h4 className="font-space-grotesk text-lg font-semibold text-white">
-                        {approval.name}
-                      </h4>
-                      <span
-                        className={`rounded-lg px-3 py-1 text-xs font-medium ${
-                          approval.userType === 'vendor'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {approval.userType}
-                      </span>
-                    </div>
-                    <p className="font-inter mb-1 text-sm text-gray-400">{approval.email}</p>
-                    <p className="font-inter text-sm text-gray-500">
-                      {approval.location} • {approval.documents} documents • Rider #
-                      {approval.riderId}
-                    </p>
+              {/* Header Section with User Info */}
+              <div className="mb-6 flex items-start gap-4">
+                <img
+                  src={approval.avatar}
+                  alt={approval.name}
+                  className="h-16 w-16 rounded-full object-cover"
+                />
+                <div className="flex-1">
+                  <div className="mb-2 flex items-center gap-3">
+                    <h4 className="font-inter text-sm font-medium text-white">{approval.name}</h4>
+                    <span
+                      className={`rounded-lg px-3 py-1 text-xs font-medium ${
+                        approval.userType === 'vendor'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
+                      {approval.userType}
+                    </span>
+                  </div>
+                  <p className="font-inter mb-1 text-xs font-normal text-white/80">
+                    {approval.email}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs text-white/80">
+                    <span>{approval.location}</span>
+                    <span>•</span>
+                    <span>{approval.documents} documents</span>
+                    <span>•</span>
+                    <span>Rider #{approval.riderId}</span>
+                    <span>•</span>
+                    <span>{approval.submissionDate}</span>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="font-inter text-sm text-gray-400">
-                    {approval.submissionDate}
-                  </span>
+              {/* Action Buttons - New Layout */}
+              <div className="flex gap-3">
+                {/* Large Review Documents Button */}
+                <button
+                  onClick={() => {
+                    // TODO: This will open modal/view with IPFS documents
+                    console.log(`Review documents for rider ${approval.riderId}`);
+                  }}
+                  className="font-inter notification-border flex flex-1 items-center justify-center gap-2 rounded-lg border px-6 py-3 text-base font-normal text-white transition-colors hover:bg-gray-800"
+                >
+                  Review Documents
+                </button>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleApprove(approval)}
-                      disabled={isProcessing || !isConnected}
-                      className="flex min-w-[100px] items-center justify-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-600"
-                    >
-                      {isProcessing && processingId === approval.id && actionType === 'approve' ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Approving...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="h-4 w-4" />
-                          Approve
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleReject(approval)}
-                      disabled={isProcessing || !isConnected}
-                      className="flex min-w-[100px] items-center justify-center gap-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-600"
-                    >
-                      {isProcessing && processingId === approval.id && actionType === 'ban' ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Rejecting...
-                        </>
-                      ) : (
-                        <>
-                          <X className="h-4 w-4" />
-                          Reject
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
+                {/* Approve Button */}
+                <button
+                  onClick={() => handleApprove(approval)}
+                  disabled={isProcessing || !isConnected}
+                  className="font-space-grotesk secondary-green-bg flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-6 py-3 text-base font-medium text-black transition-colors hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:bg-gray-600"
+                >
+                  {isProcessing && processingId === approval.id && actionType === 'approve' ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="rounded-fulltext-black h-5 w-5" />
+                      Approve
+                    </>
+                  )}
+                </button>
+
+                {/* Reject Button */}
+                <button
+                  onClick={() => handleReject(approval)}
+                  disabled={isProcessing || !isConnected}
+                  className="font-inter notification-border flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-6 py-3 text-base font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-600"
+                >
+                  {isProcessing && processingId === approval.id && actionType === 'ban' ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    <>
+                      <X className="error-border text-error font-space-grotesk h-5 w-5 rounded-full border" />
+                      Reject
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           ))}

@@ -16,6 +16,7 @@
   --text-inactive: #a1a1a1;
   --primary-yellow: #ffd54f;
   --secondary-green: #079865;
+  --secondary-green-bg: #1de9b6;
   --lighter-green-text: #e0f2e9;
   --header-bg-start: rgba(13, 27, 30, 0.85);
   --header-bg-end: rgba(20, 46, 44, 0.85);
@@ -28,6 +29,7 @@
   --dark-text: #e5e5e5;
   --light-bg: #ffffff;
   --light-text: #1a1a1a;
+  --error-color: #ef5350;
   --footer-bg-start: #0d1b1e;
   --footer-bg-end: #142e2c;
 
@@ -151,8 +153,8 @@ a {
     background-color: var(--card-bg);
   }
 
-  .bg-primary-green {
-    background-color: var(--primary-green);
+  .secondary-green-bg {
+    background-color: var(--secondary-green-bg);
   }
 
   .primary-gradient-text {
@@ -210,6 +212,9 @@ a {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  .text-error {
+    color: var(--error-color);
+  }
 
   /* Borders */
   .border-shiny-green {
@@ -218,6 +223,10 @@ a {
 
   .notification-border {
     border: 1px solid var(--notification-border);
+  }
+
+  .error-border {
+    border: 1.5px solid var(--error-color);
   }
 
   /* Shadows */
