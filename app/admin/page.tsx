@@ -74,8 +74,8 @@ export default function AdminDashboard() {
   const [actionType, setActionType] = useState<'approve' | 'ban' | null>(null);
 
   // Get wallet contexts
-  const metamaskCtx = useContext(MetamaskContext);
-  const walletConnectCtx = useContext(WalletConnectContext);
+  // const metamaskCtx = useContext(MetamaskContext);
+  // const walletConnectCtx = useContext(WalletConnectContext);
   const { accountId, walletInterface } = useWalletInterface();
 
   // Determine connection status
@@ -262,10 +262,18 @@ export default function AdminDashboard() {
     growthRate: '+15.2%',
   };
 
-  const userDistribution = {
-    regularUsers: { percentage: 89, label: 'Regular Users' },
-    agents: { percentage: 8, label: 'Agents' },
-    vendors: { percentage: 3, label: 'Vendors' },
+  const recentActivity = {
+    regularUsers: {
+      notification: 'New User Registered',
+      name: 'Sarah Johnson',
+      time: '2 minutes ago',
+    },
+    agents: {
+      notification: 'Agent Verification Pending',
+      name: 'Mike Chen',
+      time: '10 minutes ago',
+    },
+    vendors: { notification: 'Vendor Approved', name: 'EcoGreen Solutions', time: '5 minutes ago' },
   };
 
   const performanceMetrics = [
@@ -502,17 +510,17 @@ export default function AdminDashboard() {
           </div>
 
           <div className="font-inter mb-6 grid grid-cols-2 gap-4">
-            <div className="rounded-xl bg-white p-4 text-center">
+            <div className="rounded-2xl bg-white p-4 text-center">
               <p className="text-primary text-base font-semibold">{revenueData.thisMonth}</p>
               <p className="font-inter text-primary text-xs font-normal">125.6T</p>
             </div>
-            <div className="text-info-darker rounded-lg bg-white p-4 text-center">
+            <div className="text-info-darker rounded-2xl bg-white p-4 text-center">
               <p className="font-inter text-base font-bold">{revenueData.thisWeek}</p>
               <p className="font-inter text-xs font-normal">CO2 Saved</p>
             </div>
           </div>
 
-          <div className="rounded-xl bg-white text-center">
+          <div className="rounded-2xl bg-white text-center">
             <div className="font-inter text-info-purple flex flex-col items-center gap-1 py-4 font-semibold">
               <div className="text-base font-semibold"> 3564 </div>
               <div className="text-xs font-normal"> Trees Equivalent</div>
@@ -521,27 +529,23 @@ export default function AdminDashboard() {
         </div>
 
         {/* User Distribution */}
-        <div className="rounded-2xl border border-slate-700/50 bg-black/80 p-6">
+        <div className="font-inter rounded-2xl border border-slate-700/50 bg-black/80 p-6">
           <div className="mb-6 flex items-center gap-2">
-            <Users className="h-5 w-5 text-blue-400" />
-            <h3 className="font-space-grotesk font-semibold text-white">User Distribution</h3>
+            <h3 className="text-base font-medium text-white">Recent Activity</h3>
           </div>
 
           <div className="space-y-4">
-            {Object.entries(userDistribution).map(([key, data]) => (
-              <div key={key} className="flex items-center justify-between">
-                <span className="font-inter font-medium text-white">{data.label}</span>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-20 rounded-full bg-slate-700">
-                    <div
-                      className="h-2 rounded-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-500"
-                      style={{ width: `${data.percentage}%` }}
-                    />
-                  </div>
-                  <span className="min-w-[35px] text-sm font-semibold text-white">
-                    {data.percentage}%
-                  </span>
+            {Object.entries(recentActivity).map(([key, data]) => (
+              <div
+                key={key}
+                className="font-inter notification-border flex items-center justify-between rounded-lg border p-4 text-white"
+              >
+                <div className="flex flex-col">
+                  <div className="text-sm font-medium text-white">{data.notification}</div>
+                  <div className="lighter-green-text text-xs font-normal">{data.name}</div>
                 </div>
+
+                <div className="lighter-green-text text-xs font-normal">{data.time}</div>
               </div>
             ))}
           </div>
