@@ -107,6 +107,4 @@ export const getFiat = async () => {
   }
 };
 
-//npx tsx app/apis/paymentApi.ts
-// getSessionId()
 getAccessToken();

@@ -373,7 +373,7 @@ export default function AgentSignupStep4(): React.JSX.Element {
       } else {
         throw new Error(result.error || 'Registration failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('💥 Account creation error:', error);
       const ErrorMessage = error instanceof Error ? error.message : 'Account creation failed';
       setLoadingMessage('');
