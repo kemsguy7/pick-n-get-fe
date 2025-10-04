@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Users,
   CheckCircle,
@@ -19,8 +19,7 @@ import {
 import AppLayout from '../components/layout/AppLayout';
 import StatCard, { StatCardProps } from '../components/ui/statCard';
 import { useRouter, useSearchParams } from 'next/navigation';
-// import { MetamaskContext } from '../contexts/MetamaskContext';
-// import { WalletConnectContext } from '../contexts/WalletConnectContext';
+import { WalletInterface } from '../services/wallets/walletInterface';
 import { useWalletInterface } from '../services/wallets/useWalletInterface';
 import { approveRider, banRider } from '../services/adminService';
 
@@ -52,9 +51,9 @@ interface PendingApproval {
 // Convert wallet interface data to format expected by adminService
 const createWalletData = (
   accountId: string,
-  walletInterface: any,
+  walletInterface: WalletInterface | null,
   network: string = 'testnet',
-): [string, any, string] => {
+): [string, WalletInterface | null, string] => {
   return [accountId, walletInterface, network];
 };
 export default function AdminDashboard() {
@@ -342,7 +341,8 @@ export default function AdminDashboard() {
       }
     } catch (error: any) {
       console.error('❌ Approval error:', error);
-      setErrorMessage(error.message || 'Failed to approve rider');
+      const ErrorMessage = error instanceof Error ? error.message : ' Failed to approve rider';
+      setErrorMessage(ErrorMessage);
     } finally {
       setIsProcessing(false);
       setProcessingId(null);
@@ -380,7 +380,8 @@ export default function AdminDashboard() {
       }
     } catch (error: any) {
       console.error('❌ Rejection error:', error);
-      setErrorMessage(error.message || 'Failed to reject rider');
+      const ErrorMessage = error instanceof Error ? error.message : 'Failed to reject rider';
+      setErrorMessage(ErrorMessage);
     } finally {
       setIsProcessing(false);
       setProcessingId(null);
