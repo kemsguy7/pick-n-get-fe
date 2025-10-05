@@ -14,16 +14,6 @@ import AppLayout from '../../../components/layout/AppLayout';
 
 // Declare window.ethereum for TypeScript
 
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-      on: (event: string, handler: (...args: unknown[]) => void) => void;
-      removeListener: (event: string, handler: (...args: unknown[]) => void) => void;
-    };
-  }
-}
-
 // Convert wallet interface data to format expected by riderService
 const createWalletData = (
   accountId: string,

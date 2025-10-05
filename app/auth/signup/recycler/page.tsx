@@ -66,11 +66,13 @@ export default function SignupPage(): React.JSX.Element {
   };
 
   // Check if user is already registered on component mount
+
   useEffect(() => {
     if (isConnected && accountId) {
       checkExistingRegistration();
     }
-  }, [isConnected, accountId, checkExistingRegistration()]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, accountId]);
 
   const handleFormChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     const { name, value } = e.target;

@@ -1,4 +1,5 @@
 'use client';
+import { Suspense } from 'react';
 import { useState, useEffect } from 'react';
 import {
   Users,
@@ -56,7 +57,7 @@ const createWalletData = (
 ): [string, WalletInterface | null, string] => {
   return [accountId, walletInterface, network];
 };
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,9 +73,6 @@ export default function AdminDashboard() {
   const [errorMessage, setErrorMessage] = useState('');
   const [actionType, setActionType] = useState<'approve' | 'ban' | null>(null);
 
-  // Get wallet contexts
-  // const metamaskCtx = useContext(MetamaskContext);
-  // const walletConnectCtx = useContext(WalletConnectContext);
   const { accountId, walletInterface } = useWalletInterface();
 
   // Determine connection status
@@ -339,7 +337,7 @@ export default function AdminDashboard() {
       } else {
         throw new Error(result.error || 'Approval failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Approval error:', error);
       const ErrorMessage = error instanceof Error ? error.message : ' Failed to approve rider';
       setErrorMessage(ErrorMessage);
@@ -378,7 +376,7 @@ export default function AdminDashboard() {
       } else {
         throw new Error(result.error || 'Rejection failed');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Rejection error:', error);
       const ErrorMessage = error instanceof Error ? error.message : 'Failed to reject rider';
       setErrorMessage(ErrorMessage);
@@ -1035,4 +1033,21 @@ export default function AdminDashboard() {
       </div>
     );
   }
+}
+
+export default function AdminDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-green-500" />
+            <p className="text-white">Loading dashboard...</p>
+          </div>
+        </div>
+      }
+    >
+      <AdminDashboardContent />
+    </Suspense>
+  );
 }

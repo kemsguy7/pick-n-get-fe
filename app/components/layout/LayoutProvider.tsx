@@ -1,9 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AllWalletsProvider } from '../../services/wallets/AllWalletsProvider';
-import {AgentSignupProvider} from "../../contexts/AgentSignupContext";
-
+import { AgentSignupProvider } from '../../contexts/AgentSignupContext';
 
 interface LayoutContextType {
   isSidebarOpen: boolean;
