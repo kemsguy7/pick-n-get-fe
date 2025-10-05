@@ -1,21 +1,22 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+/* eslint-disable react-refresh/only-export-components */
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
 import { LayoutProvider } from './components/layout/LayoutProvider';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Pick-n-get - Sustainable Recycling Made Easy",
-  description: "Join the circular economy revolution with Pick-n-get.",
+  title: 'Pick-n-get - Sustainable Recycling Made Easy',
+  description: 'Join the circular economy revolution with Pick-n-get.',
 };
 
 export default function RootLayout({
@@ -26,9 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <LayoutProvider>
-          {children}
-        </LayoutProvider>
+        <LayoutProvider>{children}</LayoutProvider>
       </body>
     </html>
   );

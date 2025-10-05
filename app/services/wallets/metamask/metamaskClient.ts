@@ -1,22 +1,36 @@
-import { ContractId, AccountId } from "@hashgraph/sdk";
-import { TokenId } from "@hashgraph/sdk";
-import { ethers } from "ethers";
-import { useContext, useEffect } from "react";
-import { appConfig } from "../../../config";
-import { MetamaskContext } from "../../../contexts/MetamaskContext";
-import { ContractFunctionParameterBuilder } from "../contractFunctionParameterBuilder";
-import { WalletInterface } from "../walletInterface";
+import { ContractId, AccountId } from '@hashgraph/sdk';
+import { TokenId } from '@hashgraph/sdk';
+import { ethers } from 'ethers';
+import { useContext, useEffect } from 'react';
+import { appConfig } from '../../../config';
+import { MetamaskContext } from '../../../contexts/MetamaskContext';
+import { ContractFunctionParameterBuilder } from '../contractFunctionParameterBuilder';
+import { WalletInterface } from '../walletInterface';
 
+interface EthereumProvider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  on(event: 'accountsChanged', handler: (accounts: string[]) => void): void;
+  on(event: string, handler: (...args: unknown[]) => void): void;
+  removeListener?(event: 'accountsChanged', handler: (accounts: string[]) => void): void;
+  removeListener?(event: string, handler: (...args: unknown[]) => void): void;
+}
+
+declare global {
+  interface Window {
+    ethereum?: EthereumProvider;
+  }
+}
 const currentNetworkConfig = appConfig.networks.testnet;
 
-export const switchToHederaNetwork = async (ethereum: any) => {
+export const switchToHederaNetwork = async (ethereum: EthereumProvider) => {
   try {
     await ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: currentNetworkConfig.chainId }] // chainId must be in hexadecimal numbers
+      params: [{ chainId: currentNetworkConfig.chainId }], // chainId must be in hexadecimal numbers
     });
-  } catch (error: any) {
-    if (error.code === 4902) {
+  } catch (error) {
+    const err = error as { code?: number };
+    if (err.code === 4902) {
       try {
         await ethereum.request({
           method: 'wallet_addEthereumChain',
@@ -27,9 +41,9 @@ export const switchToHederaNetwork = async (ethereum: any) => {
               nativeCurrency: {
                 name: 'HBAR',
                 symbol: 'HBAR',
-                decimals: 18
+                decimals: 18,
               },
-              rpcUrls: [currentNetworkConfig.jsonRpcUrl]
+              rpcUrls: [currentNetworkConfig.jsonRpcUrl],
             },
           ],
         });
@@ -39,21 +53,20 @@ export const switchToHederaNetwork = async (ethereum: any) => {
     }
     console.error(error);
   }
-}
+};
 
 // FIXED: Move window access inside functions, not at module level
 const getProvider = () => {
   if (typeof window === 'undefined') {
-    throw new Error("This function can only be called in the browser environment");
+    throw new Error('This function can only be called in the browser environment');
   }
-  
-  const { ethereum } = window as any;
+  const { ethereum } = window;
   if (!ethereum) {
-    throw new Error("Metamask is not installed! Go install the extension!");
+    throw new Error('Metamask is not installed! Go install the extension!');
   }
 
   return new ethers.providers.Web3Provider(ethereum);
-}
+};
 
 // returns a list of accounts
 // otherwise empty array
@@ -65,35 +78,37 @@ export const connectToMetamask = async () => {
   }
 
   try {
-    const { ethereum } = window as any;
+    const { ethereum } = window;
     if (!ethereum) {
-      alert("Metamask is not installed! Please install the MetaMask extension.");
+      alert('Metamask is not installed! Please install the MetaMask extension.');
       return [];
     }
 
     const provider = getProvider();
-    let accounts: string[] = []
+    let accounts: string[] = [];
 
     await switchToHederaNetwork(ethereum);
-    accounts = await provider.send("eth_requestAccounts", []);
-    
+    accounts = await provider.send('eth_requestAccounts', []);
+
     return accounts;
-  } catch (error: any) {
-    if (error.code === 4001) {
+  } catch (error) {
+    const err = error as { code?: number };
+    if (err.code === 4001) {
       // EIP-1193 userRejectedRequest error
-      console.warn("Please connect to Metamask.");
+      console.warn('Please connect to Metamask.');
     } else {
       console.error('Error connecting to MetaMask:', error);
     }
     return [];
   }
-}
+};
 
 class MetaMaskWallet implements WalletInterface {
   private convertAccountIdToSolidityAddress(accountId: AccountId): string {
-    const accountIdString = accountId.evmAddress !== null
-      ? accountId.evmAddress.toString()
-      : accountId.toSolidityAddress();
+    const accountIdString =
+      accountId.evmAddress !== null
+        ? accountId.evmAddress.toString()
+        : accountId.toSolidityAddress();
 
     return `0x${accountIdString}`;
   }
@@ -115,8 +130,9 @@ class MetaMaskWallet implements WalletInterface {
       await provider.waitForTransaction(hash);
 
       return hash;
-    } catch (error: any) {
-      console.warn(error.message ? error.message : error);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.log(message);
       return null;
     }
   }
@@ -127,16 +143,16 @@ class MetaMaskWallet implements WalletInterface {
       'transfer',
       new ContractFunctionParameterBuilder()
         .addParam({
-          type: "address",
-          name: "recipient",
-          value: this.convertAccountIdToSolidityAddress(toAddress)
+          type: 'address',
+          name: 'recipient',
+          value: this.convertAccountIdToSolidityAddress(toAddress),
         })
         .addParam({
-          type: "uint256",
-          name: "amount",
-          value: amount
+          type: 'uint256',
+          name: 'amount',
+          value: amount,
         }),
-      appConfig.constants.METAMASK_GAS_LIMIT_TRANSFER_FT
+      appConfig.constants.METAMASK_GAS_LIMIT_TRANSFER_FT,
     );
 
     return hash;
@@ -150,21 +166,21 @@ class MetaMaskWallet implements WalletInterface {
       'transferFrom',
       new ContractFunctionParameterBuilder()
         .addParam({
-          type: "address",
-          name: "from",
-          value: addresses[0]
+          type: 'address',
+          name: 'from',
+          value: addresses[0],
         })
         .addParam({
-          type: "address",
-          name: "to",
-          value: this.convertAccountIdToSolidityAddress(toAddress)
+          type: 'address',
+          name: 'to',
+          value: this.convertAccountIdToSolidityAddress(toAddress),
         })
         .addParam({
-          type: "uint256",
-          name: "nftId",
-          value: serialNumber
+          type: 'uint256',
+          name: 'nftId',
+          value: serialNumber,
         }),
-      appConfig.constants.METAMASK_GAS_LIMIT_TRANSFER_NFT
+      appConfig.constants.METAMASK_GAS_LIMIT_TRANSFER_NFT,
     );
 
     return hash;
@@ -177,7 +193,7 @@ class MetaMaskWallet implements WalletInterface {
       ContractId.fromString(tokenId.toString()),
       'associate',
       new ContractFunctionParameterBuilder(),
-      appConfig.constants.METAMASK_GAS_LIMIT_ASSOCIATE
+      appConfig.constants.METAMASK_GAS_LIMIT_ASSOCIATE,
     );
 
     return hash;
@@ -185,47 +201,49 @@ class MetaMaskWallet implements WalletInterface {
 
   // Purpose: build contract execute transaction and send to hashconnect for signing and execution
   // Returns: Promise<TransactionId | null>
-  async executeContractFunction(contractId: ContractId, functionName: string, functionParameters: ContractFunctionParameterBuilder, gasLimit: number) {
+  async executeContractFunction(
+    contractId: ContractId,
+    functionName: string,
+    functionParameters: ContractFunctionParameterBuilder,
+    gasLimit: number,
+  ) {
     const provider = getProvider();
     const signer = await provider.getSigner();
-    const abi = [
-      `function ${functionName}(${functionParameters.buildAbiFunctionParams()})`
-    ];
+    const abi = [`function ${functionName}(${functionParameters.buildAbiFunctionParams()})`];
 
     // create contract instance for the contract id
     // to call the function, use contract[functionName](...functionParameters, ethersOverrides)
     const contract = new ethers.Contract(`0x${contractId.toSolidityAddress()}`, abi, signer);
     try {
-      const txResult = await contract[functionName](
-        ...functionParameters.buildEthersParams(),
-        {
-          gasLimit: gasLimit === -1 ? undefined : gasLimit
-        }
-      );
+      const txResult = await contract[functionName](...functionParameters.buildEthersParams(), {
+        gasLimit: gasLimit === -1 ? undefined : gasLimit,
+      });
       return txResult.hash;
-    } catch (error: any) {
-      console.warn(error.message ? error.message : error);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(message);
+
       return null;
     }
   }
 
   disconnect() {
-    alert("Please disconnect using the Metamask extension.")
+    alert('Please disconnect using the Metamask extension.');
   }
-};
+}
 
 export const metamaskWallet = new MetaMaskWallet();
 
 export const MetaMaskClient = () => {
   const { setMetamaskAccountAddress } = useContext(MetamaskContext);
-  
+
   useEffect(() => {
     // FIXED: Only run on client side
     if (typeof window === 'undefined') return;
-    
+
     // set the account address if already connected
     try {
-      const { ethereum } = window as any;
+      const { ethereum } = window;
       if (!ethereum) {
         console.log('MetaMask not detected');
         return;
@@ -236,7 +254,7 @@ export const MetaMaskClient = () => {
         if (signers.length !== 0) {
           setMetamaskAccountAddress(signers[0]);
         } else {
-          setMetamaskAccountAddress("");
+          setMetamaskAccountAddress('');
         }
       });
 
@@ -245,23 +263,23 @@ export const MetaMaskClient = () => {
         if (accounts.length !== 0) {
           setMetamaskAccountAddress(accounts[0]);
         } else {
-          setMetamaskAccountAddress("");
+          setMetamaskAccountAddress('');
         }
       };
 
-      ethereum.on("accountsChanged", handleAccountsChanged);
+      ethereum.on('accountsChanged', handleAccountsChanged);
 
       // cleanup by removing listeners
       return () => {
         if (ethereum?.removeListener) {
-          ethereum.removeListener("accountsChanged", handleAccountsChanged);
+          ethereum.removeListener('accountsChanged', handleAccountsChanged);
         }
-      }
-    } catch (error: any) {
-      console.error('MetaMask client error:', error.message ? error.message : error);
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('MetaMask client error:', message);
     }
   }, [setMetamaskAccountAddress]);
 
   return null;
-}
-
+};

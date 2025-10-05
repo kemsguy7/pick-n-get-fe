@@ -1,27 +1,29 @@
-"use client"
-import { useState } from "react"
-import { ArrowLeft, CheckCircle, AlertTriangle, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import AppLayout from "../../../components/layout/AppLayout"
+'use client';
+import { useState } from 'react';
+import { ArrowLeft, CheckCircle, AlertTriangle, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import AppLayout from '../../../components/layout/AppLayout';
 
 interface UserDetails {
-  name: string
-  userId: string
-  email: string
-  phone: string
-  role: string
-  country: string
-  itemsRecycled: number
-  status: string
-  balance: string
+  name: string;
+  userId: string;
+  email: string;
+  phone: string;
+  role: string;
+  country: string;
+  itemsRecycled: number;
+  status: string;
+  balance: string;
 }
 
 export default function ManageUserPage() {
-  const router = useRouter()
-  const [currentAction, setCurrentAction] = useState<'default' | 'approve' | 'pay' | 'ban' | 'delete' | 'success'>('default')
-  const [actionType, setActionType] = useState<'approve' | 'pay' | 'ban' | 'delete'>('approve')
-  const [paymentAmount, setPaymentAmount] = useState('')
-  const [banReason, setBanReason] = useState('')
+  const router = useRouter();
+  const [currentAction, setCurrentAction] = useState<
+    'default' | 'approve' | 'pay' | 'ban' | 'delete' | 'success'
+  >('default');
+  const [actionType, setActionType] = useState<'approve' | 'pay' | 'ban' | 'delete'>('approve');
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [banReason, setBanReason] = useState('');
 
   const userDetails: UserDetails = {
     name: 'Adaora Okafor',
@@ -32,121 +34,119 @@ export default function ManageUserPage() {
     country: 'Nigeria',
     itemsRecycled: 12,
     status: 'Active',
-    balance: '120 HBAR'
-  }
+    balance: '120 HBAR',
+  };
 
   const handleAction = (action: 'approve' | 'pay' | 'ban' | 'delete') => {
-    setActionType(action)
-    setCurrentAction(action)
+    setActionType(action);
+    setCurrentAction(action);
     // Clear form data when switching actions
-    setPaymentAmount('')
-    setBanReason('')
-  }
+    setPaymentAmount('');
+    setBanReason('');
+  };
 
   const handleConfirmAction = () => {
-    setCurrentAction('success')
-  }
+    setCurrentAction('success');
+  };
 
   const handleCancelAction = () => {
-    setCurrentAction('default')
+    setCurrentAction('default');
     // Clear form data
-    setPaymentAmount('')
-    setBanReason('')
-  }
+    setPaymentAmount('');
+    setBanReason('');
+  };
 
   const handleBackToUsers = () => {
     // Navigate back to admin dashboard and set users tab as active
-    router.push('/admin?tab=users')
-  }
+    router.push('/admin?tab=users');
+  };
 
   const renderActionContent = () => {
     switch (currentAction) {
       case 'approve':
         return (
-          <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-            <div className="flex items-center justify-between mb-4">
+          <div className="rounded-xl border border-slate-700/50 bg-black p-6">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-400" />
-                <h3 className="text-white font-semibold font-space-grotesk">Approve User</h3>
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <h3 className="font-space-grotesk font-semibold text-white">Approve User</h3>
               </div>
               <button
                 onClick={handleCancelAction}
-                className="p-1 hover:bg-slate-700 rounded-full transition-colors"
+                className="rounded-full p-1 transition-colors hover:bg-slate-700"
               >
-                <X className="w-5 h-5 text-gray-400 hover:text-white" />
+                <X className="h-5 w-5 text-gray-400 hover:text-white" />
               </button>
             </div>
-            <p className="text-gray-400 mb-6 font-inter">
-              Check documents and confirm approval.
-            </p>
+            <p className="font-inter mb-6 text-gray-400">Check documents and confirm approval.</p>
             <div className="flex gap-3">
               <button
                 onClick={handleConfirmAction}
-                className="gradient-button px-6 py-2 rounded-lg text-black font-semibold hover:shadow-lg transition-all duration-200 font-inter"
+                className="gradient-button font-inter rounded-lg px-6 py-2 font-semibold text-black transition-all duration-200 hover:shadow-lg"
               >
                 Confirm Approval
               </button>
               <button
                 onClick={handleCancelAction}
-                className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-inter"
+                className="font-inter rounded-lg bg-gray-600 px-6 py-2 text-white transition-colors hover:bg-gray-700"
               >
                 Cancel
               </button>
             </div>
           </div>
-        )
+        );
 
       case 'pay':
         return (
-          <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold font-space-grotesk">Pay User</h3>
+          <div className="rounded-xl border border-slate-700/50 bg-black p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-space-grotesk font-semibold text-white">Pay User</h3>
               <button
                 onClick={handleCancelAction}
-                className="p-1 hover:bg-slate-700 rounded-full transition-colors"
+                className="rounded-full p-1 transition-colors hover:bg-slate-700"
               >
-                <X className="w-5 h-5 text-gray-400 hover:text-white" />
+                <X className="h-5 w-5 text-gray-400 hover:text-white" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-400 text-sm font-inter mb-2">Amount:</label>
+                <label className="font-inter mb-2 block text-sm text-gray-400">Amount:</label>
                 <input
                   type="text"
                   placeholder="Enter Amount"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
+                  className="w-full rounded-lg border border-slate-600 bg-[#1a2928] px-4 py-3 text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={handleConfirmAction}
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors font-inter"
+                  className="font-inter flex-1 rounded-lg bg-orange-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-orange-600"
                 >
                   Confirm Payment
                 </button>
                 <button
                   onClick={handleCancelAction}
-                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-inter"
+                  className="font-inter rounded-lg bg-gray-600 px-6 py-3 text-white transition-colors hover:bg-gray-700"
                 >
                   Cancel
                 </button>
               </div>
             </div>
           </div>
-        )
+        );
 
       case 'ban':
         return (
-          <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold font-space-grotesk">Ban User</h3>
+          <div className="rounded-xl border border-slate-700/50 bg-black p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-space-grotesk font-semibold text-white">Ban User</h3>
               <button
                 onClick={handleCancelAction}
-                className="p-1 hover:bg-slate-700 rounded-full transition-colors"
+                className="rounded-full p-1 transition-colors hover:bg-slate-700"
               >
-                <X className="w-5 h-5 text-gray-400 hover:text-white" />
+                <X className="h-5 w-5 text-gray-400 hover:text-white" />
               </button>
             </div>
             <div className="space-y-4">
@@ -155,191 +155,195 @@ export default function ManageUserPage() {
                 value={banReason}
                 onChange={(e) => setBanReason(e.target.value)}
                 rows={4}
-                className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 resize-none"
+                className="w-full resize-none rounded-lg border border-slate-600 bg-[#1a2928] px-4 py-3 text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
               />
               <div className="flex gap-3">
                 <button
                   onClick={handleConfirmAction}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors font-inter"
+                  className="font-inter flex-1 rounded-lg bg-red-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-red-600"
                 >
                   Confirm Ban
                 </button>
                 <button
                   onClick={handleCancelAction}
-                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-inter"
+                  className="font-inter rounded-lg bg-gray-600 px-6 py-3 text-white transition-colors hover:bg-gray-700"
                 >
                   Cancel
                 </button>
               </div>
             </div>
           </div>
-        )
+        );
 
       case 'delete':
         return (
-          <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-            <div className="flex items-center justify-between mb-4">
+          <div className="rounded-xl border border-slate-700/50 bg-black p-6">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
-                <h3 className="text-red-400 font-semibold font-space-grotesk">Delete User</h3>
+                <AlertTriangle className="h-5 w-5 text-red-400" />
+                <h3 className="font-space-grotesk font-semibold text-red-400">Delete User</h3>
               </div>
               <button
                 onClick={handleCancelAction}
-                className="p-1 hover:bg-slate-700 rounded-full transition-colors"
+                className="rounded-full p-1 transition-colors hover:bg-slate-700"
               >
-                <X className="w-5 h-5 text-gray-400 hover:text-white" />
+                <X className="h-5 w-5 text-gray-400 hover:text-white" />
               </button>
             </div>
-            <p className="text-gray-400 mb-6 font-inter">
+            <p className="font-inter mb-6 text-gray-400">
               This action cannot be undone. Are you sure?
             </p>
             <div className="flex gap-3">
               <button
                 onClick={handleConfirmAction}
-                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors font-inter"
+                className="font-inter rounded-lg bg-red-500 px-6 py-3 font-semibold text-white transition-colors hover:bg-red-600"
               >
                 Confirm Delete
               </button>
               <button
                 onClick={handleCancelAction}
-                className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-inter"
+                className="font-inter rounded-lg bg-gray-600 px-6 py-3 text-white transition-colors hover:bg-gray-700"
               >
                 Cancel
               </button>
             </div>
           </div>
-        )
+        );
 
-      case 'success':
+      case 'success': {
         const successMessages = {
           approve: 'User has been approved!',
           pay: 'Payment Sent Successfully!',
           ban: 'User has been banned!',
-          delete: 'User deleted permanently!'
-        }
-        
+          delete: 'User deleted permanently!',
+        };
+
         return (
-          <div className="bg-black rounded-xl p-6 border border-slate-700/50">
-            <div className="bg-green-600/20 border border-green-600/30 rounded-lg p-6 text-center">
-              <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-3" />
-              <p className="text-green-400 font-semibold font-space-grotesk text-lg">
+          <div className="rounded-xl border border-slate-700/50 bg-black p-6">
+            <div className="rounded-lg border border-green-600/30 bg-green-600/20 p-6 text-center">
+              <CheckCircle className="mx-auto mb-3 h-8 w-8 text-green-400" />
+              <p className="font-space-grotesk text-lg font-semibold text-green-400">
                 {successMessages[actionType]}
               </p>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="mt-6 flex gap-3">
               <button
                 onClick={handleBackToUsers}
-                className="flex items-center gap-2 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white transition-colors font-inter"
+                className="font-inter flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-white transition-colors hover:bg-green-600"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 Back to Users
               </button>
               <button
                 onClick={() => setCurrentAction('default')}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-inter"
+                className="font-inter rounded-lg bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700"
               >
                 Perform Another Action
               </button>
             </div>
           </div>
-        )
+        );
+      }
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
       <div className="min-h-screen p-4 lg:p-6">
-        <div className="max-w-5xl mx-auto space-y-6">
-          
+        <div className="mx-auto max-w-5xl space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl lg:text-3xl font-bold text-primary font-space-grotesk">
+            <h1 className="text-primary font-space-grotesk text-2xl font-bold lg:text-3xl">
               Manage User
             </h1>
             <button
               onClick={handleBackToUsers}
-              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-white transition-colors font-inter text-sm font-medium"
+              className="font-inter flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-600"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
               Back to Users
             </button>
           </div>
 
           {/* User Info Card */}
-          <div className="bg-black rounded-xl p-8 border border-slate-700/50">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="rounded-xl border border-slate-700/50 bg-black p-8">
+            <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
               <div className="space-y-4">
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Name:</span>
-                  <span className="text-primary font-semibold font-space-grotesk text-lg">{userDetails.name}</span>
+                  <span className="font-inter text-gray-400">Name:</span>
+                  <span className="text-primary font-space-grotesk text-lg font-semibold">
+                    {userDetails.name}
+                  </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Email:</span>
-                  <span className="text-white font-inter">{userDetails.email}</span>
+                  <span className="font-inter text-gray-400">Email:</span>
+                  <span className="font-inter text-white">{userDetails.email}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Phone:</span>
-                  <span className="text-white font-inter">{userDetails.phone}</span>
+                  <span className="font-inter text-gray-400">Phone:</span>
+                  <span className="font-inter text-white">{userDetails.phone}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Role:</span>
-                  <span className="text-white font-inter">{userDetails.role}</span>
+                  <span className="font-inter text-gray-400">Role:</span>
+                  <span className="font-inter text-white">{userDetails.role}</span>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">User ID:</span>
-                  <span className="text-primary font-semibold font-space-grotesk text-lg">{userDetails.userId}</span>
+                  <span className="font-inter text-gray-400">User ID:</span>
+                  <span className="text-primary font-space-grotesk text-lg font-semibold">
+                    {userDetails.userId}
+                  </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Country:</span>
-                  <span className="text-white font-inter">{userDetails.country}</span>
+                  <span className="font-inter text-gray-400">Country:</span>
+                  <span className="font-inter text-white">{userDetails.country}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Items Recycled:</span>
-                  <span className="text-white font-inter">{userDetails.itemsRecycled}</span>
+                  <span className="font-inter text-gray-400">Items Recycled:</span>
+                  <span className="font-inter text-white">{userDetails.itemsRecycled}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Status:</span>
-                  <span className="bg-[#DCFCE7] text-primary px-3 py-1 rounded-full text-xs font-medium">
+                  <span className="font-inter text-gray-400">Status:</span>
+                  <span className="text-primary rounded-full bg-[#DCFCE7] px-3 py-1 text-xs font-medium">
                     {userDetails.status}
                   </span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-400 font-inter">Balance:</span>
-                  <span className="text-white font-inter">{userDetails.balance}</span>
+                  <span className="font-inter text-gray-400">Balance:</span>
+                  <span className="font-inter text-white">{userDetails.balance}</span>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
             {currentAction === 'default' && (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <button
                   onClick={() => handleAction('pay')}
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors font-inter"
+                  className="font-inter rounded-lg bg-orange-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-orange-600"
                 >
                   Pay User
                 </button>
                 <button
                   onClick={() => handleAction('ban')}
-                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors font-inter"
+                  className="font-inter rounded-lg bg-red-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-red-600"
                 >
                   Ban User
                 </button>
                 <button
                   onClick={() => handleAction('approve')}
-                  className="gradient-button text-black font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-200 font-inter"
+                  className="gradient-button font-inter rounded-lg px-4 py-3 font-semibold text-black transition-all duration-200 hover:shadow-lg"
                 >
                   Approve User
                 </button>
                 <button
                   onClick={() => handleAction('delete')}
-                  className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors font-inter"
+                  className="font-inter rounded-lg bg-red-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-red-700"
                 >
                   Delete User
                 </button>
@@ -352,5 +356,5 @@ export default function ManageUserPage() {
         </div>
       </div>
     </AppLayout>
-  )
+  );
 }
