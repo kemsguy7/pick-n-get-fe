@@ -2,7 +2,7 @@ import { ContractId } from '@hashgraph/sdk';
 import { WalletInterface } from './wallets/walletInterface';
 import { ContractFunctionParameterBuilder } from './wallets/contractFunctionParameterBuilder';
 
-const CONTRACT_ADDRESS = '0.0.6879372';
+const CONTRACT_ADDRESS = '0.0.6955878'; 
 
 // Type definitions for admin operations
 export enum RiderStatus {

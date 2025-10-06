@@ -7,7 +7,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface PersonalInfo {
   firstName: string;
   lastName: string;
-  phoneNumber: string; // This will be converted to number (0-255) for blockchain
+  phoneNumber: string; // This will be used as string for blockchain
   homeAddress: string;
   country: string;
   nationalIdNumber: string;
@@ -58,6 +58,11 @@ export interface AgentSignupData {
   documentInfo: DocumentInfo;
   currentStep: number;
   completedSteps: number[];
+  // NEW: Web2 backend sync tracking
+  web2Saved?: boolean;
+  web2Error?: string;
+  blockchainTxHash?: string;
+  riderId?: number;
 }
 
 // Context type
@@ -73,6 +78,9 @@ interface AgentSignupContextType {
   isStepCompleted: (step: number) => boolean;
   canProceedToStep: (step: number) => boolean;
   getFormCompletionPercentage: () => number;
+  // NEW: Web2 status tracking
+  updateWeb2Status: (saved: boolean, error?: string) => void;
+  updateRegistrationResult: (txHash: string, riderId?: number) => void;
 }
 
 // Default signup data
@@ -96,6 +104,10 @@ const defaultSignupData: AgentSignupData = {
   documentInfo: {},
   currentStep: 1,
   completedSteps: [],
+  web2Saved: undefined,
+  web2Error: undefined,
+  blockchainTxHash: undefined,
+  riderId: undefined,
 };
 
 // Create context
@@ -114,37 +126,16 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
       const savedData = localStorage.getItem(STORAGE_KEY);
       if (savedData) {
         const parsedData = JSON.parse(savedData);
-        console.log('📥 Loaded signup data from localStorage:', parsedData);
+        console.log('Loaded signup data from localStorage');
         setSignupData((prev) => ({ ...prev, ...parsedData }));
       }
     } catch (error) {
-      console.error('❌ Failed to load signup data from localStorage:', error);
+      console.error('Failed to load signup data from localStorage:', error);
     }
   }, []);
 
-  // Save data to localStorage whenever it changes
-  // useEffect(() => {
-  //   try {
-  //     // Don't save File objects to localStorage (they're not serializable)
-  //     const dataToSave = {
-  //       ...signupData,
-  //       documentInfo: Object.fromEntries(
-  //         Object.entries(signupData.documentInfo).map(([key, value]) => [
-  //           key,
-  //           value ? { cid: value.cid, url: value.url } : undefined
-  //         ])
-  //       )
-  //     }
-  //     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave))
-  //     console.log("💾 Saved signup data to localStorage")
-  //   } catch (error) {
-  //     console.error("❌ Failed to save signup data to localStorage:", error)
-  //   }
-  // }, [signupData])
-
   // Update wallet information
   const updateWalletInfo = (walletAddress: string, walletType: string) => {
-    console.log('🔗 Updating wallet info:', { walletAddress, walletType });
     setSignupData((prev) => ({
       ...prev,
       walletConnected: true,
@@ -155,7 +146,6 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
 
   // Update personal information
   const updatePersonalInfo = (info: Partial<PersonalInfo>) => {
-    console.log('👤 Updating personal info:', info);
     setSignupData((prev) => ({
       ...prev,
       personalInfo: { ...prev.personalInfo, ...info },
@@ -164,7 +154,6 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
 
   // Update vehicle information
   const updateVehicleInfo = (info: Partial<VehicleInfo>) => {
-    console.log('🚗 Updating vehicle info:', info);
     setSignupData((prev) => ({
       ...prev,
       vehicleInfo: { ...prev.vehicleInfo, ...info },
@@ -173,7 +162,6 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
 
   // Update document information
   const updateDocumentInfo = (info: Partial<DocumentInfo>) => {
-    console.log('📄 Updating document info:', info);
     setSignupData((prev) => ({
       ...prev,
       documentInfo: { ...prev.documentInfo, ...info },
@@ -181,22 +169,11 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
   };
 
   // Set current step
-  // const setCurrentStep = (step: number) => {
-  //   console.log("📍 Setting current step:", step)
-  //   setSignupData(prev => ({
-  //     ...prev,
-  //     currentStep: step
-  //   }))
-  // }
-
-  // Set current step
   const setCurrentStep = (step: number) => {
-    // Add this guard to prevent unnecessary updates
     if (signupData.currentStep === step) {
-      return; // Don't update if it's already the same step
+      return;
     }
 
-    console.log('📍 Setting current step:', step);
     setSignupData((prev) => ({
       ...prev,
       currentStep: step,
@@ -205,16 +182,35 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
 
   // Mark step as completed
   const markStepCompleted = (step: number) => {
-    console.log('✅ Marking step completed:', step);
     setSignupData((prev) => ({
       ...prev,
       completedSteps: [...new Set([...prev.completedSteps, step])],
     }));
   };
 
+  // NEW: Update Web2 backend sync status
+  const updateWeb2Status = (saved: boolean, error?: string) => {
+    console.log('Updating Web2 sync status:', { saved, error });
+    setSignupData((prev) => ({
+      ...prev,
+      web2Saved: saved,
+      web2Error: error,
+    }));
+  };
+
+  // NEW: Update registration result (txHash and riderId)
+  const updateRegistrationResult = (txHash: string, riderId?: number) => {
+    console.log('Updating registration result:', { txHash, riderId });
+    setSignupData((prev) => ({
+      ...prev,
+      blockchainTxHash: txHash,
+      riderId: riderId,
+    }));
+  };
+
   // Reset all signup data
   const resetSignupData = () => {
-    console.log('🔄 Resetting signup data');
+    console.log('Resetting signup data');
     setSignupData(defaultSignupData);
     localStorage.removeItem(STORAGE_KEY);
   };
@@ -227,23 +223,23 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
   // Check if user can proceed to a specific step
   const canProceedToStep = (step: number): boolean => {
     switch (step) {
-      case 1: // Wallet connection
+      case 1:
         return true;
-      case 2: // Personal info
+      case 2:
         return signupData.walletConnected;
-      case 3: // Vehicle info
+      case 3:
         return (
           signupData.walletConnected &&
           signupData.personalInfo.firstName.length > 0 &&
           signupData.personalInfo.lastName.length > 0 &&
-          signupData.personalInfo.phoneNumber.length > 0 &&
+          signupData.personalInfo.phoneNumber.length > 4 &&
           signupData.personalInfo.homeAddress.length > 0
         );
-      case 4: // Documents
+      case 4:
         return (
           signupData.walletConnected &&
           signupData.personalInfo.firstName.length > 0 &&
-          signupData.vehicleInfo.vehiclePlateNumber.length > 0 &&
+          signupData.vehicleInfo.vehiclePlateNumber.length > 4 &&
           signupData.vehicleInfo.vehicleMakeModel.length > 0
         );
       default:
@@ -256,10 +252,8 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
     let completed = 0;
     const total = 4;
 
-    // Step 1: Wallet connection
     if (signupData.walletConnected) completed++;
 
-    // Step 2: Personal info
     if (
       signupData.personalInfo.firstName &&
       signupData.personalInfo.lastName &&
@@ -269,7 +263,6 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
       completed++;
     }
 
-    // Step 3: Vehicle info
     if (
       signupData.vehicleInfo.vehiclePlateNumber &&
       signupData.vehicleInfo.vehicleMakeModel &&
@@ -278,7 +271,6 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
       completed++;
     }
 
-    // Step 4: Documents
     const requiredDocs = ['driversLicense', 'vehicleRegistration', 'vehiclePhotos', 'profilePhoto'];
     const uploadedDocs = requiredDocs.filter(
       (doc) => signupData.documentInfo[doc as keyof DocumentInfo]?.cid,
@@ -289,53 +281,6 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
 
     return Math.round((completed / total) * 100);
   };
-
-  // Validation functions
-  // const validatePersonalInfo = (): string[] => {
-  //   const errors: string[] = []
-  //   const { personalInfo } = signupData
-
-  //   if (!personalInfo.firstName.trim()) errors.push("First name is required")
-  //   if (!personalInfo.lastName.trim()) errors.push("Last name is required")
-  //   if (!personalInfo.phoneNumber.trim()) errors.push("Phone number is required")
-  //   if (!personalInfo.homeAddress.trim()) errors.push("Home address is required")
-
-  //   // Validate phone number range (0-255 for blockchain)
-  //   const phoneNum = parseInt(personalInfo.phoneNumber)
-  //   if (isNaN(phoneNum) || phoneNum < 0 || phoneNum > 255) {
-  //     errors.push("Phone number must be between 0 and 255")
-  //   }
-
-  //   return errors
-  // }
-
-  // const validateVehicleInfo = (): string[] => {
-  //   const errors: string[] = []
-  //   const { vehicleInfo } = signupData
-
-  //   if (!vehicleInfo.vehicleMakeModel.trim()) errors.push("Vehicle make/model is required")
-  //   if (!vehicleInfo.vehiclePlateNumber.trim()) errors.push("Vehicle plate number is required")
-  //   if (!vehicleInfo.vehicleColor.trim()) errors.push("Vehicle color is required")
-
-  //   const capacity = parseInt(vehicleInfo.carryingCapacity)
-  //   if (isNaN(capacity) || capacity <= 0) {
-  //     errors.push("Carrying capacity must be a positive number")
-  //   }
-
-  //   return errors
-  // }
-
-  // const validateDocuments = (): string[] => {
-  //   const errors: string[] = []
-  //   const { documentInfo } = signupData
-
-  //   if (!documentInfo.driversLicense?.cid) errors.push("Driver's license is required")
-  //   if (!documentInfo.vehicleRegistration?.cid) errors.push("Vehicle registration is required")
-  //   if (!documentInfo.vehiclePhotos?.cid) errors.push("Vehicle photos are required")
-  //   if (!documentInfo.profilePhoto?.cid) errors.push("Profile photo is required")
-
-  //   return errors
-  // }
 
   const contextValue: AgentSignupContextType = {
     signupData,
@@ -349,6 +294,8 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
     isStepCompleted,
     canProceedToStep,
     getFormCompletionPercentage,
+    updateWeb2Status,
+    updateRegistrationResult,
   };
 
   return <AgentSignupContext.Provider value={contextValue}>{children}</AgentSignupContext.Provider>;
@@ -363,5 +310,4 @@ export function useAgentSignup() {
   return context;
 }
 
-// Export default for convenience
 export default AgentSignupContext;

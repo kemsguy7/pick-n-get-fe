@@ -59,16 +59,14 @@ export default function AgentSignupStep2(): React.JSX.Element {
 
     if (!data.firstName.trim()) newErrors.push('First name is required');
     if (!data.lastName.trim()) newErrors.push('Last name is required');
-    if (!data.phoneNumber.trim()) newErrors.push('User ID number is required');
+    if (!data.phoneNumber.trim()) newErrors.push('Phone number is required');
     if (!data.homeAddress.trim()) newErrors.push('Home address is required');
-    // if (!data.nationalIdNumber.trim()) newErrors.push("National ID number is required")
 
-    // Validate phone number range (0-255 for blockchain)
-    const phoneNum = parseInt(data.phoneNumber);
-    if (data.phoneNumber && (isNaN(phoneNum) || phoneNum < 0 || phoneNum > 255)) {
-      newErrors.push('User ID number must be between 0 and 255');
+    // Validate phone number range )
+
+    if (data.phoneNumber && data.phoneNumber.trim().length < 4) {
+      newErrors.push('Phone number must be at least 4 characters');
     }
-
     // Validate name lengths
     if (data.firstName && data.firstName.length < 2) {
       newErrors.push('First name must be at least 2 characters');
@@ -118,10 +116,8 @@ export default function AgentSignupStep2(): React.JSX.Element {
       data.homeAddress.trim();
 
     // Fix the phone number validation logic
-    const phoneNum = parseInt(data.phoneNumber);
-    const isValidPhone = data.phoneNumber.trim()
-      ? !isNaN(phoneNum) && phoneNum >= 0 && phoneNum <= 255
-      : false;
+    const phoneNum = data.phoneNumber;
+    const isValidPhone = data.phoneNumber.trim() && phoneNum.length >= 4;
 
     // Check minimum lengths
     const isValidLength =
@@ -240,8 +236,8 @@ export default function AgentSignupStep2(): React.JSX.Element {
 
                 {/* User ID Number (Phone Number for blockchain) */}
                 <div>
-                  <label className="font-inter mb-1 block text-sm font-medium text-gray-700">
-                    User ID Number <span className="text-red-500">*</span>
+                  <label className="font-inter mb-1 block text-sm font-medium text-black">
+                    Phone Number <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Phone className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
@@ -251,9 +247,8 @@ export default function AgentSignupStep2(): React.JSX.Element {
                       value={signupData.personalInfo.phoneNumber}
                       onChange={handleInputChange}
                       placeholder="123"
-                      min="0"
-                      max="255"
-                      className={`font-inter w-full rounded-lg border py-2.5 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-green-500 ${
+                      min="4"
+                      className={`font-inter w-full rounded-lg border py-2.5 pr-3 pl-10 text-black focus:border-transparent focus:ring-2 focus:ring-green-500 ${
                         getFieldError('phoneNumber')
                           ? 'border-red-300 bg-red-50'
                           : 'border-gray-300'
@@ -261,8 +256,8 @@ export default function AgentSignupStep2(): React.JSX.Element {
                     />
                   </div>
                   <p className="mt-1 text-xs text-gray-500">
-                    Enter a unique number between 0-255. This will be your identification number in
-                    the system.
+                    Enter Your Valid Phone Number. This will be your identification number in the
+                    system.
                   </p>
                   {getFieldError('phoneNumber') && (
                     <p className="mt-1 text-xs text-red-500">{getFieldError('phoneNumber')}</p>
@@ -282,14 +277,14 @@ export default function AgentSignupStep2(): React.JSX.Element {
                       onChange={handleInputChange}
                       placeholder="123 Housing Estate, Cape Town"
                       rows={3}
-                      className={`font-inter w-full resize-none rounded-lg border py-2.5 pr-3 pl-10 focus:border-transparent focus:ring-2 focus:ring-green-500 ${
+                      className={`font-inter w-full resize-none rounded-lg border py-2.5 pr-3 pl-10 text-black focus:border-transparent focus:ring-2 focus:ring-green-500 ${
                         getFieldError('homeAddress')
                           ? 'border-red-300 bg-red-50'
                           : 'border-gray-300'
                       }`}
                     />
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-black">
                     This field must be at least 10 characters long.
                   </p>
                   {getFieldError('homeAddress') && (
@@ -333,26 +328,6 @@ export default function AgentSignupStep2(): React.JSX.Element {
                     </div>
                   </div>
                 </div>
-
-                {/* National ID Number */}
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 font-inter">
-                    National ID Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="nationalIdNumber"
-                    value={signupData.personalInfo.nationalIdNumber}
-                    onChange={handleInputChange}
-                    placeholder="Enter your national ID number"
-                    className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent font-inter ${
-                      getFieldError('nationalIdNumber') ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                    }`}
-                  />
-                  {getFieldError('nationalIdNumber') && (
-                    <p className="text-red-500 text-xs mt-1">{getFieldError('nationalIdNumber')}</p>
-                  )}
-                </div> */}
               </div>
             </div>
 
@@ -381,7 +356,7 @@ export default function AgentSignupStep2(): React.JSX.Element {
                 <span>
                   {Math.round(
                     (Object.values(signupData.personalInfo).filter((val) => val.trim()).length /
-                      6) *
+                      5) *
                       100,
                   )}
                   %
@@ -391,7 +366,7 @@ export default function AgentSignupStep2(): React.JSX.Element {
                 <div
                   className="h-1 rounded-full bg-green-500 transition-all duration-300"
                   style={{
-                    width: `${Math.min((Object.values(signupData.personalInfo).filter((val) => val.trim()).length / 6) * 100, 100)}%`,
+                    width: `${Math.min((Object.values(signupData.personalInfo).filter((val) => val.trim()).length / 5) * 100, 100)}%`,
                   }}
                 ></div>
               </div>
