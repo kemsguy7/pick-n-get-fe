@@ -1,24 +1,24 @@
-"use client"
-import { useState } from "react"
-import { Users, CheckCircle, BarChart3, Settings, Shield } from 'lucide-react'
-import AppLayout from "../../components/layout/AppLayout"
-import StatCard, { StatCardProps } from "../../components/ui/statCard"
+'use client';
+import { useState } from 'react';
+import { Users, CheckCircle, BarChart3, Settings, Shield } from 'lucide-react';
+import AppLayout from '../../components/layout/AppLayout';
+import StatCard, { StatCardProps } from '../../components/ui/statCard';
 
 export default function AdminSettingsPage() {
-  const [activeTab, setActiveTab] = useState('settings')
-  const [selectedMaterial, setSelectedMaterial] = useState('Paper & Cardboard')
-  const [pricePerKg, setPricePerKg] = useState('$10/kg')
-  const [fundingAmount, setFundingAmount] = useState('$1000')
-  
+  const [activeTab, setActiveTab] = useState('settings');
+  const [selectedMaterial, setSelectedMaterial] = useState('Paper & Cardboard');
+  const [pricePerKg, setPricePerKg] = useState('$10/kg');
+  const [fundingAmount, setFundingAmount] = useState('$1000');
+
   // Platform settings state
-  const [maintenanceMode, setMaintenanceMode] = useState(false)
-  const [autoApprovals, setAutoApprovals] = useState(true)
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [autoApprovals, setAutoApprovals] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(true);
+
   // Security settings state
-  const [twoFactorAuth, setTwoFactorAuth] = useState(true)
-  const [apiRateLimiting, setApiRateLimiting] = useState(true)
-  const [auditLogging, setAuditLogging] = useState(true)
+  const [twoFactorAuth, setTwoFactorAuth] = useState(true);
+  const [apiRateLimiting, setApiRateLimiting] = useState(true);
+  const [auditLogging, setAuditLogging] = useState(true);
 
   // Stats data for settings page
   const statsData: StatCardProps[] = [
@@ -33,7 +33,7 @@ export default function AdminSettingsPage() {
       subtitle: '+15.2% from last month',
       subtitleColor: 'text-green-500',
       backgroundColor: 'bg-green-50',
-      borderColor: 'border-green-200'
+      borderColor: 'border-green-200',
     },
     {
       icon: Users,
@@ -46,7 +46,7 @@ export default function AdminSettingsPage() {
       subtitle: '89% completion rate',
       subtitleColor: 'text-blue-500',
       backgroundColor: 'bg-blue-50',
-      borderColor: 'border-blue-200'
+      borderColor: 'border-blue-200',
     },
     {
       icon: CheckCircle,
@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
       subtitle: '4.8 avg rating',
       subtitleColor: 'text-purple-500',
       backgroundColor: 'bg-purple-50',
-      borderColor: 'border-purple-200'
+      borderColor: 'border-purple-200',
     },
     {
       icon: Users,
@@ -72,112 +72,139 @@ export default function AdminSettingsPage() {
       subtitle: '+12% from last month',
       subtitleColor: 'text-green-500',
       backgroundColor: 'bg-green-50',
-      borderColor: 'border-green-200'
-    }
-  ]
+      borderColor: 'border-green-200',
+    },
+  ];
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'approvals', label: 'Approvals', icon: CheckCircle },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'settings', label: 'Settings', icon: Settings }
-  ]
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
       <div className="min-h-screen p-4 lg:p-6">
-        <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
-          
+        <div className="mx-auto max-w-7xl space-y-6 lg:space-y-8">
           {/* Header Section */}
-          <div className="flex flex-col lg:flex-row mt-4 lg:items-center lg:justify-between gap-4">
+          <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-green-gradient bg-transparent bg-clip-text mb-2 font-space-grotesk">
+              <h1 className="text-green-gradient font-space-grotesk mb-2 bg-transparent bg-clip-text text-3xl font-bold md:text-4xl lg:text-5xl">
                 Welcome, Kemsguy
               </h1>
-              <p className="text-lg secondary-text font-inter">
+              <p className="secondary-text font-inter text-lg">
                 Manage and monitor the PicknGet platform
               </p>
             </div>
             <div className="flex gap-3">
-              <button className="px-6 py-2 bg-white/20 backdrop-blur-custom text-white rounded-lg hover:bg-white/30 transition-colors font-inter flex items-center gap-2">
+              <button className="backdrop-blur-custom font-inter flex items-center gap-2 rounded-lg bg-white/20 px-6 py-2 text-white transition-colors hover:bg-white/30">
                 Export Data
               </button>
-              <button className="gradient-button px-6 py-2 rounded-lg text-black font-semibold hover:shadow-lg transition-all duration-200 font-inter">
+              <button className="gradient-button font-inter rounded-lg px-6 py-2 font-semibold text-black transition-all duration-200 hover:shadow-lg">
                 Refresh
               </button>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             {statsData.map((stat, index) => (
               <StatCard key={index} {...stat} />
             ))}
           </div>
 
           {/* System Alerts */}
-          <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-200">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <h3 className="text-orange-600 font-semibold font-space-grotesk">System Alerts (3)</h3>
+          <div className="rounded-2xl border border-orange-200 bg-gradient-to-r from-orange-50 to-red-50 p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-red-500"></div>
+              <h3 className="font-space-grotesk font-semibold text-orange-600">
+                System Alerts (3)
+              </h3>
             </div>
-            
+
             <div className="space-y-3">
               {[
-                { title: 'Server Performance', message: 'High CPU usage detected on main server', time: '5 minutes ago', type: 'error' },
-                { title: 'Payment Gateway', message: 'Increased transaction failures', time: '1 hour ago', type: 'warning' },
-                { title: 'Scheduled Maintenance', message: 'Database backup completed successfully', time: '3 hours ago', type: 'info' }
+                {
+                  title: 'Server Performance',
+                  message: 'High CPU usage detected on main server',
+                  time: '5 minutes ago',
+                  type: 'error',
+                },
+                {
+                  title: 'Payment Gateway',
+                  message: 'Increased transaction failures',
+                  time: '1 hour ago',
+                  type: 'warning',
+                },
+                {
+                  title: 'Scheduled Maintenance',
+                  message: 'Database backup completed successfully',
+                  time: '3 hours ago',
+                  type: 'info',
+                },
               ].map((alert, index) => (
-                <div key={index} className="bg-white rounded-lg p-4 flex items-center justify-between">
+                <div
+                  key={index}
+                  className="flex items-center justify-between rounded-lg bg-white p-4"
+                >
                   <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      alert.type === 'error' ? 'bg-red-500' :
-                      alert.type === 'warning' ? 'bg-orange-500' : 'bg-blue-500'
-                    }`}></div>
+                    <div
+                      className={`h-2 w-2 rounded-full ${
+                        alert.type === 'error'
+                          ? 'bg-red-500'
+                          : alert.type === 'warning'
+                            ? 'bg-orange-500'
+                            : 'bg-blue-500'
+                      }`}
+                    ></div>
                     <div>
-                      <p className="font-medium text-gray-800 font-space-grotesk">{alert.title}</p>
-                      <p className="text-sm text-gray-600 font-inter">{alert.message}</p>
+                      <p className="font-space-grotesk font-medium text-gray-800">{alert.title}</p>
+                      <p className="font-inter text-sm text-gray-600">{alert.message}</p>
                     </div>
                   </div>
-                  <span className="text-sm text-gray-500 font-inter">{alert.time}</span>
+                  <span className="font-inter text-sm text-gray-500">{alert.time}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex overflow-x-auto bg-[#1a2928] rounded-lg p-1 gap-1">
+          <div className="flex gap-1 overflow-x-auto rounded-lg bg-[#1a2928] p-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 min-w-0 px-4 py-3 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-2 ${
+                className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-medium whitespace-nowrap transition-all duration-200 ${
                   activeTab === tab.id
-                    ? 'bg-[#EDFFF3] text-primary'
-                    : 'lighter-green-text hover:text-white hover:bg-white/10'
+                    ? 'text-primary bg-[#EDFFF3]'
+                    : 'lighter-green-text hover:bg-white/10 hover:text-white'
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className="h-4 w-4" />
                 {tab.label}
               </button>
             ))}
           </div>
 
           {/* Settings Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Pricing & Contracts */}
-            <div className="bg-black/80 rounded-xl p-6 border border-slate-700/50">
-              <h3 className="text-primary font-semibold mb-6 font-space-grotesk text-lg">Pricing & Contracts</h3>
-              
+            <div className="rounded-xl border border-slate-700/50 bg-black/80 p-6">
+              <h3 className="text-primary font-space-grotesk mb-6 text-lg font-semibold">
+                Pricing & Contracts
+              </h3>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-400 text-sm font-inter mb-2">Set Rate of Price:</label>
-                  <select 
+                  <label className="font-inter mb-2 block text-sm text-gray-400">
+                    Set Rate of Price:
+                  </label>
+                  <select
                     value={selectedMaterial}
                     onChange={(e) => setSelectedMaterial(e.target.value)}
-                    className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500"
+                    className="w-full rounded-lg border border-slate-600 bg-[#1a2928] px-4 py-3 text-white focus:border-green-500 focus:outline-none"
                   >
                     <option value="Paper & Cardboard">Paper & Cardboard</option>
                     <option value="Plastic">Plastic</option>
@@ -185,44 +212,48 @@ export default function AdminSettingsPage() {
                     <option value="Glass">Glass</option>
                   </select>
                 </div>
-                
+
                 <div>
                   <input
                     type="text"
                     placeholder="e.g., $10/kg"
                     value={pricePerKg}
                     onChange={(e) => setPricePerKg(e.target.value)}
-                    className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
+                    className="w-full rounded-lg border border-slate-600 bg-[#1a2928] px-4 py-3 text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
                   />
                 </div>
-                
-                <button className="w-full gradient-button text-black font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-200 font-inter">
+
+                <button className="gradient-button font-inter w-full rounded-lg px-4 py-3 font-semibold text-black transition-all duration-200 hover:shadow-lg">
                   Update Price
                 </button>
               </div>
             </div>
 
             {/* Contract Management */}
-            <div className="bg-black/80 rounded-xl p-6 border border-slate-700/50">
-              <h3 className="text-primary font-semibold mb-6 font-space-grotesk text-lg">Contract Management</h3>
-              
+            <div className="rounded-xl border border-slate-700/50 bg-black/80 p-6">
+              <h3 className="text-primary font-space-grotesk mb-6 text-lg font-semibold">
+                Contract Management
+              </h3>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-400 text-sm font-inter mb-2">Amount to Fund:</label>
+                  <label className="font-inter mb-2 block text-sm text-gray-400">
+                    Amount to Fund:
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g., $1000"
                     value={fundingAmount}
                     onChange={(e) => setFundingAmount(e.target.value)}
-                    className="w-full bg-[#1a2928] border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500"
+                    className="w-full rounded-lg border border-slate-600 bg-[#1a2928] px-4 py-3 text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="gradient-button text-black font-semibold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-200 font-inter">
+                  <button className="gradient-button font-inter rounded-lg px-4 py-3 font-semibold text-black transition-all duration-200 hover:shadow-lg">
                     Fund Contract
                   </button>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors font-inter">
+                  <button className="font-inter rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700">
                     Get Contract Balance
                   </button>
                 </div>
@@ -230,20 +261,22 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Platform Settings */}
-            <div className="bg-black/80 rounded-xl p-6 border border-slate-700/50">
-              <div className="flex items-center gap-2 mb-6">
-                <Settings className="w-5 h-5 text-primary" />
-                <h3 className="text-primary font-semibold font-space-grotesk text-lg">Platform Settings</h3>
+            <div className="rounded-xl border border-slate-700/50 bg-black/80 p-6">
+              <div className="mb-6 flex items-center gap-2">
+                <Settings className="text-primary h-5 w-5" />
+                <h3 className="text-primary font-space-grotesk text-lg font-semibold">
+                  Platform Settings
+                </h3>
               </div>
-              
+
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium font-inter">Maintenance Mode</p>
-                    <p className="text-gray-400 text-sm font-inter">Enable system maintenance</p>
+                    <p className="font-inter font-medium text-white">Maintenance Mode</p>
+                    <p className="font-inter text-sm text-gray-400">Enable system maintenance</p>
                   </div>
                   <div className="flex items-center">
-                    <span className="mr-3 text-gray-400 text-sm">
+                    <span className="mr-3 text-sm text-gray-400">
                       {maintenanceMode ? 'Enabled' : 'Disabled'}
                     </span>
                     <button
@@ -261,13 +294,15 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium font-inter">Auto Approvals</p>
-                    <p className="text-gray-400 text-sm font-inter">Automatically approve verified users</p>
+                    <p className="font-inter font-medium text-white">Auto Approvals</p>
+                    <p className="font-inter text-sm text-gray-400">
+                      Automatically approve verified users
+                    </p>
                   </div>
                   <div className="flex items-center">
-                    <span className="mr-3 text-gray-400 text-sm">
+                    <span className="mr-3 text-sm text-gray-400">
                       {autoApprovals ? 'Enabled' : 'Disabled'}
                     </span>
                     <button
@@ -285,13 +320,15 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium font-inter">Email Notifications</p>
-                    <p className="text-gray-400 text-sm font-inter">Send system notifications via email</p>
+                    <p className="font-inter font-medium text-white">Email Notifications</p>
+                    <p className="font-inter text-sm text-gray-400">
+                      Send system notifications via email
+                    </p>
                   </div>
                   <div className="flex items-center">
-                    <span className="mr-3 text-gray-400 text-sm">
+                    <span className="mr-3 text-sm text-gray-400">
                       {emailNotifications ? 'Enabled' : 'Disabled'}
                     </span>
                     <button
@@ -312,20 +349,22 @@ export default function AdminSettingsPage() {
             </div>
 
             {/* Security Settings */}
-            <div className="bg-black/80 rounded-xl p-6 border border-slate-700/50">
-              <div className="flex items-center gap-2 mb-6">
-                <Shield className="w-5 h-5 text-red-400" />
-                <h3 className="text-red-400 font-semibold font-space-grotesk text-lg">Security Settings</h3>
+            <div className="rounded-xl border border-slate-700/50 bg-black/80 p-6">
+              <div className="mb-6 flex items-center gap-2">
+                <Shield className="h-5 w-5 text-red-400" />
+                <h3 className="font-space-grotesk text-lg font-semibold text-red-400">
+                  Security Settings
+                </h3>
               </div>
-              
+
               <div className="space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium font-inter">Two-Factor Auth</p>
-                    <p className="text-gray-400 text-sm font-inter">Require 2FA for admin access</p>
+                    <p className="font-inter font-medium text-white">Two-Factor Auth</p>
+                    <p className="font-inter text-sm text-gray-400">Require 2FA for admin access</p>
                   </div>
                   <div className="flex items-center">
-                    <span className="mr-3 text-green-400 text-sm font-medium">Enabled</span>
+                    <span className="mr-3 text-sm font-medium text-green-400">Enabled</span>
                     <button
                       onClick={() => setTwoFactorAuth(!twoFactorAuth)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -341,13 +380,13 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium font-inter">API Rate Limiting</p>
-                    <p className="text-gray-400 text-sm font-inter">Limit API request rates</p>
+                    <p className="font-inter font-medium text-white">API Rate Limiting</p>
+                    <p className="font-inter text-sm text-gray-400">Limit API request rates</p>
                   </div>
                   <div className="flex items-center">
-                    <span className="mr-3 text-green-400 text-sm font-medium">Active</span>
+                    <span className="mr-3 text-sm font-medium text-green-400">Active</span>
                     <button
                       onClick={() => setApiRateLimiting(!apiRateLimiting)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -363,13 +402,13 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium font-inter">Audit Logging</p>
-                    <p className="text-gray-400 text-sm font-inter">Log all admin actions</p>
+                    <p className="font-inter font-medium text-white">Audit Logging</p>
+                    <p className="font-inter text-sm text-gray-400">Log all admin actions</p>
                   </div>
                   <div className="flex items-center">
-                    <span className="mr-3 text-green-400 text-sm font-medium">Active</span>
+                    <span className="mr-3 text-sm font-medium text-green-400">Active</span>
                     <button
                       onClick={() => setAuditLogging(!auditLogging)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -390,5 +429,5 @@ export default function AdminSettingsPage() {
         </div>
       </div>
     </AppLayout>
-  )
+  );
 }

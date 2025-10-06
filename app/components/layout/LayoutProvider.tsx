@@ -1,7 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AllWalletsProvider } from '../../services/wallets/AllWalletsProvider';
+import { AgentSignupProvider } from '../../contexts/AgentSignupContext';
 
 interface LayoutContextType {
   isSidebarOpen: boolean;
@@ -39,9 +41,11 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   return (
     <AllWalletsProvider>
-      <LayoutContext.Provider value={{ isSidebarOpen, setSidebarOpen, toggleSidebar }}>
-        {children}
-      </LayoutContext.Provider>
+      <AgentSignupProvider>
+        <LayoutContext.Provider value={{ isSidebarOpen, setSidebarOpen, toggleSidebar }}>
+          {children}
+        </LayoutContext.Provider>
+      </AgentSignupProvider>
     </AllWalletsProvider>
   );
 };

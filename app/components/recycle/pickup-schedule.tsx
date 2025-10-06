@@ -1,62 +1,62 @@
-"use client"
-import { useState } from "react"
-import { Calendar, Bike, Car, Truck, Info } from "lucide-react"
-import type { RecycleFormData } from "../../recycle/page"
+'use client';
+import { useState } from 'react';
+import { Calendar, Bike, Car, Truck, Info } from 'lucide-react';
+import type { RecycleFormData } from '../../recycle/page';
 
 interface PickupScheduleProps {
-  formData: RecycleFormData
-  updateFormData: (data: Partial<RecycleFormData>) => void
-  onSubmit: () => void
-  onBack: () => void
+  formData: RecycleFormData;
+  updateFormData: (data: Partial<RecycleFormData>) => void;
+  onSubmit: () => void;
+  onBack: () => void;
 }
 
 interface Vehicle {
-  id: string
-  name: string
-  icon: React.ReactNode
-  price: number
-  minWeight?: number
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  price: number;
+  minWeight?: number;
 }
 
 interface Driver {
-  id: string
-  name: string
-  rating: number
-  distance: string
-  price: number
-  estimatedTime: string
+  id: string;
+  name: string;
+  rating: number;
+  distance: string;
+  price: number;
+  estimatedTime: string;
 }
 
 const vehicles: Vehicle[] = [
   {
     id: 'bike',
     name: 'Bike',
-    icon: <Bike className="w-5 h-5" />,
+    icon: <Bike className="h-5 w-5" />,
     price: 500,
-    minWeight: 0
+    minWeight: 0,
   },
   {
     id: 'car',
     name: 'Car',
-    icon: <Car className="w-5 h-5" />,
+    icon: <Car className="h-5 w-5" />,
     price: 1000,
-    minWeight: 0
+    minWeight: 0,
   },
   {
     id: 'van',
     name: 'Van',
-    icon: <Truck className="w-5 h-5" />,
+    icon: <Truck className="h-5 w-5" />,
     price: 2000,
-    minWeight: 0
+    minWeight: 0,
   },
   {
     id: 'truck',
     name: 'Truck',
-    icon: <Truck className="w-5 h-5" />,
+    icon: <Truck className="h-5 w-5" />,
     price: 3000,
-    minWeight: 0
-  }
-]
+    minWeight: 0,
+  },
+];
 
 const availableDrivers: Driver[] = [
   {
@@ -65,7 +65,7 @@ const availableDrivers: Driver[] = [
     rating: 4.8,
     distance: '2.1km away',
     price: 500,
-    estimatedTime: '15-20 mins'
+    estimatedTime: '15-20 mins',
   },
   {
     id: '2',
@@ -73,7 +73,7 @@ const availableDrivers: Driver[] = [
     rating: 4.9,
     distance: '3.5km away',
     price: 1000,
-    estimatedTime: '20-25 mins'
+    estimatedTime: '20-25 mins',
   },
   {
     id: '3',
@@ -81,7 +81,7 @@ const availableDrivers: Driver[] = [
     rating: 4.7,
     distance: '5.0km away',
     price: 2000,
-    estimatedTime: '25-30 mins'
+    estimatedTime: '25-30 mins',
   },
   {
     id: '4',
@@ -89,80 +89,92 @@ const availableDrivers: Driver[] = [
     rating: 4.6,
     distance: '7.2km away',
     price: 3000,
-    estimatedTime: '30-35 mins'
-  }
-]
+    estimatedTime: '30-35 mins',
+  },
+];
 
-export default function PickupSchedule({ formData, updateFormData, onSubmit, onBack }: PickupScheduleProps) {
-  const [country, setCountry] = useState('Nigeria')
-  const [address, setAddress] = useState(formData.address || 'Test Address, Lagos, Nigeria')
-  const [date, setDate] = useState(formData.date || new Date().toISOString().split('T')[0])
-  const [time, setTime] = useState(formData.time || '10:00')
-  const [selectedVehicle, setSelectedVehicle] = useState<"bike" | "car" | "truck" | undefined>(formData.selectedVehicle || 'car')
-  const [selectedDriver, setSelectedDriver] = useState<string>(formData.selectedDriver || '1')
-  const [showDrivers, setShowDrivers] = useState(true) // Always show for testing
+export default function PickupSchedule({
+  formData,
+  updateFormData,
+  onSubmit,
+  onBack,
+}: PickupScheduleProps) {
+  const [country, setCountry] = useState('Nigeria');
+  const [address, setAddress] = useState(formData.address || 'Test Address, Lagos, Nigeria');
+  const [date, setDate] = useState(formData.date || new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState(formData.time || '10:00');
+  const [selectedVehicle, setSelectedVehicle] = useState<'bike' | 'car' | 'truck' | undefined>(
+    formData.selectedVehicle || 'car',
+  );
+  const [selectedDriver, setSelectedDriver] = useState<string>(formData.selectedDriver || '1');
+  const [showDrivers, setShowDrivers] = useState(true); // Always show for testing
 
-  console.log(showDrivers)
+  console.log(showDrivers);
   // Mock weight from category (in real app, this would come from previous step)
-  const estimatedWeight = parseFloat(formData.weight) || 2.5 // kg
+  const estimatedWeight = parseFloat(formData.weight) || 2.5; // kg
 
-  const handleVehicleSelect = (vehicleId: any) => {
-    setSelectedVehicle(vehicleId)
-    setShowDrivers(true)
+  const handleVehicleSelect = (vehicleId: string) => {
+    setSelectedVehicle(vehicleId as 'bike' | 'car' | 'truck');
+    setShowDrivers(true);
     // Auto-select first driver for testing
     if (!selectedDriver) {
-      setSelectedDriver('1')
+      setSelectedDriver('1');
     }
-  }
+  };
 
   const handleDriverSelect = (driverId: string) => {
-    setSelectedDriver(driverId)
-  }
+    setSelectedDriver(driverId);
+  };
 
   const handleSubmit = () => {
-    updateFormData({ 
-      address, 
-      date, 
+    updateFormData({
+      address,
+      date,
       time,
       selectedVehicle,
-      selectedDriver
-    })
-    onSubmit()
-  }
+      selectedDriver,
+    });
+    onSubmit();
+  };
 
   // Relaxed validation for testing - only require basic selections
-  const isFormValid = selectedVehicle && selectedDriver
+  const isFormValid = selectedVehicle && selectedDriver;
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 lg:p-8 border border-slate-700/50">
-        <div className="flex items-center mb-6">
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-            <Calendar className="w-4 h-4 text-white" />
+    <div className="mx-auto max-w-6xl">
+      <div className="rounded-2xl border border-slate-700/50 bg-slate-800/50 p-6 backdrop-blur-sm lg:p-8">
+        <div className="mb-6 flex items-center">
+          <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
+            <Calendar className="h-4 w-4 text-white" />
           </div>
-          <h2 className="text-xl font-semibold text-blue-400 font-space-grotesk">Schedule Pickup</h2>
+          <h2 className="font-space-grotesk text-xl font-semibold text-blue-400">
+            Schedule Pickup
+          </h2>
         </div>
 
         {/* Testing Notice */}
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6">
+        <div className="mb-6 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4">
           <div className="flex items-center gap-2">
-            <Info className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <p className="text-blue-400 text-sm font-inter">
-              🧪 Testing Mode: Just select a vehicle and driver to proceed. Full pickup integration coming soon!
+            <Info className="h-5 w-5 flex-shrink-0 text-blue-400" />
+            <p className="font-inter text-sm text-blue-400">
+              🧪 Testing Mode: Just select a vehicle and driver to proceed. Full pickup integration
+              coming soon!
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
           {/* Left Column - Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6 lg:col-span-2">
             {/* Country Selection - Pre-filled for testing */}
             <div>
-              <label className="block text-white font-medium mb-2 font-inter">Select Country *</label>
+              <label className="font-inter mb-2 block font-medium text-white">
+                Select Country *
+              </label>
               <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors"
+                className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white transition-colors focus:border-green-500 focus:outline-none"
               >
                 <option value="Nigeria">Nigeria</option>
                 <option value="Ghana">Ghana</option>
@@ -172,72 +184,79 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
 
             {/* Address - Pre-filled for testing */}
             <div>
-              <label className="block text-white font-medium mb-2 font-inter">Pickup Address *</label>
+              <label className="font-inter mb-2 block font-medium text-white">
+                Pickup Address *
+              </label>
               <textarea
                 rows={3}
                 placeholder="Enter your full address including landmarks"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors resize-none"
+                className="w-full resize-none rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white placeholder-gray-400 transition-colors focus:border-green-500 focus:outline-none"
               />
-              <p className="text-xs text-gray-400 mt-1">Pre-filled for testing. You can modify if needed.</p>
+              <p className="mt-1 text-xs text-gray-400">
+                Pre-filled for testing. You can modify if needed.
+              </p>
             </div>
 
             {/* Date & Time - Pre-filled for testing */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-white font-medium mb-2 font-inter">Date</label>
+                <label className="font-inter mb-2 block font-medium text-white">Date</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors"
+                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white transition-colors focus:border-green-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-white font-medium mb-2 font-inter">Time</label>
+                <label className="font-inter mb-2 block font-medium text-white">Time</label>
                 <input
                   type="time"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 transition-colors"
+                  className="w-full rounded-lg border border-slate-600 bg-slate-700/50 px-4 py-3 text-white transition-colors focus:border-green-500 focus:outline-none"
                 />
               </div>
             </div>
 
             {/* Vehicle Selection */}
             <div>
-              <label className="block text-white font-medium mb-2 font-inter">Select Vehicle (with price) *</label>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <label className="font-inter mb-2 block font-medium text-white">
+                Select Vehicle (with price) *
+              </label>
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {vehicles.map((vehicle) => {
-                  const isDisabled = estimatedWeight > 10 && vehicle.id === 'bike'
+                  const isDisabled = estimatedWeight > 10 && vehicle.id === 'bike';
                   return (
                     <button
                       key={vehicle.id}
                       onClick={() => !isDisabled && handleVehicleSelect(vehicle.id)}
                       disabled={isDisabled}
-                      className={`p-4 rounded-lg border transition-all duration-200 flex flex-col items-center gap-2 ${
+                      className={`flex flex-col items-center gap-2 rounded-lg border p-4 transition-all duration-200 ${
                         selectedVehicle === vehicle.id
-                          ? 'bg-green-500/20 border-green-500 text-green-400'
+                          ? 'border-green-500 bg-green-500/20 text-green-400'
                           : isDisabled
-                          ? 'bg-slate-700/30 border-slate-600/50 text-slate-500 cursor-not-allowed'
-                          : 'bg-slate-700/50 border-slate-600 text-white hover:border-green-500/50 hover:bg-green-500/10'
+                            ? 'cursor-not-allowed border-slate-600/50 bg-slate-700/30 text-slate-500'
+                            : 'border-slate-600 bg-slate-700/50 text-white hover:border-green-500/50 hover:bg-green-500/10'
                       }`}
                     >
                       {vehicle.icon}
-                      <span className="font-medium text-sm">{vehicle.name}</span>
+                      <span className="text-sm font-medium">{vehicle.name}</span>
                       <span className="text-xs">₦{vehicle.price.toLocaleString()}</span>
                     </button>
-                  )
+                  );
                 })}
               </div>
 
               {/* Success message */}
               {selectedVehicle && (
-                <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center gap-2">
-                  <Info className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  <p className="text-green-400 text-sm font-inter">
-                    {vehicles.find(v => v.id === selectedVehicle)?.name} selected successfully. Please choose a rider below.
+                <div className="mt-3 flex items-center gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-3">
+                  <Info className="h-5 w-5 flex-shrink-0 text-green-400" />
+                  <p className="font-inter text-sm text-green-400">
+                    {vehicles.find((v) => v.id === selectedVehicle)?.name} selected successfully.
+                    Please choose a rider below.
                   </p>
                 </div>
               )}
@@ -246,21 +265,21 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
             {/* Available Drivers - Always show if vehicle selected */}
             {selectedVehicle && (
               <div>
-                <h3 className="text-white font-medium mb-4 font-inter">Available Riders (Demo)</h3>
-                <div className="bg-black/60 rounded-xl p-4 space-y-3">
+                <h3 className="font-inter mb-4 font-medium text-white">Available Riders (Demo)</h3>
+                <div className="space-y-3 rounded-xl bg-black/60 p-4">
                   {availableDrivers.map((driver) => (
                     <button
                       key={driver.id}
                       onClick={() => handleDriverSelect(driver.id)}
-                      className={`w-full p-4 rounded-lg border transition-all duration-200 flex items-center justify-between ${
+                      className={`flex w-full items-center justify-between rounded-lg border p-4 transition-all duration-200 ${
                         selectedDriver === driver.id
-                          ? 'bg-green-500/20 border-green-500 text-green-400'
-                          : 'bg-slate-800 border-slate-600 text-white hover:border-green-500/50'
+                          ? 'border-green-500 bg-green-500/20 text-green-400'
+                          : 'border-slate-600 bg-slate-800 text-white hover:border-green-500/50'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                          <Truck className="w-5 h-5 text-white" />
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500">
+                          <Truck className="h-5 w-5 text-white" />
                         </div>
                         <div className="text-left">
                           <p className="font-medium">{driver.name}</p>
@@ -284,14 +303,16 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
           {/* Right Column - Info */}
           <div className="space-y-6">
             {/* Pickup Information */}
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mr-2">
-                  <Info className="w-3 h-3 text-white" />
+            <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-6">
+              <div className="mb-4 flex items-center">
+                <div className="mr-2 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500">
+                  <Info className="h-3 w-3 text-white" />
                 </div>
-                <h3 className="text-blue-400 font-semibold font-space-grotesk">Testing Information</h3>
+                <h3 className="font-space-grotesk font-semibold text-blue-400">
+                  Testing Information
+                </h3>
               </div>
-              <ul className="space-y-2 text-sm font-inter">
+              <ul className="font-inter space-y-2 text-sm">
                 <li className="text-gray-300">• This is demo pickup scheduling</li>
                 <li className="text-gray-300">• Just select any vehicle and driver</li>
                 <li className="text-gray-300">• Real pickup integration coming soon</li>
@@ -301,16 +322,22 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
 
             {/* Current Selection Summary */}
             {selectedVehicle && selectedDriver && (
-              <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6">
-                <h3 className="text-green-400 font-semibold font-space-grotesk mb-3">Selection Summary</h3>
-                <div className="space-y-2 text-sm font-inter">
+              <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-6">
+                <h3 className="font-space-grotesk mb-3 font-semibold text-green-400">
+                  Selection Summary
+                </h3>
+                <div className="font-inter space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-300">Vehicle:</span>
-                    <span className="text-white">{vehicles.find(v => v.id === selectedVehicle)?.name}</span>
+                    <span className="text-white">
+                      {vehicles.find((v) => v.id === selectedVehicle)?.name}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">Driver:</span>
-                    <span className="text-white">{availableDrivers.find(d => d.id === selectedDriver)?.name}</span>
+                    <span className="text-white">
+                      {availableDrivers.find((d) => d.id === selectedDriver)?.name}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">Ready to submit:</span>
@@ -323,24 +350,24 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between mt-8">
+        <div className="mt-8 flex justify-between">
           <button
             onClick={onBack}
-            className="bg-black px-6 py-3 rounded-lg text-white hover:bg-gray-800 transition-colors font-inter"
+            className="font-inter rounded-lg bg-black px-6 py-3 text-white transition-colors hover:bg-gray-800"
           >
             Back
           </button>
           <button
             onClick={handleSubmit}
             disabled={!isFormValid}
-            className={`px-6 py-3 rounded-lg font-semibold font-inter flex items-center gap-2 transition-all ${
+            className={`font-inter flex items-center gap-2 rounded-lg px-6 py-3 font-semibold transition-all ${
               isFormValid
                 ? 'gradient-button text-black hover:shadow-lg'
-                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                : 'cursor-not-allowed bg-gray-600 text-gray-400'
             }`}
           >
             Submit Request
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -351,5 +378,5 @@ export default function PickupSchedule({ formData, updateFormData, onSubmit, onB
         </div>
       </div>
     </div>
-  )
+  );
 }
