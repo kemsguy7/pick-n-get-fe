@@ -3,7 +3,12 @@ export default function WhyChoose() {
     {
       id: 1,
       icon: (
-        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-8 w-8 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -12,13 +17,18 @@ export default function WhyChoose() {
           />
         </svg>
       ),
-      title: "Verified & Secure",
-      description: "All agents are verified and transactions are secured by blockchain technology"
+      title: 'Verified & Secure',
+      description: 'All agents are verified and transactions are secured by blockchain technology',
     },
     {
       id: 2,
       icon: (
-        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-8 w-8 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -27,13 +37,18 @@ export default function WhyChoose() {
           />
         </svg>
       ),
-      title: "Real-Time Pricing",
-      description: "Dynamic pricing based on market rates and location-specific multipliers"
+      title: 'Real-Time Pricing',
+      description: 'Dynamic pricing based on market rates and location-specific multipliers',
     },
     {
       id: 3,
       icon: (
-        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-8 w-8 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -42,13 +57,18 @@ export default function WhyChoose() {
           />
         </svg>
       ),
-      title: "Multi-Country Support",
-      description: "Operating across 6 African countries with local currency support"
+      title: 'Multi-Country Support',
+      description: 'Operating across 6 African countries with local currency support',
     },
     {
       id: 4,
       icon: (
-        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="h-8 w-8 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -57,39 +77,39 @@ export default function WhyChoose() {
           />
         </svg>
       ),
-      title: "Instant Rewards",
-      description: "Get paid immediately in ECO tokens that you can use or convert to fiat."
-    }
+      title: 'Instant Rewards',
+      description: 'Get paid immediately in ECO tokens that you can use or convert to fiat.',
+    },
   ];
 
   return (
     <section className="min-h-screen px-4 py-16 lg:py-24">
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-16">
-          <h2 className="text-4xl md:text-5xl font-space-grotesk  lg:text-6xl font-semibold text-white mb-6 text-balance">
-            Why Choose PicknGet?
+          <h2 className="font-space-grotesk mb-6 text-4xl font-semibold text-balance text-white md:text-5xl lg:text-6xl">
+            Why Choose EcoCleans?
           </h2>
-          <p className="text-lg md:text-xl font-normal secondary-text text-gray-300 max-w-2xl text-pretty">
+          <p className="secondary-text max-w-2xl text-lg font-normal text-pretty text-gray-300 md:text-xl">
             We're revolutionizing waste management across Africa with cutting-edge Web3 technology"
           </p>
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left Column - Features */}
           <div className="space-y-8">
             {/* Dynamic Features */}
             {features.map((feature) => (
               <div key={feature.id} className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center">
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-green-100">
                   {feature.icon}
                 </div>
                 <div>
-                  <h3 className="text-xl font-space-grotesk mb-2 font-bold text-white">
+                  <h3 className="font-space-grotesk mb-2 text-xl font-bold text-white">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-400 secondary-text font-inter font-normal leading-relaxed">
+                  <p className="secondary-text font-inter leading-relaxed font-normal text-gray-400">
                     {feature.description}
                   </p>
                 </div>
@@ -98,28 +118,40 @@ export default function WhyChoose() {
 
             {/* CTA Button */}
             <div className="pt-8">
-              <button className="gradient-button text-black font-space-grotesk font-medium text-lg px-8 py-3 rounded-lg flex items-center gap-2 hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+              <button className="gradient-button font-space-grotesk flex transform items-center gap-2 rounded-lg px-8 py-3 text-lg font-medium text-black transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 Get Started Today
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
                 </svg>
               </button>
             </div>
           </div>
 
           {/* Right Column - Dashboard */}
-          <div className="space-y-6 footer-gradient footer-theme-shadow p-6 rounded-3xl">
+          <div className="footer-gradient footer-theme-shadow space-y-6 rounded-3xl p-6">
             {/* Real-time Badge */}
-            <div className="flex justify-end ">
-              <span className="bg-[#1ED76033] border border-black text-primary font-roboto  px-3  rounded-lg text-sm font-medium">Real - time</span>
+            <div className="flex justify-end">
+              <span className="text-primary font-roboto rounded-lg border border-black bg-[#1ED76033] px-3 text-sm font-medium">
+                Real - time
+              </span>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1  sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* CO2 Prevented Card */}
-              <div className="bg-white/10 flex flex-col items-center  justify-center backdrop-blur-sm hover:border hover:border-gray-700 rounded-2xl p-6">
-                <div className="flex items-center  justify-center w-12 h-12 bg-blue-500/20 rounded-xl mb-4">
-                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex flex-col items-center justify-center rounded-2xl bg-white/10 p-6 backdrop-blur-sm hover:border hover:border-gray-700">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20">
+                  <svg
+                    className="h-6 w-6 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -128,14 +160,21 @@ export default function WhyChoose() {
                     />
                   </svg>
                 </div>
-                <div className="text-2xl font-space-grotesk font-bold text-white mb-3">89,340</div>
-                <div className="text-gray-400 md:text-md font-inter secondary-text text-sm">kg CO₂ Prevented</div>
+                <div className="font-space-grotesk mb-3 text-2xl font-bold text-white">89,340</div>
+                <div className="md:text-md font-inter secondary-text text-sm text-gray-400">
+                  kg CO₂ Prevented
+                </div>
               </div>
 
               {/* Trees Equivalent Card */}
-              <div className="bg-white/10 flex flex-col items-center backdrop-blur-sm border border-gray-700 rounded-2xl p-6">
-                <div className="flex items-center justify-center w-12 h-12 bg-green-500/20 rounded-xl mb-4">
-                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex flex-col items-center rounded-2xl border border-gray-700 bg-white/10 p-6 backdrop-blur-sm">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/20">
+                  <svg
+                    className="h-6 w-6 text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -144,18 +183,25 @@ export default function WhyChoose() {
                     />
                   </svg>
                 </div>
-                <div className="text-2xl font-bold font-space-grotesk text-white mb-4">1247</div>
-                <div className="text-gray-400 font-normal font-inter secondary-text text-sm md:text-md">Trees Equivalent</div>
+                <div className="font-space-grotesk mb-4 text-2xl font-bold text-white">1247</div>
+                <div className="font-inter secondary-text md:text-md text-sm font-normal text-gray-400">
+                  Trees Equivalent
+                </div>
               </div>
             </div>
 
             {/* Recent Activity */}
-            <div className=" border border-gray-700 rounded-2xl p-6">
-              <h4 className="text-white font-normal font-inter mb-4">Recent Activity</h4>
+            <div className="rounded-2xl border border-gray-700 p-6">
+              <h4 className="font-inter mb-4 font-normal text-white">Recent Activity</h4>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 py-6 px-3 bg-white/10 backdrop-blur-sm rounded-xl">
-                  <div className="flex items-center justify-center w-8 h-8 bg-yellow-500/20 rounded-lg">
-                    <svg className="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-6 backdrop-blur-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-500/20">
+                    <svg
+                      className="h-4 w-4 text-yellow-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -164,11 +210,16 @@ export default function WhyChoose() {
                       />
                     </svg>
                   </div>
-                  <span className="text-gray-300 text-sm">Milestone reached this month</span>
+                  <span className="text-sm text-gray-300">Milestone reached this month</span>
                 </div>
-                <div className="flex items-center gap-3 py-6 px-3 bg-white/10 backdrop-blur-sm rounded-xl">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-500/20 rounded-lg">
-                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-6 backdrop-blur-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20">
+                    <svg
+                      className="h-4 w-4 text-blue-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -177,7 +228,7 @@ export default function WhyChoose() {
                       />
                     </svg>
                   </div>
-                  <span className="text-gray-300 text-sm">Growing community</span>
+                  <span className="text-sm text-gray-300">Growing community</span>
                 </div>
               </div>
             </div>
@@ -185,5 +236,5 @@ export default function WhyChoose() {
         </div>
       </div>
     </section>
-  )
+  );
 }

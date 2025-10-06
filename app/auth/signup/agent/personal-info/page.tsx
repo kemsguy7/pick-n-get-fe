@@ -135,7 +135,7 @@ export default function AgentSignupStep2(): React.JSX.Element {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500">
               <div className="h-8 w-8 rounded-lg bg-white"></div>
             </div>
-            <h1 className="font-space-grotesk text-2xl font-bold text-white">Join Pick'n'Get</h1>
+            <h1 className="font-space-grotesk text-2xl font-bold text-white">Join EcoCleans</h1>
             <p className="font-inter text-gray-300">Start your sustainable journey today</p>
           </div>
 

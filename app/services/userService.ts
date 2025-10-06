@@ -209,6 +209,7 @@ async function checkTransactionStatus(
       : 'https://mainnet.mirrornode.hedera.com';
 
   console.log(`- Checking transaction status for: ${evmTxHash}`);
+  console.log(accountId);
 
   for (let attempt = 0; attempt < 8; attempt++) {
     try {
@@ -235,7 +236,7 @@ async function checkTransactionStatus(
         }
       }
     } catch (error) {
-      console.log(`- Mirror node check attempt ${attempt + 1} failed`);
+      console.log(`- Mirror node check attempt ${attempt + 1} failed`, error);
     }
   }
 
@@ -262,6 +263,7 @@ function decodeContractError(errorHex: string): string | null {
 
     return null;
   } catch (err) {
+    console.log('Failed to decode contract error', err);
     return null;
   }
 }
