@@ -1,22 +1,30 @@
 'use client';
 
 import React, { useState, useEffect, useContext, ChangeEvent } from 'react';
-import { Check, Loader2, AlertCircle, Wallet } from 'lucide-react';
+import { Check, Loader2, AlertCircle, Wallet, Upload, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { MetamaskContext } from '../../../contexts/MetamaskContext';
 import { WalletConnectContext } from '../../../contexts/WalletConnectContext';
 import { useWalletInterface } from '../../../services/wallets/useWalletInterface';
 import { registerUser, checkUserRegistration, UserData } from '../../../services/userService';
 import { WalletInterface } from '../../../services/wallets/walletInterface';
+import { validateFile, uploadToIPFS } from '../../../apis/ipfsApi';
 import AppLayout from '../../../components/layout/AppLayout';
 
 interface UserFormData {
   name: string;
   homeAddress: string;
-  phoneNumber: string; // This will store the user ID number (0-255)
+  phoneNumber: string;
+  profilePicture?: File;
 }
 
-// Convert wallet interface data to format expected by adminService
+interface UploadProgress {
+  uploading: boolean;
+  progress: number;
+  cid: string;
+  error: string;
+}
+
 const createWalletData = (
   accountId: string,
   walletInterface: WalletInterface | null,
@@ -33,19 +41,24 @@ export default function SignupPage(): React.JSX.Element {
   const [success, setSuccess] = useState<string>('');
   const router = useRouter();
 
-  // Get wallet contexts
   const metamaskCtx = useContext(MetamaskContext);
   const walletConnectCtx = useContext(WalletConnectContext);
   const { accountId, walletInterface } = useWalletInterface();
 
-  // Determine connection status
   const isConnected = !!(accountId && walletInterface);
 
-  // User form data
   const [userForm, setUserForm] = useState<UserFormData>({
     name: '',
     homeAddress: '',
     phoneNumber: '',
+    profilePicture: undefined,
+  });
+
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
+    uploading: false,
+    progress: 0,
+    cid: '',
+    error: '',
   });
 
   const checkExistingRegistration = async (): Promise<void> => {
@@ -65,8 +78,6 @@ export default function SignupPage(): React.JSX.Element {
     }
   };
 
-  // Check if user is already registered on component mount
-
   useEffect(() => {
     if (isConnected && accountId) {
       checkExistingRegistration();
@@ -82,6 +93,69 @@ export default function SignupPage(): React.JSX.Element {
     }));
   };
 
+  const handleProfilePictureUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      setUserForm((prev) => ({ ...prev, profilePicture: undefined }));
+      setUploadProgress({ uploading: false, progress: 0, cid: '', error: '' });
+      return;
+    }
+
+    const validation = await validateFile(file, {
+      maxSize: 5 * 1024 * 1024,
+      allowedTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+    });
+
+    if (!validation.isValid) {
+      setUploadProgress({
+        uploading: false,
+        progress: 0,
+        cid: '',
+        error: validation.errors?.[0] || 'Invalid file',
+      });
+      return;
+    }
+
+    setUploadProgress({ uploading: true, progress: 10, cid: '', error: '' });
+
+    try {
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => ({
+          ...prev,
+          progress: Math.min(prev.progress + 10, 90),
+        }));
+      }, 500);
+
+      const uploadResult = await uploadToIPFS(file, `profile-${Date.now()}-${file.name}`);
+      clearInterval(progressInterval);
+
+      if (uploadResult.success) {
+        setUploadProgress({
+          uploading: false,
+          progress: 100,
+          cid: uploadResult.cid!,
+          error: '',
+        });
+        setUserForm((prev) => ({ ...prev, profilePicture: file }));
+      } else {
+        setUploadProgress({
+          uploading: false,
+          progress: 0,
+          cid: '',
+          error: uploadResult.error || 'Upload failed',
+        });
+      }
+    } catch (error) {
+      setUploadProgress({
+        uploading: false,
+        progress: 0,
+        cid: '',
+        error: error instanceof Error ? error.message : 'Upload failed',
+      });
+    }
+  };
+
   const handleContinue = (): void => {
     if (currentStep === 1) {
       setCurrentStep(2);
@@ -95,11 +169,10 @@ export default function SignupPage(): React.JSX.Element {
   const validateForm = (): string | null => {
     if (!userForm.name.trim()) return 'Name is required';
     if (!userForm.homeAddress.trim()) return 'Home address is required';
-    if (!userForm.phoneNumber.trim()) return 'User ID number is required';
+    if (!userForm.phoneNumber.trim()) return 'Phone number is required';
 
-    const phoneNum = parseInt(userForm.phoneNumber);
-    if (isNaN(phoneNum) || phoneNum < 0 || phoneNum > 255) {
-      return 'User ID number must be a valid number between 0-255';
+    if (userForm.phoneNumber.trim().length < 4) {
+      return 'Phone number must be at least 4 characters';
     }
 
     return null;
@@ -116,7 +189,6 @@ export default function SignupPage(): React.JSX.Element {
         throw new Error('Wallet not connected');
       }
 
-      // Validate form
       const validationError = validateForm();
       if (validationError) {
         throw new Error(validationError);
@@ -124,11 +196,11 @@ export default function SignupPage(): React.JSX.Element {
 
       setLoadingMessage('Checking existing registration...');
 
-      // Register user
       const userData: UserData = {
         name: userForm.name,
         homeAddress: userForm.homeAddress,
         phoneNumber: userForm.phoneNumber,
+        profilePicture: uploadProgress.cid || undefined,
       };
 
       const walletData = createWalletData(accountId, walletInterface);
@@ -138,9 +210,7 @@ export default function SignupPage(): React.JSX.Element {
 
       if (result.success) {
         setLoadingMessage('');
-        setSuccess(
-          `Registration successful! Your user ID is: ${result.userId}. Transaction: ${result.txHash}`,
-        );
+        setSuccess(`Registration successful! Transaction: ${result.txHash}`);
         setTimeout(() => {
           router.push('/dashboard');
         }, 4000);
@@ -149,10 +219,10 @@ export default function SignupPage(): React.JSX.Element {
       }
     } catch (error) {
       console.error('Registration error:', error);
-      const ErrorMessage =
+      const errorMessage =
         error instanceof Error ? error.message : 'An unexpected error occurred during registration';
       setLoadingMessage('');
-      setError(ErrorMessage);
+      setError(errorMessage);
     } finally {
       if (!success) {
         setIsLoading(false);
@@ -277,7 +347,6 @@ export default function SignupPage(): React.JSX.Element {
             )}
           </div>
         );
-
       case 3:
         return (
           <div className="space-y-6">
@@ -298,7 +367,7 @@ export default function SignupPage(): React.JSX.Element {
                   name="name"
                   value={userForm.name}
                   onChange={handleFormChange}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-green-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:border-transparent focus:ring-2 focus:ring-green-500"
                   placeholder="Enter your full name"
                 />
               </div>
@@ -310,34 +379,96 @@ export default function SignupPage(): React.JSX.Element {
                   value={userForm.homeAddress}
                   onChange={handleFormChange}
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-green-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:border-transparent focus:ring-2 focus:ring-green-500"
                   placeholder="Enter your complete home address"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
-                  User ID Number
-                </label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Phone Number</label>
                 <input
-                  type="number"
+                  type="text"
                   name="phoneNumber"
                   value={userForm.phoneNumber}
                   onChange={handleFormChange}
-                  min="0"
-                  max="255"
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter a unique number (0-255)"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-black focus:border-transparent focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter your phone number"
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Enter a unique number between 0-255. This will be your identification number in
-                  the system.
-                  <br />
-                  <span className="text-amber-600">
-                    Note: Due to smart contract limitations, we use numeric IDs instead of phone
-                    numbers.
-                  </span>
+                  Enter a valid phone number (at least 4 characters)
                 </p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Profile Picture (Optional)
+                </label>
+                <input
+                  type="file"
+                  id="profilePicture"
+                  accept="image/*"
+                  onChange={handleProfilePictureUpload}
+                  className="hidden"
+                  disabled={uploadProgress.uploading}
+                />
+
+                {uploadProgress.uploading ? (
+                  <div className="rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-4 text-center">
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-500" />
+                    <p className="mt-2 text-sm text-blue-600">
+                      Uploading... {uploadProgress.progress}%
+                    </p>
+                    <div className="mt-2 h-2 w-full rounded-full bg-blue-200">
+                      <div
+                        className="h-2 rounded-full bg-blue-500 transition-all"
+                        style={{ width: `${uploadProgress.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ) : uploadProgress.cid ? (
+                  <div className="rounded-lg border-2 border-green-300 bg-green-50 p-4 text-center">
+                    <Check className="mx-auto h-8 w-8 text-green-500" />
+                    <p className="mt-2 text-sm font-medium text-green-600">
+                      {userForm.profilePicture?.name}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">Uploaded to IPFS</p>
+                    <p className="mt-1 font-mono text-xs break-all text-green-600">
+                      {uploadProgress.cid.substring(0, 20)}...
+                    </p>
+                    <button
+                      onClick={() => {
+                        setUserForm((prev) => ({ ...prev, profilePicture: undefined }));
+                        setUploadProgress({ uploading: false, progress: 0, cid: '', error: '' });
+                      }}
+                      className="mx-auto mt-2 flex items-center gap-1 text-xs text-red-500 hover:text-red-700"
+                    >
+                      <X className="h-3 w-3" />
+                      Remove
+                    </button>
+                  </div>
+                ) : uploadProgress.error ? (
+                  <div className="rounded-lg border-2 border-red-300 bg-red-50 p-4 text-center">
+                    <AlertCircle className="mx-auto h-8 w-8 text-red-500" />
+                    <p className="mt-2 text-sm text-red-600">{uploadProgress.error}</p>
+                    <label
+                      htmlFor="profilePicture"
+                      className="mt-2 inline-block cursor-pointer text-xs text-blue-500 hover:underline"
+                    >
+                      Try Again
+                    </label>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="profilePicture"
+                    className="flex cursor-pointer flex-col items-center rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400"
+                  >
+                    <div className="rounded-full bg-gray-100 p-3">
+                      <Upload className="h-6 w-6 text-gray-400" />
+                    </div>
+                    <p className="mt-3 text-sm font-medium text-gray-700">Upload Profile Picture</p>
+                    <p className="mt-1 text-xs text-gray-500">PNG, JPG up to 5MB (Optional)</p>
+                  </label>
+                )}
               </div>
             </div>
           </div>
@@ -433,16 +564,7 @@ export default function SignupPage(): React.JSX.Element {
                 </button>
               )}
             </div>
-
-            {/* Sign In Link */}
-            <p className="font-inter mt-4 text-center text-sm text-gray-600">
-              Already have an account?{' '}
-              <a href="#" className="text-green-500 hover:underline">
-                Sign in here
-              </a>
-            </p>
           </div>
-
           {/* Trust Indicators */}
           <div className="mt-8 flex items-center justify-center gap-8 text-center">
             <div className="text-white">
