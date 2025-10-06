@@ -1,569 +1,520 @@
 const abi = [
-  { "type": "error", "name": "AlreadyPaid", "inputs": [] },
-  { "type": "error", "name": "AlreadyRegistered", "inputs": [] },
-  { "type": "error", "name": "InValid", "inputs": [] },
-  { "type": "error", "name": "InsufficientPayment", "inputs": [] },
-  { "type": "error", "name": "InsufficientStock", "inputs": [] },
+  { inputs: [], name: 'AlreadyPaid', type: 'error' },
+  { inputs: [], name: 'AlreadyRegistered', type: 'error' },
+  { inputs: [], name: 'InValid', type: 'error' },
+  { inputs: [], name: 'InsufficientPayment', type: 'error' },
+  { inputs: [], name: 'InsufficientStock', type: 'error' },
   {
-    "type": "error",
-    "name": "Invalid",
-    "inputs": [{ "type": "address", "name": "" }]
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'Invalid',
+    type: 'error',
   },
-  { "type": "error", "name": "NoRecycleItem", "inputs": [] },
-  { "type": "error", "name": "NotAuthorised", "inputs": [] },
-  { "type": "error", "name": "NotConfirmed", "inputs": [] },
-  { "type": "error", "name": "NotFound", "inputs": [] },
-  { "type": "error", "name": "ProductSoldOut", "inputs": [] },
-  { "type": "error", "name": "UserNotRegistered", "inputs": [] },
+  { inputs: [], name: 'NoRecycleItem', type: 'error' },
+  { inputs: [], name: 'NotAuthorised', type: 'error' },
+  { inputs: [], name: 'NotConfirmed', type: 'error' },
+  { inputs: [], name: 'NotFound', type: 'error' },
+  { inputs: [], name: 'ProductSoldOut', type: 'error' },
+  { inputs: [], name: 'UserNotRegistered', type: 'error' },
   {
-    "type": "event",
-    "anonymous": false,
-    "name": "ItemRecycled",
-    "inputs": [
-      { "type": "address", "name": "user", "indexed": true },
-      { "type": "uint256", "name": "itemId", "indexed": false },
-      { "type": "string", "name": "itemType", "indexed": false },
-      { "type": "uint256", "name": "weight", "indexed": false }
-    ]
-  },
-  {
-    "type": "event",
-    "anonymous": false,
-    "name": "PaidForRecycledItem",
-    "inputs": [
-      { "type": "address", "name": "user", "indexed": true },
-      { "type": "uint256", "name": "userId", "indexed": true },
-      { "type": "uint256", "name": "itemId", "indexed": false },
-      { "type": "uint8", "name": "itemType", "indexed": false }
-    ]
-  },
-  {
-    "type": "event",
-    "anonymous": false,
-    "name": "ProductAdded",
-    "inputs": [
-      { "type": "uint256", "name": "id", "indexed": true },
-      { "type": "address", "name": "owner", "indexed": false }
-    ]
-  },
-  {
-    "type": "event",
-    "anonymous": false,
-    "name": "RiderApproved",
-    "inputs": [
-      { "type": "uint256", "name": "riderId", "indexed": true },
-      { "type": "string", "name": "_name", "indexed": false },
-      { "type": "uint8", "name": "_number", "indexed": false },
-      { "type": "string", "name": "_vehicleNumber", "indexed": false },
-      { "type": "bytes", "name": "_image", "indexed": false },
-      { "type": "string", "name": "_country", "indexed": false },
-      { "type": "uint8", "name": "_vehicleType", "indexed": false }
-    ]
-  },
-  { "type": "fallback", "stateMutability": "payable" },
-  {
-    "type": "function",
-    "name": "SUPER_ADMIN",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [],
-    "outputs": [{ "type": "address", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "_addProducts",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "_id" },
-      { "type": "string", "name": "_name" },
-      { "type": "uint256", "name": "_quantity" },
-      { "type": "bytes", "name": "_data" },
-      { "type": "uint256", "name": "_amount" },
-      { "type": "uint8", "name": "_decimals" }
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'user', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'itemId', type: 'uint256' },
+      { indexed: false, internalType: 'string', name: 'itemType', type: 'string' },
+      { indexed: false, internalType: 'uint256', name: 'weight', type: 'uint256' },
     ],
-    "outputs": []
+    name: 'ItemRecycled',
+    type: 'event',
   },
   {
-    "type": "function",
-    "name": "adminId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "allProductsByProducer",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "" },
-      { "type": "uint256", "name": "" }
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'user', type: 'address' },
+      { indexed: true, internalType: 'uint256', name: 'userId', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'itemId', type: 'uint256' },
+      { indexed: false, internalType: 'enum ItemLib.ItemType', name: 'itemType', type: 'uint8' },
     ],
-    "outputs": [
-      { "type": "uint256", "name": "productId" },
-      { "type": "string", "name": "name" },
-      { "type": "uint256", "name": "quantity" },
-      { "type": "address", "name": "owner" },
-      { "type": "bytes", "name": "data" },
-      { "type": "uint256", "name": "amount" },
-      { "type": "uint8", "name": "productStatus" }
-    ]
+    name: 'PaidForRecycledItem',
+    type: 'event',
   },
   {
-    "type": "function",
-    "name": "approveRider",
-    "constant": false,
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "_riderId" }],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "banRider",
-    "constant": false,
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "_riderId" }],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "confirmItem",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "_riderId" },
-      { "type": "uint256", "name": "_userId" },
-      { "type": "uint256", "name": "_recycleItemId" }
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'uint256', name: 'id', type: 'uint256' },
+      { indexed: false, internalType: 'address', name: 'owner', type: 'address' },
     ],
-    "outputs": []
+    name: 'ProductAdded',
+    type: 'event',
   },
   {
-    "type": "function",
-    "name": "contractBalance",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "deleteAdmin",
-    "constant": false,
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "_admin" }],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "deleteAdminById",
-    "constant": false,
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "_adminId" }],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "deleteUserAccount",
-    "constant": false,
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "_user" }],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "fundContract",
-    "constant": false,
-    "stateMutability": "payable",
-    "payable": true,
-    "inputs": [],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "hasRecycled",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "bool", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "hasUserReceivedPayment",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "" },
-      { "type": "uint256", "name": "" }
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'uint256', name: 'riderId', type: 'uint256' },
+      { indexed: false, internalType: 'string', name: '_name', type: 'string' },
+      { indexed: false, internalType: 'string', name: '_number', type: 'string' },
+      { indexed: false, internalType: 'string', name: '_vehicleNumber', type: 'string' },
+      { indexed: false, internalType: 'bytes', name: '_image', type: 'bytes' },
+      { indexed: false, internalType: 'string', name: '_country', type: 'string' },
+      {
+        indexed: false,
+        internalType: 'enum PicknGet.VehicleType',
+        name: '_vehicleType',
+        type: 'uint8',
+      },
     ],
-    "outputs": [{ "type": "bool", "name": "" }]
+    name: 'RiderApproved',
+    type: 'event',
+  },
+  { stateMutability: 'payable', type: 'fallback' },
+  {
+    inputs: [],
+    name: 'SUPER_ADMIN',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "idToAdmin",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "address", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "isAdminRegistered",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "" }],
-    "outputs": [{ "type": "bool", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "isProducerPaidForProduct",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "address", "name": "" },
-      { "type": "uint256", "name": "" }
+    inputs: [
+      { internalType: 'uint256', name: '_id', type: 'uint256' },
+      { internalType: 'string', name: '_name', type: 'string' },
+      { internalType: 'uint256', name: '_quantity', type: 'uint256' },
+      { internalType: 'string', name: '_description', type: 'string' },
+      { internalType: 'bytes', name: '_data', type: 'bytes' },
+      { internalType: 'uint256', name: '_amount', type: 'uint256' },
+      { internalType: 'uint8', name: '_decimals', type: 'uint8' },
     ],
-    "outputs": [{ "type": "bool", "name": "" }]
+    name: '_addProducts',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "isProducerRegistered",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "bool", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "itemByUserId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "" },
-      { "type": "uint256", "name": "" }
+    inputs: [
+      { internalType: 'string', name: '_address', type: 'string' },
+      { internalType: 'string', name: '_number', type: 'string' },
+      { internalType: 'string', name: '_name', type: 'string' },
+      { internalType: 'bytes', name: '_picture', type: 'bytes' },
     ],
-    "outputs": [
-      { "type": "uint256", "name": "itemId" },
-      { "type": "uint256", "name": "weight" },
-      { "type": "uint8", "name": "itemType" },
-      { "type": "uint8", "name": "itemStatus" },
-      { "type": "string", "name": "description" },
-      { "type": "bytes", "name": "image" }
-    ]
+    name: '_registerUser',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "ownerDetails",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [
-      { "type": "string", "name": "name" },
-      { "type": "string", "name": "country" },
-      { "type": "uint256", "name": "phoneNumber" }
-    ]
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'adminId',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "payUser",
-    "constant": false,
-    "stateMutability": "payable",
-    "payable": true,
-    "inputs": [
-      { "type": "uint256", "name": "_userId" },
-      { "type": "uint256", "name": "_recycledItemId" }
+    inputs: [
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'uint256', name: '', type: 'uint256' },
     ],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "productCount",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productCountByOwner",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productIdByOwner",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productIds",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productOwner",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "address", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "products",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [
-      { "type": "uint256", "name": "productId" },
-      { "type": "string", "name": "name" },
-      { "type": "uint256", "name": "quantity" },
-      { "type": "address", "name": "owner" },
-      { "type": "bytes", "name": "data" },
-      { "type": "uint256", "name": "amount" },
-      { "type": "uint8", "name": "productStatus" }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "productsByProducerId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "" },
-      { "type": "uint256", "name": "" }
+    name: 'allProductsByProducer',
+    outputs: [
+      { internalType: 'uint256', name: 'productId', type: 'uint256' },
+      { internalType: 'string', name: 'name', type: 'string' },
+      { internalType: 'uint256', name: 'quantity', type: 'uint256' },
+      { internalType: 'address', name: 'owner', type: 'address' },
+      { internalType: 'string', name: 'description', type: 'string' },
+      { internalType: 'bytes', name: 'data', type: 'bytes' },
+      { internalType: 'uint256', name: 'amount', type: 'uint256' },
+      { internalType: 'enum Product.ProductStatus', name: 'productStatus', type: 'uint8' },
     ],
-    "outputs": [{ "type": "uint256", "name": "" }]
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "rates",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint8", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
+    inputs: [{ internalType: 'uint256', name: '_riderId', type: 'uint256' }],
+    name: 'approveRider',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "recycleItem",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "string", "name": "_type" },
-      { "type": "uint256", "name": "_weight" },
-      { "type": "string", "name": "_description" },
-      { "type": "bytes", "name": "_data" }
+    inputs: [{ internalType: 'uint256', name: '_riderId', type: 'uint256' }],
+    name: 'banRider',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: '_riderId', type: 'uint256' },
+      { internalType: 'uint256', name: '_userId', type: 'uint256' },
+      { internalType: 'uint256', name: '_recycleItemId', type: 'uint256' },
     ],
-    "outputs": []
+    name: 'confirmItem',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "recycledItemId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
+    inputs: [],
+    name: 'contractBalance',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "registerAdmin",
-    "constant": false,
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "_admin" }],
-    "outputs": []
+    inputs: [{ internalType: 'address', name: '_admin', type: 'address' }],
+    name: 'deleteAdmin',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "registerProducer",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "string", "name": "_name" },
-      { "type": "string", "name": "_country" },
-      { "type": "uint256", "name": "_number" }
+    inputs: [{ internalType: 'address', name: '_user', type: 'address' }],
+    name: 'deleteUserAccount',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  { inputs: [], name: 'fundContract', outputs: [], stateMutability: 'payable', type: 'function' },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'hasRecycled',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'uint256', name: '', type: 'uint256' },
     ],
-    "outputs": []
+    name: 'hasUserReceivedPayment',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "registerUser",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "string", "name": "_address" },
-      { "type": "uint8", "name": "_number" },
-      { "type": "string", "name": "_name" }
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'idToAdmin',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'isAdminRegistered',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'isApproved',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: '', type: 'address' },
+      { internalType: 'uint256', name: '', type: 'uint256' },
     ],
-    "outputs": []
+    name: 'isProducerPaidForProduct',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "registrationAddress",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "address", "name": "" }]
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'isProducerRegistered',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "registrationId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "riderApplication",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "string", "name": "_name" },
-      { "type": "uint8", "name": "_number" },
-      { "type": "string", "name": "_vehicleNumber" },
-      { "type": "string", "name": "_homeAddress" },
-      { "type": "string", "name": "_country" },
-      { "type": "uint256", "name": "_capacity" },
-      { "type": "bytes", "name": "_image" },
-      { "type": "bytes", "name": "_vehicleRegistration" },
-      { "type": "uint8", "name": "_vehicleType" }
+    inputs: [
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'uint256', name: '', type: 'uint256' },
     ],
-    "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "riderCount",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "riderId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [
-      { "type": "uint256", "name": "id" },
-      { "type": "string", "name": "name" },
-      { "type": "uint8", "name": "phoneNumber" },
-      { "type": "string", "name": "vehicleNumber" },
-      { "type": "address", "name": "walletAddress" },
-      { "type": "string", "name": "homeAddress" },
-      { "type": "uint8", "name": "riderStatus" },
-      { "type": "string", "name": "country" },
-      { "type": "uint256", "name": "capacity" },
-      { "type": "bytes", "name": "vehicleImage" },
-      { "type": "bytes", "name": "vehicleRegistrationImage" },
-      { "type": "uint8", "name": "vehicleType" }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "setRate",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "uint8", "name": "_type" },
-      { "type": "uint256", "name": "_rate" }
+    name: 'itemByUserId',
+    outputs: [
+      { internalType: 'uint256', name: 'itemId', type: 'uint256' },
+      { internalType: 'uint256', name: 'weight', type: 'uint256' },
+      { internalType: 'enum ItemLib.ItemType', name: 'itemType', type: 'uint8' },
+      { internalType: 'enum PicknGet.ItemStatus', name: 'itemStatus', type: 'uint8' },
+      { internalType: 'string', name: 'description', type: 'string' },
+      { internalType: 'bytes', name: 'image', type: 'bytes' },
     ],
-    "outputs": []
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "totalEarned",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'ownerDetails',
+    outputs: [
+      { internalType: 'string', name: 'name', type: 'string' },
+      { internalType: 'string', name: 'country', type: 'string' },
+      { internalType: 'uint256', name: 'phoneNumber', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "totalRecycleddByUser",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
+    inputs: [
+      { internalType: 'uint256', name: '_userId', type: 'uint256' },
+      { internalType: 'uint256', name: '_recycledItemId', type: 'uint256' },
+    ],
+    name: 'payUser',
+    outputs: [],
+    stateMutability: 'payable',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "userAccountId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [
-      { "type": "uint256", "name": "id" },
-      { "type": "address", "name": "userAddress" },
-      { "type": "string", "name": "homeAddress" },
-      { "type": "uint8", "name": "phoneNumber" },
-      { "type": "string", "name": "name" }
-    ]
+    inputs: [],
+    name: 'productCount',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "userId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'productCountByOwner',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "validPid",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "bool", "name": "" }]
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'productIdByOwner',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
   },
   {
-    "type": "function",
-    "name": "validRider",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "bool", "name": "" }]
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'productIds',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
   },
-  { "type": "receive", "stateMutability": "payable" }
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'productOwner',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'products',
+    outputs: [
+      { internalType: 'uint256', name: 'productId', type: 'uint256' },
+      { internalType: 'string', name: 'name', type: 'string' },
+      { internalType: 'uint256', name: 'quantity', type: 'uint256' },
+      { internalType: 'address', name: 'owner', type: 'address' },
+      { internalType: 'string', name: 'description', type: 'string' },
+      { internalType: 'bytes', name: 'data', type: 'bytes' },
+      { internalType: 'uint256', name: 'amount', type: 'uint256' },
+      { internalType: 'enum Product.ProductStatus', name: 'productStatus', type: 'uint8' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'uint256', name: '', type: 'uint256' },
+    ],
+    name: 'productsByProducerId',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'enum ItemLib.ItemType', name: '', type: 'uint8' }],
+    name: 'rates',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'string', name: '_type', type: 'string' },
+      { internalType: 'uint256', name: '_weight', type: 'uint256' },
+      { internalType: 'string', name: '_description', type: 'string' },
+      { internalType: 'bytes', name: '_data', type: 'bytes' },
+    ],
+    name: 'recycleItem',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'recycledItemId',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '_admin', type: 'address' }],
+    name: 'registerAdmin',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'string', name: '_name', type: 'string' },
+      { internalType: 'string', name: '_country', type: 'string' },
+      { internalType: 'uint256', name: '_number', type: 'uint256' },
+    ],
+    name: 'registerProducer',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: '_producer', type: 'address' },
+      { internalType: 'string', name: '_name', type: 'string' },
+      { internalType: 'string', name: '_country', type: 'string' },
+      { internalType: 'uint256', name: '_number', type: 'uint256' },
+    ],
+    name: 'registerProductOwner',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'string', name: '_address', type: 'string' },
+      { internalType: 'string', name: '_number', type: 'string' },
+      { internalType: 'string', name: '_name', type: 'string' },
+      { internalType: 'bytes', name: '_picture', type: 'bytes' },
+    ],
+    name: 'registerUser',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'registrationAddress',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'registrationId',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'string', name: '_name', type: 'string' },
+      { internalType: 'string', name: '_number', type: 'string' },
+      { internalType: 'string', name: '_vehicleNumber', type: 'string' },
+      { internalType: 'string', name: '_homeAddress', type: 'string' },
+      { internalType: 'string', name: '_country', type: 'string' },
+      { internalType: 'uint256', name: '_capacity', type: 'uint256' },
+      { internalType: 'bytes', name: '_image', type: 'bytes' },
+      { internalType: 'bytes', name: '_vehicleRegistration', type: 'bytes' },
+      { internalType: 'enum PicknGet.VehicleType', name: '_vehicleType', type: 'uint8' },
+      { internalType: 'bytes', name: '_picture', type: 'bytes' },
+    ],
+    name: 'riderApplication',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'riderCount',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'riderId',
+    outputs: [
+      { internalType: 'uint256', name: 'id', type: 'uint256' },
+      { internalType: 'string', name: 'name', type: 'string' },
+      { internalType: 'string', name: 'phoneNumber', type: 'string' },
+      { internalType: 'string', name: 'vehicleNumber', type: 'string' },
+      { internalType: 'address', name: 'walletAddress', type: 'address' },
+      { internalType: 'string', name: 'homeAddress', type: 'string' },
+      { internalType: 'enum PicknGet.RiderStatus', name: 'riderStatus', type: 'uint8' },
+      { internalType: 'string', name: 'country', type: 'string' },
+      { internalType: 'uint256', name: 'capacity', type: 'uint256' },
+      { internalType: 'bytes', name: 'vehicleImage', type: 'bytes' },
+      { internalType: 'bytes', name: 'vehicleRegistrationImage', type: 'bytes' },
+      { internalType: 'enum PicknGet.VehicleType', name: 'vehicleType', type: 'uint8' },
+      { internalType: 'bytes', name: 'profilePicture', type: 'bytes' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'enum ItemLib.ItemType', name: '_type', type: 'uint8' },
+      { internalType: 'uint256', name: '_rate', type: 'uint256' },
+    ],
+    name: 'setRate',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'totalEarned',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'totalRecycleddByUser',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'userAccountId',
+    outputs: [
+      { internalType: 'uint256', name: 'id', type: 'uint256' },
+      { internalType: 'address', name: 'userAddress', type: 'address' },
+      { internalType: 'string', name: 'homeAddress', type: 'string' },
+      { internalType: 'string', name: 'phoneNumber', type: 'string' },
+      { internalType: 'string', name: 'name', type: 'string' },
+      { internalType: 'bytes', name: 'profilePicture', type: 'bytes' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'userId',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'validPid',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'validRider',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  { stateMutability: 'payable', type: 'receive' },
 ];
 
 export default abi;

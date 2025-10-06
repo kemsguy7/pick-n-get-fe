@@ -71,8 +71,15 @@ export default function AgentSignupStep4(): React.JSX.Element {
   const isConnected = !!(accountId && walletInterface);
 
   // Get signup context
-  const { signupData, updateDocumentInfo, setCurrentStep, markStepCompleted, canProceedToStep } =
-    useAgentSignup();
+  const {
+    signupData,
+    updateDocumentInfo,
+    setCurrentStep,
+    markStepCompleted,
+    canProceedToStep,
+    updateWeb2Status,
+    updateRegistrationResult,
+  } = useAgentSignup();
 
   // Set current step when component mounts
   useEffect(() => {
@@ -297,12 +304,13 @@ export default function AgentSignupStep4(): React.JSX.Element {
 
       setLoadingMessage('Preparing rider registration data...');
 
-      // Get form data from context instead of localStorage
+      // Get form data from context
       const { personalInfo, vehicleInfo, documentInfo } = signupData;
 
-      // Debug vehicle info
+      // Debug output
       console.log('🚗 Vehicle Info from context:', vehicleInfo);
-      console.log('🔍 Raw vehicle type:', vehicleInfo.vehicleType);
+      console.log('📄 Document Info from context:', documentInfo);
+      console.log('👤 Personal Info from context:', personalInfo);
 
       // Validate all required data is present
       if (!personalInfo.firstName || !personalInfo.lastName || !personalInfo.phoneNumber) {
@@ -317,13 +325,17 @@ export default function AgentSignupStep4(): React.JSX.Element {
         throw new Error('Required documents are missing');
       }
 
-      // Map vehicle type safely using the helper function
+      if (!documentInfo.profilePhoto?.cid) {
+        throw new Error('Profile photo is required');
+      }
+
+      // Map vehicle type safely
       const mappedVehicleType = getVehicleType(vehicleInfo.vehicleType);
 
       // Prepare rider data for blockchain registration
       const riderData: RiderData = {
         name: `${personalInfo.firstName} ${personalInfo.lastName}`,
-        phoneNumber: parseInt(personalInfo.phoneNumber),
+        phoneNumber: personalInfo.phoneNumber, // Now string, no conversion needed
         vehicleNumber: vehicleInfo.vehiclePlateNumber,
         homeAddress: personalInfo.homeAddress,
         country: personalInfo.country,
@@ -331,6 +343,16 @@ export default function AgentSignupStep4(): React.JSX.Element {
         vehicleImage: documentInfo.vehiclePhotos.cid,
         vehicleRegistration: documentInfo.vehicleRegistration.cid,
         vehicleType: mappedVehicleType,
+
+        // Profile picture and additional documents
+        profilePicture: documentInfo.profilePhoto.cid,
+        driversLicense: documentInfo.driversLicense?.cid,
+        insuranceCertificate: documentInfo.insuranceCertificate?.cid,
+
+        // Additional vehicle details for Web2
+        vehicleMakeModel: vehicleInfo.vehicleMakeModel,
+        vehiclePlateNumber: vehicleInfo.vehiclePlateNumber,
+        vehicleColor: vehicleInfo.vehicleColor,
       };
 
       console.log('📋 Rider data prepared:', {
@@ -342,6 +364,9 @@ export default function AgentSignupStep4(): React.JSX.Element {
         capacity: riderData.capacity,
         vehicleImageCID: riderData.vehicleImage,
         vehicleRegistrationCID: riderData.vehicleRegistration,
+        profilePictureCID: riderData.profilePicture,
+        driversLicenseCID: riderData.driversLicense || 'Not provided',
+        insuranceCertificateCID: riderData.insuranceCertificate || 'Not provided',
       });
 
       // Validate rider data
@@ -357,15 +382,34 @@ export default function AgentSignupStep4(): React.JSX.Element {
       const result = await registerRider(walletData, riderData);
 
       if (result.success) {
-        console.log('🎉 Rider registration successful!');
+        console.log('Rider registration successful!');
+
+        // Update registration result in context
+        updateRegistrationResult(result.txHash || '', result.riderId);
+
+        // Update Web2 sync status in context
+        updateWeb2Status(result.web2Saved || false, result.web2Error);
+
+        // Check if Web2 backend save was successful
+        if (result.web2Saved) {
+          console.log('✅ Data saved to backend database');
+        } else if (result.web2Error) {
+          console.warn('⚠️ Backend save failed:', result.web2Error);
+          // Don't fail the entire registration, just warn the user
+        }
 
         // Mark step as completed
         markStepCompleted(4);
 
         setLoadingMessage('');
-        setSuccess(
-          `Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`,
-        );
+
+        let successMessage = `Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`;
+
+        if (result.web2Error) {
+          successMessage += ` Note: Data was saved to blockchain but backend sync failed. Please contact support.`;
+        }
+
+        setSuccess(successMessage);
 
         setTimeout(() => {
           router.push('/auth/signup/success');
@@ -375,9 +419,9 @@ export default function AgentSignupStep4(): React.JSX.Element {
       }
     } catch (error) {
       console.error('💥 Account creation error:', error);
-      const ErrorMessage = error instanceof Error ? error.message : 'Account creation failed';
+      const errorMessage = error instanceof Error ? error.message : 'Account creation failed';
       setLoadingMessage('');
-      setError(ErrorMessage);
+      setError(errorMessage);
     } finally {
       if (!success) {
         setIsLoading(false);
