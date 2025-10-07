@@ -37,7 +37,7 @@ const hederaNetwork = currentNetworkConfig.network;
 //   icons: [window.location.origin + "/logo192.png"],
 // }
 const metadata: SignClientTypes.Metadata = {
-  name: "Pick'n'Get",
+  name: 'EcoCleans',
   description: 'Recycling Platform',
   url: typeof window !== 'undefined' ? window.location.origin : 'https://localhost:3000',
   icons: [typeof window !== 'undefined' ? window.location.origin + '/logo192.png' : '/logo192.png'],

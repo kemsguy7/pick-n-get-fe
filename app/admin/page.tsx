@@ -398,7 +398,7 @@ function AdminDashboardContent() {
                 Welcome, Kemsguy
               </h1>
               <p className="secondary-text font-inter text-lg">
-                Manage and monitor the PicknGet platform
+                Manage and monitor the EcoCleans platform
               </p>
             </div>
             <div className="flex gap-3">

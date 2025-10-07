@@ -175,7 +175,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500">
               <div className="h-8 w-8 rounded-lg bg-white"></div>
             </div>
-            <h1 className="font-space-grotesk text-2xl font-bold text-white">Join Pick'n'Get</h1>
+            <h1 className="font-space-grotesk text-2xl font-bold text-white">Join EcoCleans</h1>
             <p className="font-inter text-gray-300">Start your sustainable journey today</p>
           </div>
 
@@ -230,7 +230,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
                   </label>
                   <div
                     onClick={() => setShowVehicleDropdown(!showVehicleDropdown)}
-                    className="font-inter flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2.5 focus:border-transparent focus:ring-2 focus:ring-green-500"
+                    className="font-inter flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-black focus:border-transparent focus:ring-2 focus:ring-green-500"
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-lg">
@@ -263,7 +263,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
                               vehicle.value as 'bike' | 'car' | 'van' | 'truck',
                             )
                           }
-                          className="font-inter flex cursor-pointer items-center justify-between px-3 py-2.5 hover:bg-gray-50"
+                          className="font-inter flex cursor-pointer items-center justify-between px-3 py-2.5 text-black hover:bg-gray-50"
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{getVehicleTypeEmoji(vehicle.value)}</span>
@@ -287,7 +287,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
                     value={signupData.vehicleInfo.vehicleMakeModel}
                     onChange={handleInputChange}
                     placeholder="e.g., Toyota Corolla, Honda CBR"
-                    className={`font-inter w-full rounded-lg border px-3 py-2.5 focus:border-transparent focus:ring-2 focus:ring-green-500 ${
+                    className={`font-inter w-full rounded-lg border px-3 py-2.5 text-black focus:border-transparent focus:ring-2 focus:ring-green-500 ${
                       getFieldError('vehicleMakeModel')
                         ? 'border-red-300 bg-red-50'
                         : 'border-gray-300'
@@ -309,7 +309,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
                     value={signupData.vehicleInfo.vehiclePlateNumber}
                     onChange={handleInputChange}
                     placeholder="e.g., ABC-123, GH-1234-20"
-                    className={`font-inter w-full rounded-lg border px-3 py-2.5 focus:border-transparent focus:ring-2 focus:ring-green-500 ${
+                    className={`font-inter w-full rounded-lg border px-3 py-2.5 text-black focus:border-transparent focus:ring-2 focus:ring-green-500 ${
                       getFieldError('vehiclePlateNumber')
                         ? 'border-red-300 bg-red-50'
                         : 'border-gray-300'
@@ -333,7 +333,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
                     value={signupData.vehicleInfo.vehicleColor}
                     onChange={handleInputChange}
                     placeholder="e.g., Red, Blue, White"
-                    className={`font-inter w-full rounded-lg border px-3 py-2.5 focus:border-transparent focus:ring-2 focus:ring-green-500 ${
+                    className={`font-inter w-full rounded-lg border px-3 py-2.5 text-black focus:border-transparent focus:ring-2 focus:ring-green-500 ${
                       getFieldError('vehicleColor') ? 'border-red-300 bg-red-50' : 'border-gray-300'
                     }`}
                   />
@@ -349,7 +349,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
                   </label>
                   <div
                     onClick={() => setShowCapacityDropdown(!showCapacityDropdown)}
-                    className="font-inter flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2.5 focus:border-transparent focus:ring-2 focus:ring-green-500"
+                    className="font-inter flex w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-black focus:border-transparent focus:ring-2 focus:ring-green-500"
                   >
                     <span>{signupData.vehicleInfo.carryingCapacity} kg</span>
                     <svg
@@ -373,7 +373,7 @@ export default function AgentSignupStep3(): React.JSX.Element {
                         <div
                           key={capacity}
                           onClick={() => handleCapacitySelect(capacity)}
-                          className="font-inter flex cursor-pointer items-center justify-between px-3 py-2.5 hover:bg-gray-50"
+                          className="font-inter flex cursor-pointer items-center justify-between px-3 py-2.5 text-black hover:bg-gray-50"
                         >
                           <span>{capacity} kg</span>
                           {signupData.vehicleInfo.carryingCapacity === capacity && (

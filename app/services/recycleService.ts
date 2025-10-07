@@ -3,7 +3,7 @@ import { WalletInterface } from './wallets/walletInterface';
 import { ContractFunctionParameterBuilder } from './wallets/contractFunctionParameterBuilder';
 
 // Contract address on Hedera testnet
-const CONTRACT_ADDRESS = '0.0.6955878';
+const CONTRACT_ADDRESS = '0.0.6960598';
 
 // Type definitions
 export interface RecycleItemData {
