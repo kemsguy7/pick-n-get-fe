@@ -42,6 +42,8 @@ export default function PickupSchedule({
   const [ridersError, setRidersError] = useState('');
   const [vehicleType, setVehicleType] = useState('');
 
+  console.log(setTime, setDate);
+
   // Fetch riders when address is entered
   useEffect(() => {
     if (address && address.length > 10) {
@@ -90,9 +92,10 @@ export default function PickupSchedule({
       } else {
         setAvailableRiders(data.data.riders);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching riders:', error);
-      setRidersError(error.message || 'Failed to load available riders');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setRidersError(errorMessage || 'Failed to load available riders');
     } finally {
       setIsLoadingRiders(false);
     }

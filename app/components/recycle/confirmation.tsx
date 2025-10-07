@@ -40,6 +40,7 @@ export default function Confirmation({ formData, onReset }: ConfirmationProps) {
   const { accountId, walletInterface } = useWalletInterface();
 
   const isConnected = !!(accountId && walletInterface);
+  console.log(isSubmitting);
 
   const calculateEarnings = () => {
     if (!formData.category || !formData.weight) return 0;
@@ -146,7 +147,7 @@ export default function Confirmation({ formData, onReset }: ConfirmationProps) {
       // ==================== SUCCESS ====================
       setSubmitStatus('success');
       setLoadingMessage('');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Submission error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       setLoadingMessage('');
