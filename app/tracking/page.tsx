@@ -49,6 +49,15 @@ interface OrderHistoryItem {
   status: string;
 }
 
+interface PickupData {
+  riderId: number;
+  pickupAddress: string;
+  pickupCoordinates?: {
+    lat: number;
+    lng: number;
+  };
+}
+
 export default function TrackingPage() {
   const [activeTab, setActiveTab] = useState('active-orders');
   const [trackingId, setTrackingId] = useState('');
@@ -333,7 +342,7 @@ export default function TrackingPage() {
     timeline: OrderTimelineStep[];
     agent: AgentInfo;
   }) {
-    const [pickupData, setPickupData] = useState<any>(null);
+    const [pickupData, setPickupData] = useState<PickupData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

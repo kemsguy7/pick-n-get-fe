@@ -77,7 +77,7 @@ export default function LiveMap({
     return () => {
       map.current?.remove();
     };
-  }, []);
+  });
 
   // Poll rider location every 5 seconds
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function LiveMap({
     }
   };
 
-  const drawRoute = (geometry: any) => {
+  const drawRoute = (geometry: GeoJSON.Geometry) => {
     if (!map.current) return;
 
     if (map.current.getLayer(routeLayerId)) {
@@ -176,7 +176,6 @@ export default function LiveMap({
       paint: { 'line-color': '#22c55e', 'line-width': 4, 'line-opacity': 0.8 },
     });
   };
-
   return (
     <div className="relative h-full w-full">
       <div ref={mapContainer} className="h-full w-full rounded-lg" />
