@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Pick-n-get - Sustainable Recycling Made Easy',
-  description: 'Join the circular economy revolution with Pick-n-get.',
+  title: 'EcoCleans - Sustainable Recycling Made Easy',
+  description: 'Join the circular economy revolution with EcoCleans.',
 };
 
 export default function RootLayout({
