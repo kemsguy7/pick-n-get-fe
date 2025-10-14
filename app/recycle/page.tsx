@@ -36,7 +36,7 @@ import { useWalletInterface } from '../services/wallets/useWalletInterface';
 // }
 
 export interface RecycleFormData {
-  category: { id: string; name: string; rate: number; icon: string } | null;
+  category: { id: string; name: string; rate: number; icon: string; description: string } | null;
   weight: string;
   description: string;
   photos: File[];

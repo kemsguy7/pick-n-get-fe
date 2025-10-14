@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 
 // Mock rider ID - will replace with actual auth id after firebase integration
-const RIDER_ID = 123;
+const RIDER_ID = 1759734077663;
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 interface AgentStats {
   totalPickups: number;
@@ -55,7 +56,7 @@ export default function AgentDashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch(`/api/v1/agents/${RIDER_ID}/stats`);
+        const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/stats`);
         if (response.ok) {
           const data = await response.json();
           setStats(data.data);
@@ -83,7 +84,7 @@ export default function AgentDashboardPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/active`);
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/active`);
       if (response.ok) {
         const data = await response.json();
         setActivePickups(data.data.pickups);
@@ -102,7 +103,7 @@ export default function AgentDashboardPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/available`);
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/available`);
       if (response.ok) {
         const data = await response.json();
         setAvailableJobs(data.data.jobs);
@@ -119,7 +120,7 @@ export default function AgentDashboardPage() {
 
   const handleAcceptJob = async (pickupId: string) => {
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/${pickupId}/accept`, {
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/${pickupId}/accept`, {
         method: 'POST',
       });
       if (response.ok) {
@@ -137,7 +138,7 @@ export default function AgentDashboardPage() {
 
   const handleUpdateStatus = async (pickupId: string, status: string) => {
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/${pickupId}/status`, {
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/${pickupId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
