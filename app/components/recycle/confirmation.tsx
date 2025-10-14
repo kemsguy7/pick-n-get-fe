@@ -9,6 +9,8 @@ import { useWalletInterface } from '../../services/wallets/useWalletInterface';
 import { recycleItem, RecycleItemData } from '../../services/recycleService';
 import { WalletInterface } from '../../services/wallets/walletInterface';
 
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+
 interface ConfirmationProps {
   formData: RecycleFormData;
   onReset: () => void;
@@ -103,28 +105,36 @@ export default function Confirmation({ formData, onReset }: ConfirmationProps) {
       setSubmitStatus('pickup');
       setLoadingMessage('Creating pickup request...');
 
-      // Get selected rider from formData
-      const selectedRiderData = formData.selectedDriver; // This should contain rider info
+      // Get user data from wallet context
+      // const userId = metamaskCtx.userBlockchainId || walletConnectCtx.userBlockchainId || 1;
+      // const userName = metamaskCtx.userName || walletConnectCtx.userName || 'User';
+      // const userPhone = metamaskCtx.userPhone || '+234000000000';
 
-      // TODO: Get user ID from backend/context (for now using mock)
-      const userId = 1; // This should come from authenticated user
+      const userId = 1; // TODO: Get from user context after login
+      const userName = 'Test User';
+      const userPhone = '+2341234567890';
+
+      // Get selected rider ID from formData (it's stored during rider selection)
+      const selectedRiderId = formData.selectedRiderId || 1; // ✅ New field needed
+      // ✅ New field needed
 
       const pickupPayload = {
         userId: userId,
         itemId: blockchainResult.itemId || 1,
-        customerName: 'John Doe', // TODO: Get from user profile
-        customerPhoneNumber: '+234123456789', // TODO: Get from user profile
+        customerName: userName,
+        customerPhoneNumber: userPhone,
         pickupAddress: formData.address,
-        pickupCoordinates: undefined, // Backend will geocode if needed
+        pickupCoordinates: formData.pickupCoordinates, // ✅ Add this
         itemCategory: formData.category.id,
         itemWeight: parseFloat(formData.weight),
-        itemDescription: formData.description,
-        itemImages: [], // TODO: Handle photo uploads to IPFS
+        itemDescription: formData.description || '',
+        itemImages: formData.photos || [],
         estimatedEarnings: estimatedEarnings,
-        riderId: parseInt(selectedRiderData || '1'), // Should be rider ID from selection
+        riderId: selectedRiderId,
       };
+      console.log('🔍 Pickup payload:', pickupPayload);
 
-      const pickupResponse = await fetch('/api/v1/pickups/create', {
+      const pickupResponse = await fetch(`${baseUrl}/pickups/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
