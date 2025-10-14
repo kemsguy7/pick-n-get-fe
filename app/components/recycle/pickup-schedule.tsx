@@ -118,21 +118,58 @@ export default function PickupSchedule({
     setSelectedRider(riderId);
     const rider = availableRiders.find((r) => r.riderId === riderId);
     if (rider) {
-      updateFormData({
+      const updateData = {
         selectedDriver: rider.name,
-        selectedRiderId: riderId, // ✅ Add this line
+        selectedRiderId: riderId,
         selectedVehicle: rider.vehicleType.toLowerCase() as 'bike' | 'car' | 'truck',
-      });
+      };
+      console.log('🔍 DEBUG: Calling updateFormData with:', updateData);
+      updateFormData(updateData);
     }
   };
 
+  // const handleContinue = () => {
+  //   if (!address || !selectedRider) {
+  //     alert('Please enter pickup address and select a rider');
+  //     return;
+  //   }
+
+  //   updateFormData({ address, date, time });
+  //   onSubmit();
+  // };
   const handleContinue = () => {
-    if (!address || !selectedRider) {
-      alert('Please enter pickup address and select a rider');
+    if (!address) {
+      alert('Please enter pickup address');
       return;
     }
 
-    updateFormData({ address, date, time });
+    if (!selectedRider) {
+      alert('Please select a rider');
+      return;
+    }
+
+    const rider = availableRiders.find((r) => r.riderId === selectedRider);
+
+    if (!rider) {
+      console.error('❌ Rider not found in availableRiders');
+      alert('Selected rider not found');
+      return;
+    }
+
+    console.log('🔍 DEBUG: handleContinue - rider ID:', rider.riderId);
+    console.log('🔍 DEBUG: Current formData:', formData);
+
+    // Update form data with ALL required fields
+    updateFormData({
+      address,
+      date,
+      time,
+      selectedDriver: rider.name,
+      selectedRiderId: rider.riderId, // ✅ Ensure ID is passed
+      selectedVehicle: rider.vehicleType.toLowerCase() as 'bike' | 'car' | 'truck',
+    });
+
+    console.log('🔍 DEBUG: After updateFormData, calling onSubmit...');
     onSubmit();
   };
 
