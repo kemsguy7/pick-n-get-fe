@@ -1,11 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-
-// Note: You'll need to set up Firebase client config
-// For now, we'll use fetch to get location from our backend API
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
@@ -40,12 +37,14 @@ export default function LiveMap({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const riderMarker = useRef<mapboxgl.Marker | null>(null);
+  const pickupMarker = useRef<mapboxgl.Marker | null>(null);
+  const destinationMarker = useRef<mapboxgl.Marker | null>(null);
   const [riderLocation, setRiderLocation] = useState<RiderLocation | null>(null);
   const [eta, setEta] = useState<string>('Calculating...');
   const [distance, setDistance] = useState<string>('--');
   const routeLayerId = 'route-layer';
 
-  // Initialize map
+  // Initialize map once
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
@@ -58,26 +57,40 @@ export default function LiveMap({
 
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    if (pickupCoordinates) {
-      new mapboxgl.Marker({ color: '#22c55e' })
+    return () => {
+      map.current?.remove();
+    };
+  }, []);
+
+  // Handle pickup marker
+  useEffect(() => {
+    if (!map.current || !pickupCoordinates) return;
+
+    if (pickupMarker.current) {
+      pickupMarker.current.setLngLat([pickupCoordinates.lng, pickupCoordinates.lat]);
+    } else {
+      pickupMarker.current = new mapboxgl.Marker({ color: '#22c55e' })
         .setLngLat([pickupCoordinates.lng, pickupCoordinates.lat])
         .setPopup(new mapboxgl.Popup().setHTML(`<strong>Pickup</strong><br/>${pickupAddress}`))
         .addTo(map.current);
     }
+  }, [pickupCoordinates, pickupAddress]);
 
-    if (destinationCoordinates) {
-      new mapboxgl.Marker({ color: '#3b82f6' })
+  // Handle destination marker
+  useEffect(() => {
+    if (!map.current || !destinationCoordinates) return;
+
+    if (destinationMarker.current) {
+      destinationMarker.current.setLngLat([destinationCoordinates.lng, destinationCoordinates.lat]);
+    } else {
+      destinationMarker.current = new mapboxgl.Marker({ color: '#3b82f6' })
         .setLngLat([destinationCoordinates.lng, destinationCoordinates.lat])
         .setPopup(
           new mapboxgl.Popup().setHTML(`<strong>Destination</strong><br/>${destinationAddress}`),
         )
         .addTo(map.current);
     }
-
-    return () => {
-      map.current?.remove();
-    };
-  });
+  }, [destinationCoordinates, destinationAddress]);
 
   // Poll rider location every 5 seconds
   useEffect(() => {
@@ -101,7 +114,54 @@ export default function LiveMap({
     return () => clearInterval(interval);
   }, [riderId]);
 
-  // Update rider marker
+  const drawRoute = useCallback((geometry: GeoJSON.Geometry) => {
+    if (!map.current) return;
+
+    if (map.current.getLayer(routeLayerId)) {
+      map.current.removeLayer(routeLayerId);
+    }
+    if (map.current.getSource(routeLayerId)) {
+      map.current.removeSource(routeLayerId);
+    }
+
+    map.current.addSource(routeLayerId, {
+      type: 'geojson',
+      data: { type: 'Feature', properties: {}, geometry },
+    });
+
+    map.current.addLayer({
+      id: routeLayerId,
+      type: 'line',
+      source: routeLayerId,
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#22c55e', 'line-width': 4, 'line-opacity': 0.8 },
+    });
+  }, []);
+
+  const fetchRoute = useCallback(
+    async (start: [number, number], end: [number, number]) => {
+      try {
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          const durationMinutes = Math.round(route.duration / 60);
+          const distanceKm = (route.distance / 1000).toFixed(1);
+
+          setEta(`${durationMinutes} min`);
+          setDistance(`${distanceKm} km`);
+          drawRoute(route.geometry);
+        }
+      } catch (error) {
+        console.error('Error fetching route:', error);
+      }
+    },
+    [drawRoute],
+  );
+
+  // Update rider marker and route
   useEffect(() => {
     if (!map.current || !riderLocation) return;
 
@@ -131,51 +191,8 @@ export default function LiveMap({
       bounds.extend([pickupCoordinates.lng, pickupCoordinates.lat]);
       map.current.fitBounds(bounds, { padding: 80 });
     }
-  }, [riderLocation, pickupCoordinates]);
+  }, [riderLocation, pickupCoordinates, fetchRoute]);
 
-  const fetchRoute = async (start: [number, number], end: [number, number]) => {
-    try {
-      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.routes && data.routes.length > 0) {
-        const route = data.routes[0];
-        const durationMinutes = Math.round(route.duration / 60);
-        const distanceKm = (route.distance / 1000).toFixed(1);
-
-        setEta(`${durationMinutes} min`);
-        setDistance(`${distanceKm} km`);
-        drawRoute(route.geometry);
-      }
-    } catch (error) {
-      console.error('Error fetching route:', error);
-    }
-  };
-
-  const drawRoute = (geometry: GeoJSON.Geometry) => {
-    if (!map.current) return;
-
-    if (map.current.getLayer(routeLayerId)) {
-      map.current.removeLayer(routeLayerId);
-    }
-    if (map.current.getSource(routeLayerId)) {
-      map.current.removeSource(routeLayerId);
-    }
-
-    map.current.addSource(routeLayerId, {
-      type: 'geojson',
-      data: { type: 'Feature', properties: {}, geometry },
-    });
-
-    map.current.addLayer({
-      id: routeLayerId,
-      type: 'line',
-      source: routeLayerId,
-      layout: { 'line-join': 'round', 'line-cap': 'round' },
-      paint: { 'line-color': '#22c55e', 'line-width': 4, 'line-opacity': 0.8 },
-    });
-  };
   return (
     <div className="relative h-full w-full">
       <div ref={mapContainer} className="h-full w-full rounded-lg" />

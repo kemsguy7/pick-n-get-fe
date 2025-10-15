@@ -11,7 +11,6 @@ import {
   User,
   Package,
   Truck,
-  Star,
   Calendar,
   Loader2,
 } from 'lucide-react';
