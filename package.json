@@ -11,7 +11,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "clean": "rm -rf .next node_modules/ .cache",
-    "restart": "npm run clean && npm install && npm run dev"
+    "restart": "npm run clean && npm install  --legacy-peer-deps && npm run dev"
   },
   "dependencies": {
     "@hashgraph/hedera-wallet-connect": "^1.5.1",
