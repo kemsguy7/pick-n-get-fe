@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Leaf, Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
+import { Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLayout } from './LayoutProvider';
 import { useWalletInterface } from '../../../app/services//wallets/useWalletInterface';
 import { WalletSelectionDialog } from '../walletConnection/WalletSelectionDialog';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface HeaderProps {
   className?: string;
@@ -150,14 +151,20 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
 
               {/* Logo */}
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500 sm:h-10 sm:w-10 lg:h-12 lg:w-12">
+                <div className="flex items-center sm:h-10">
                   <Link href="/" passHref>
-                    <Leaf className="h-4 w-4 text-white sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
+                    <Image
+                      src="/EcocleansLogo.jpeg"
+                      width={150}
+                      height={150}
+                      alt="EcoCleans Logo"
+                    />
+                    {/* <Leaf className="h-4 w-4 text-white sm:h-6 sm:w-6 lg:h-7 lg:w-7" /> */}
                   </Link>
                 </div>
-                <span className="font-space-grotesk text-lg font-semibold text-white sm:text-xl lg:text-2xl">
+                {/* <span className="font-space-grotesk text-lg font-semibold text-white sm:text-xl lg:text-2xl">
                   EcoCleans
-                </span>
+                </span> */}
               </div>
             </div>
 

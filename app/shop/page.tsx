@@ -1,61 +1,75 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import AppLayout from "../components/layout/AppLayout"
-import ProductCard, { ProductCardProps } from "../components/ui/ProductCard"
-import ProductListCard from "../components/shop/ProductListCard"
-import ShoppingCart from "../components/shop/shoppingCart"
-import { 
-  Search,
-  
-  ChevronDown,
-  ShoppingBag,
-  Recycle,
-  
-  Star
-} from 'lucide-react'
+import { useState } from 'react';
+import AppLayout from '../components/layout/AppLayout';
+import ProductCard, { ProductCardProps } from '../components/ui/ProductCard';
+import ProductListCard from '../components/shop/ProductListCard';
+import ShoppingCart from '../components/shop/shoppingCart';
+
+import { Search, ChevronDown, ShoppingBag, Recycle, Star } from 'lucide-react';
 
 interface CategoryFilter {
-  id: string
-  name: string
-  icon: React.ReactNode
-  count: number
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  count: number;
 }
 
 interface CartItem extends ProductCardProps {
-  quantity: number
+  quantity: number;
 }
 
 export default function EcoShopPage() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [sortBy, setSortBy] = useState('featured')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('featured');
   // const [showFilters, setShowFilters] = useState(false)
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [showCart, setShowCart] = useState(false)
-  const [favoriteItems, setFavoriteItems] = useState<string[]>([])
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [favoriteItems, setFavoriteItems] = useState<string[]>([]);
 
   // Categories
   const categories: CategoryFilter[] = [
-    { id: 'all', name: 'All Categories', icon: <Recycle className="w-4 h-4" />, count: 12 },
-    { id: 'bags', name: 'Bags & Accessories', icon: <ShoppingBag className="w-4 h-4" />, count: 3 },
-    { id: 'furniture', name: 'Furniture', icon: <div className="w-4 h-4 bg-green-500 rounded" />, count: 2 },
-    { id: 'office', name: 'Office Supplies', icon: <div className="w-4 h-4 bg-blue-500 rounded" />, count: 4 },
-    { id: 'fitness', name: 'Fitness & Wellness', icon: <div className="w-4 h-4 bg-purple-500 rounded" />, count: 2 },
-    { id: 'garden', name: 'Home & Garden', icon: <div className="w-4 h-4 bg-orange-500 rounded" />, count: 1 },
-  ]
+    { id: 'all', name: 'All Categories', icon: <Recycle className="h-4 w-4" />, count: 12 },
+    { id: 'bags', name: 'Bags & Accessories', icon: <ShoppingBag className="h-4 w-4" />, count: 3 },
+    {
+      id: 'furniture',
+      name: 'Furniture',
+      icon: <div className="h-4 w-4 rounded bg-green-500" />,
+      count: 2,
+    },
+    {
+      id: 'office',
+      name: 'Office Supplies',
+      icon: <div className="h-4 w-4 rounded bg-blue-500" />,
+      count: 4,
+    },
+    {
+      id: 'fitness',
+      name: 'Fitness & Wellness',
+      icon: <div className="h-4 w-4 rounded bg-purple-500" />,
+      count: 2,
+    },
+    {
+      id: 'garden',
+      name: 'Home & Garden',
+      icon: <div className="h-4 w-4 rounded bg-orange-500" />,
+      count: 1,
+    },
+  ];
 
   // Products data
   const productsData: ProductCardProps[] = [
     {
       id: '1',
-      image: '/api/placeholder/400/400',
+      image: '/RecycleImg1.png',
       name: 'Recycled Ocean Plastic Backpack',
-      description: 'Durable and stylish backpack made from 100% recycled ocean plastic bottles. Perfect for daily use with multiple compartments.',
+      description:
+        'Durable and stylish backpack made from 100% recycled ocean plastic bottles. Perfect for daily use with multiple compartments.',
       price: 95.99,
       currency: '₦',
-      originalPrice: 120.00,
+      originalPrice: 120.0,
       rating: 4.7,
       reviewCount: 127,
       brand: 'EcoCarr Lagos',
@@ -64,13 +78,14 @@ export default function EcoShopPage() {
       isVerified: true,
       ecoTokens: 580,
       freeShipping: true,
-      shippingThreshold: 50000
+      shippingThreshold: 50000,
     },
     {
       id: '2',
-      image: '/api/placeholder/400/400',
+      image: '/RecycleImg2.png',
       name: 'Tire Ottoman Seat',
-      description: 'Comfortable ottoman made from upcycled car tires with eco-friendly cushioning and modern design.',
+      description:
+        'Comfortable ottoman made from upcycled car tires with eco-friendly cushioning and modern design.',
       price: 205.99,
       currency: '₦',
       rating: 4.6,
@@ -81,13 +96,14 @@ export default function EcoShopPage() {
       isVerified: true,
       ecoTokens: 920,
       freeShipping: true,
-      shippingThreshold: 50000
+      shippingThreshold: 50000,
     },
     {
       id: '3',
-      image: '/api/placeholder/400/400',
+      image: '/RecycleImg3.png',
       name: 'Recycled Paper Desk Organizer',
-      description: 'Multi-compartment desk organizer made from 100% recycled paper. Lightweight yet sturdy design.',
+      description:
+        'Multi-compartment desk organizer made from 100% recycled paper. Lightweight yet sturdy design.',
       price: 54.99,
       currency: '₦',
       rating: 4.8,
@@ -98,13 +114,14 @@ export default function EcoShopPage() {
       isVerified: true,
       ecoTokens: 500,
       freeShipping: true,
-      shippingThreshold: 50000
+      shippingThreshold: 50000,
     },
     {
       id: '4',
-      image: '/api/placeholder/400/400',
+      image: '/YogaMat.jpeg',
       name: 'Eco Yoga Mat - Recycled Rubber',
-      description: 'Premium yoga mat made from recycled rubber tires with excellent grip, cushioning and durability.',
+      description:
+        'Premium yoga mat made from recycled rubber tires with excellent grip, cushioning and durability.',
       price: 75.99,
       currency: '₦',
       rating: 4.9,
@@ -115,13 +132,14 @@ export default function EcoShopPage() {
       isVerified: true,
       ecoTokens: 450,
       freeShipping: true,
-      shippingThreshold: 50000
+      shippingThreshold: 50000,
     },
     {
       id: '5',
-      image: '/api/placeholder/400/400',
+      image: '/RecycleImg5.png',
       name: 'Recycled Plastic Garden Planter',
-      description: 'Durable outdoor planter made from recycled plastic waste. Weather-resistant and UV-stable.',
+      description:
+        'Durable outdoor planter made from recycled plastic waste. Weather-resistant and UV-stable.',
       price: 62.99,
       currency: '₦',
       rating: 4.3,
@@ -132,13 +150,14 @@ export default function EcoShopPage() {
       isVerified: true,
       ecoTokens: 400,
       freeShipping: true,
-      shippingThreshold: 50000
+      shippingThreshold: 50000,
     },
     {
       id: '6',
-      image: '/api/placeholder/400/400',
+      image: '/RecycleImg6.png',
       name: 'Upcycled Denim Tote Bag',
-      description: 'Stylish tote bag made from upcycled denim fabric. Each bag is unique with its own wash pattern.',
+      description:
+        'Stylish tote bag made from upcycled denim fabric. Each bag is unique with its own wash pattern.',
       price: 95.99,
       currency: '₦',
       rating: 4.7,
@@ -149,57 +168,53 @@ export default function EcoShopPage() {
       isVerified: true,
       ecoTokens: 550,
       freeShipping: true,
-      shippingThreshold: 50000
-    }
-  ]
+      shippingThreshold: 50000,
+    },
+  ];
 
   const handleAddToCart = (productId: string) => {
-    const product = productsData.find(p => p.id === productId)
+    const product = productsData.find((p) => p.id === productId);
     if (product) {
-      setCartItems(prev => {
-        const existingItem = prev.find(item => item.id === productId)
+      setCartItems((prev) => {
+        const existingItem = prev.find((item) => item.id === productId);
         if (existingItem) {
-          return prev.map(item => 
-            item.id === productId 
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          )
+          return prev.map((item) =>
+            item.id === productId ? { ...item, quantity: item.quantity + 1 } : item,
+          );
         }
-        return [...prev, { ...product, quantity: 1 }]
-      })
+        return [...prev, { ...product, quantity: 1 }];
+      });
     }
-  }
+  };
 
   const handleToggleFavorite = (productId: string) => {
-    setFavoriteItems(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    )
-  }
+    setFavoriteItems((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
+    );
+  };
 
-  const filteredProducts = productsData.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === 'all' || 
-                           product.name.toLowerCase().includes(selectedCategory)
-    return matchesSearch && matchesCategory
-  })
+  const filteredProducts = productsData.filter((product) => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'all' || product.name.toLowerCase().includes(selectedCategory);
+    return matchesSearch && matchesCategory;
+  });
 
-  const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
-  console.log(cartItemCount); 
+  const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  console.log(cartItemCount);
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6 dashboard-container">
-        <div className="max-w-7xl mx-auto space-y-6 lg:space-y-8">
-          
+      <div className="dashboard-container min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
+        <div className="mx-auto max-w-7xl space-y-6 lg:space-y-8">
           {/* Header */}
-          <div className="text-center mb-8 lg:mb-12">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-4 font-space-grotesk flex items-center justify-center gap-3">
-              EcoShop <ShoppingBag className="w-8 h-8 lg:w-10 lg:h-10 text-green-400" />
+          <div className="mb-8 text-center lg:mb-12">
+            <h1 className="text-primary font-space-grotesk mb-4 flex items-center justify-center gap-3 text-3xl font-bold md:text-4xl lg:text-5xl">
+              EcoShop <ShoppingBag className="h-8 w-8 text-green-400 lg:h-10 lg:w-10" />
             </h1>
-            <p className="text-lg secondary-text font-inter">
+            <p className="secondary-text font-inter text-lg">
               Discover amazing products made from recycled materials.
             </p>
             <p className="secondary-text font-inter text-sm">
@@ -208,90 +223,93 @@ export default function EcoShopPage() {
           </div>
 
           {/* Featured Products Pills */}
-          <div className="flex flex-wrap gap-2 justify-center mb-6">
-            <span className="px-4 py-2 bg-[#DCFCE7] text-primary rounded-full text-sm font-medium">
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            <span className="text-primary rounded-full bg-[#DCFCE7] px-4 py-2 text-sm font-medium">
               100% Eco-Friendly
             </span>
-            <span className="px-4 py-2 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
+            <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-600">
               Verified Vendors
             </span>
-            <span className="px-4 py-2 bg-purple-100 text-purple-600 rounded-full text-sm font-medium">
+            <span className="rounded-full bg-purple-100 px-4 py-2 text-sm font-medium text-purple-600">
               Pay with ECO Tokens
             </span>
-            <span className="px-4 py-2 bg-orange-100 text-orange-600 rounded-full text-sm font-medium">
+            <span className="rounded-full bg-orange-100 px-4 py-2 text-sm font-medium text-orange-600">
               Carbon-Neutral Shipping
             </span>
           </div>
 
           {/* Featured Products Section */}
           <div>
-            <h2 className="text-2xl font-bold text-white mb-6 font-space-grotesk flex items-center gap-2">
-              <Star className="w-6 h-6 text-yellow-400" />
+            <h2 className="font-space-grotesk mb-6 flex items-center gap-2 text-2xl font-bold text-white">
+              <Star className="h-6 w-6 text-yellow-400" />
               Featured Products
             </h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+            <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
               {/* Featured Product 1 */}
-              <div className="relative bg-slate-800 rounded-2xl overflow-hidden border border-[#A5D6A74D]">
-                <div className="absolute top-4 left-4 flex gap-2 z-10">
-                  <span className="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div className="relative overflow-hidden rounded-2xl border border-[#A5D6A74D] bg-slate-800">
+                <div className="absolute top-4 left-4 z-10 flex gap-2">
+                  <span className="flex items-center gap-1 rounded-lg bg-green-100 px-3 py-1 text-xs font-medium text-green-600">
+                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
                     Featured Eco Product
                   </span>
-                  <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-xs font-medium">
+                  <span className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-600">
                     95% Recycled
                   </span>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/2 p-6">
-                    <img 
-                      src="/api/placeholder/300/300" 
+                    <img
+                      src="/RecycleImg1.png"
                       alt="Recycled Ocean Plastic Backpack"
-                      className="w-full h-64 object-cover rounded-lg"
+                      className="h-64 w-full rounded-lg object-cover"
                     />
                   </div>
-                  
-                  <div className="w-1/2 p-6 flex flex-col justify-between">
+
+                  <div className="flex w-1/2 flex-col justify-between p-6">
                     <div>
-                      <h3 className="text-white font-bold text-xl font-space-grotesk mb-3">
+                      <h3 className="font-space-grotesk mb-3 text-xl font-bold text-white">
                         Recycled Ocean Plastic Backpack
                       </h3>
-                      <p className="text-gray-300 text-sm mb-4 font-inter">
-                        Durable and stylish backpack made from 100% recycled ocean plastic bottles. Perfect for daily use with multiple compartments.
+                      <p className="font-inter mb-4 text-sm text-gray-300">
+                        Durable and stylish backpack made from 100% recycled ocean plastic bottles.
+                        Perfect for daily use with multiple compartments.
                       </p>
-                      
-                      <div className="flex items-center gap-1 mb-4">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-white font-medium text-sm">4.8</span>
-                        <span className="text-gray-400 text-sm">(127 reviews)</span>
+
+                      <div className="mb-4 flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium text-white">4.8</span>
+                        <span className="text-sm text-gray-400">(127 reviews)</span>
                       </div>
 
-                      <div className="flex items-center gap-4 mb-4 text-xs text-gray-300">
+                      <div className="mb-4 flex items-center gap-4 text-xs text-gray-300">
                         <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <div className="h-3 w-3 rounded-full bg-green-500"></div>
                           <span>89,340kg CO₂ saved</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <div className="h-3 w-3 rounded-full bg-blue-500"></div>
                           <span>12.5L of water saved</span>
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="mb-3 flex items-center justify-between">
                         <div>
-                          <span className="text-white font-bold text-2xl font-space-grotesk">₦65.99</span>
-                          <p className="text-green-400 text-sm">920ECO</p>
+                          <span className="font-space-grotesk text-2xl font-bold text-white">
+                            ₦65.99
+                          </span>
+                          <p className="text-sm text-green-400">920ECO</p>
                         </div>
                         <div className="text-right">
                           <p className="text-xs text-gray-400">by EcoCraft Lagos</p>
                           <p className="text-xs text-gray-400">24 in stock</p>
                         </div>
                       </div>
-                      
-                      <button className="w-full gradient-button text-black font-semibold py-3 rounded-lg">
+
+                      <button className="gradient-button w-full rounded-lg py-3 font-semibold text-black">
                         Add to Cart
                       </button>
                     </div>
@@ -300,66 +318,69 @@ export default function EcoShopPage() {
               </div>
 
               {/* Featured Product 2 */}
-              <div className="relative bg-slate-800 rounded-2xl overflow-hidden border border-[#A5D6A74D]">
-                <div className="absolute top-4 left-4 flex gap-2 z-10">
-                  <span className="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div className="relative overflow-hidden rounded-2xl border border-[#A5D6A74D] bg-slate-800">
+                <div className="absolute top-4 left-4 z-10 flex gap-2">
+                  <span className="flex items-center gap-1 rounded-lg bg-green-100 px-3 py-1 text-xs font-medium text-green-600">
+                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
                     Featured Eco Product
                   </span>
-                  <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg text-xs font-medium">
+                  <span className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-600">
                     95% Recycled
                   </span>
                 </div>
-                
+
                 <div className="flex">
                   <div className="w-1/2 p-6">
-                    <img 
-                      src="/api/placeholder/300/300" 
+                    <img
+                      src="/RecycleImg2.png"
                       alt="Tire Ottoman Seat"
-                      className="w-full h-64 object-cover rounded-lg"
+                      className="h-64 w-full rounded-lg object-cover"
                     />
                   </div>
-                  
-                  <div className="w-1/2 p-6 flex flex-col justify-between">
+
+                  <div className="flex w-1/2 flex-col justify-between p-6">
                     <div>
-                      <h3 className="text-white font-bold text-xl font-space-grotesk mb-3">
+                      <h3 className="font-space-grotesk mb-3 text-xl font-bold text-white">
                         Tire Ottoman Seat
                       </h3>
-                      <p className="text-gray-300 text-sm mb-4 font-inter">
-                        Comfortable ottoman made from upcycled car tires with eco-friendly cushioning. Perfect for modern living spaces.
+                      <p className="font-inter mb-4 text-sm text-gray-300">
+                        Comfortable ottoman made from upcycled car tires with eco-friendly
+                        cushioning. Perfect for modern living spaces.
                       </p>
-                      
-                      <div className="flex items-center gap-1 mb-4">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-white font-medium text-sm">4.6</span>
-                        <span className="text-gray-400 text-sm">(89 reviews)</span>
+
+                      <div className="mb-4 flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm font-medium text-white">4.6</span>
+                        <span className="text-sm text-gray-400">(89 reviews)</span>
                       </div>
 
-                      <div className="flex items-center gap-4 mb-4 text-xs text-gray-300">
+                      <div className="mb-4 flex items-center gap-4 text-xs text-gray-300">
                         <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <div className="h-3 w-3 rounded-full bg-green-500"></div>
                           <span>15.7kg CO₂ saved</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <div className="h-3 w-3 rounded-full bg-blue-500"></div>
                           <span>45L of water saved</span>
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="mb-3 flex items-center justify-between">
                         <div>
-                          <span className="text-white font-bold text-2xl font-space-grotesk">₦89.99</span>
-                          <p className="text-green-400 text-sm">1800ECO</p>
+                          <span className="font-space-grotesk text-2xl font-bold text-white">
+                            ₦89.99
+                          </span>
+                          <p className="text-sm text-green-400">1800ECO</p>
                         </div>
                         <div className="text-right">
                           <p className="text-xs text-gray-400">by Sustainable Furniture Co.</p>
                           <p className="text-xs text-gray-400">12 in stock</p>
                         </div>
                       </div>
-                      
-                      <button className="w-full gradient-button text-black font-semibold py-3 rounded-lg">
+
+                      <button className="gradient-button w-full rounded-lg py-3 font-semibold text-black">
                         Add to Cart
                       </button>
                     </div>
@@ -370,16 +391,16 @@ export default function EcoShopPage() {
           </div>
 
           {/* Search, Filters & View Toggle */}
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          <div className="mb-6 flex flex-col gap-4 lg:flex-row">
             {/* Search Bar */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <div className="relative flex-1">
+              <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
               <input
                 type="text"
                 placeholder="Search eco-friendly products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-colors"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 py-3 pr-4 pl-10 text-white placeholder-gray-400 transition-colors focus:border-green-500 focus:outline-none"
               />
             </div>
 
@@ -389,23 +410,23 @@ export default function EcoShopPage() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none bg-slate-800 border border-[#D9D9D94D] rounded-lg px-4 py-3 pr-8 text-white focus:outline-none focus:border-green-500"
+                  className="appearance-none rounded-lg border border-[#D9D9D94D] bg-slate-800 px-4 py-3 pr-8 text-white focus:border-green-500 focus:outline-none"
                   style={{ backdropFilter: 'blur(4px)' }}
                 >
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               </div>
 
               <div className="relative">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none bg-slate-800 border border-[#D9D9D94D] rounded-lg px-4 py-3 pr-8 text-white focus:outline-none focus:border-green-500"
+                  className="appearance-none rounded-lg border border-[#D9D9D94D] bg-slate-800 px-4 py-3 pr-8 text-white focus:border-green-500 focus:outline-none"
                   style={{ backdropFilter: 'blur(4px)' }}
                 >
                   <option value="featured">Featured</option>
@@ -414,46 +435,49 @@ export default function EcoShopPage() {
                   <option value="rating">Highest Rated</option>
                   <option value="newest">Most Eco-Friendly</option>
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <ChevronDown className="pointer-events-none absolute top-1/2 right-2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               </div>
             </div>
           </div>
 
           {/* Shop by Category */}
           <div>
-            <h2 className="text-2xl font-bold text-white mb-6 font-space-grotesk">Shop by Category</h2>
+            <h2 className="font-space-grotesk mb-6 text-2xl font-bold text-white">
+              Shop by Category
+            </h2>
             <p className="secondary-text font-inter mb-6">
-              Select the type of materials you want to recycle. Each category has different rates and requirements.
+              Select the type of materials you want to recycle. Each category has different rates
+              and requirements.
             </p>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+
+            <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
               {categories.slice(1).map((category) => (
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`p-4 rounded-xl border transition-all duration-200 text-center ${
+                  className={`rounded-xl border p-4 text-center transition-all duration-200 ${
                     selectedCategory === category.id
-                      ? 'bg-green-500/20 border-green-500 text-green-400'
-                      : 'bg-slate-800 border-slate-600 text-white hover:border-green-500/50'
+                      ? 'border-green-500 bg-green-500/20 text-green-400'
+                      : 'border-slate-600 bg-slate-800 text-white hover:border-green-500/50'
                   }`}
                 >
-                  <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+                  <div className="mx-auto mb-2 flex h-8 w-8 items-center justify-center">
                     {category.icon}
                   </div>
-                  <p className="text-sm font-medium font-inter">{category.name}</p>
+                  <p className="font-inter text-sm font-medium">{category.name}</p>
                 </button>
               ))}
             </div>
           </div>
 
           {/* View Toggle and Products Count */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
-                  viewMode === 'grid' 
-                    ? 'bg-green-600 text-white' 
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-green-600 text-white'
                     : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
                 }`}
               >
@@ -461,25 +485,23 @@ export default function EcoShopPage() {
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
-                  viewMode === 'list' 
-                    ? 'bg-green-600 text-white' 
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-green-600 text-white'
                     : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
                 }`}
               >
                 List View
               </button>
             </div>
-            
-            <span className="text-gray-400 text-sm">
-              {filteredProducts.length} products found
-            </span>
+
+            <span className="text-sm text-gray-400">{filteredProducts.length} products found</span>
           </div>
 
           {/* Products Grid/List */}
           <div>
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -506,29 +528,30 @@ export default function EcoShopPage() {
           </div>
 
           {/* Shopping Impact */}
-          <div className="bg-[#DCFCE7] rounded-2xl p-6 border border-green-200 mt-12">
-            <h3 className="text-primary font-semibold font-space-grotesk mb-4 flex items-center gap-2">
-              <Recycle className="w-5 h-5" />
+          <div className="mt-12 rounded-2xl border border-green-200 bg-[#DCFCE7] p-6">
+            <h3 className="text-primary font-space-grotesk mb-4 flex items-center gap-2 font-semibold">
+              <Recycle className="h-5 w-5" />
               Your Shopping Impact
             </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-green-600 font-space-grotesk">0kg</p>
-                <p className="text-green-600 text-sm font-inter">CO₂ Saved</p>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="rounded-lg bg-white p-4 text-center">
+                <p className="font-space-grotesk text-2xl font-bold text-green-600">0kg</p>
+                <p className="font-inter text-sm text-green-600">CO₂ Saved</p>
               </div>
-              <div className="bg-white rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-blue-600 font-space-grotesk">0L</p>
-                <p className="text-blue-600 text-sm font-inter">Water Saved</p>
+              <div className="rounded-lg bg-white p-4 text-center">
+                <p className="font-space-grotesk text-2xl font-bold text-blue-600">0L</p>
+                <p className="font-inter text-sm text-blue-600">Water Saved</p>
               </div>
-              <div className="bg-white rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-purple-600 font-space-grotesk">0kg</p>
-                <p className="text-purple-600 text-sm font-inter">Waste Diverted</p>
+              <div className="rounded-lg bg-white p-4 text-center">
+                <p className="font-space-grotesk text-2xl font-bold text-purple-600">0kg</p>
+                <p className="font-inter text-sm text-purple-600">Waste Diverted</p>
               </div>
             </div>
-            
-            <p className="text-center text-gray-600 text-sm mt-4 font-inter">
-              Every purchase supports sustainable manufacturing and helps reduce environmental impact.
+
+            <p className="font-inter mt-4 text-center text-sm text-gray-600">
+              Every purchase supports sustainable manufacturing and helps reduce environmental
+              impact.
             </p>
           </div>
         </div>
@@ -541,15 +564,15 @@ export default function EcoShopPage() {
           onClose={() => setShowCart(false)}
           onUpdateQuantity={(id, quantity) => {
             if (quantity === 0) {
-              setCartItems(prev => prev.filter(item => item.id !== id))
+              setCartItems((prev) => prev.filter((item) => item.id !== id));
             } else {
-              setCartItems(prev => prev.map(item => 
-                item.id === id ? { ...item, quantity } : item
-              ))
+              setCartItems((prev) =>
+                prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
+              );
             }
           }}
         />
       )}
     </AppLayout>
-  )
+  );
 }
