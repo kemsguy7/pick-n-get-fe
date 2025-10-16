@@ -153,13 +153,9 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="flex items-center sm:h-10">
                   <Link href="/" passHref>
-                    <Image src="/EcoCleanLogo.jpeg" width={150} height={150} alt="EcoCleans Logo" />
-                    {/* <Leaf className="h-4 w-4 text-white sm:h-6 sm:w-6 lg:h-7 lg:w-7" /> */}
+                    <Image src="/EcoCleanLogo.png" width={150} height={150} alt="EcoCleans Logo" />
                   </Link>
                 </div>
-                {/* <span className="font-space-grotesk text-lg font-semibold text-white sm:text-xl lg:text-2xl">
-                  EcoCleans
-                </span> */}
               </div>
             </div>
 
