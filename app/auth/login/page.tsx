@@ -1,5 +1,5 @@
+'use client';
 export const dynamic = 'force-dynamic';
-('use client');
 
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
