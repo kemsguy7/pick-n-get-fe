@@ -207,6 +207,7 @@ export default function LiveMap({ riderId, pickupAddress, pickupCoordinates }: L
       const pickupPos: [number, number] = [pickupCoordinates.lng, pickupCoordinates.lat];
       fetchRouteAndUpdateMap(riderPos, pickupPos);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [riderLocation, pickupCoordinates, isMapInitialized]);
 
   const fetchRouteAndUpdateMap = async (start: [number, number], end: [number, number]) => {

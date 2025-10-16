@@ -10,6 +10,19 @@ import { app } from '../../../lib/firebase';
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
+// Define Firebase Error interface
+interface FirebaseError extends Error {
+  code: string;
+  message: string;
+}
+
+// Define backend response interface
+interface BackendVerificationResponse {
+  userId?: string;
+  riderId?: string;
+  name: string;
+}
+
 export default function VerifyForm() {
   const router = useRouter();
   const { confirmationResult, login, setIsLoading } = useAuthStore();
@@ -72,8 +85,8 @@ export default function VerifyForm() {
           uid: result.user.uid,
           phoneNumber: result.user.phoneNumber!,
           role: role,
-          userId: userData.userId,
-          riderId: userData.riderId,
+          userId: userData.userId ? Number(userData.userId) : undefined,
+          riderId: userData.riderId ? Number(userData.riderId) : undefined,
           name: userData.name,
         });
 
@@ -91,15 +104,16 @@ export default function VerifyForm() {
       } else {
         throw new Error('User not found in database');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ Verification error:', error);
+      const firebaseError = error as FirebaseError;
 
-      if (error.code === 'auth/invalid-verification-code') {
+      if (firebaseError.code === 'auth/invalid-verification-code') {
         setError('Invalid code. Please check and try again.');
-      } else if (error.code === 'auth/code-expired') {
+      } else if (firebaseError.code === 'auth/code-expired') {
         setError('Code expired. Please request a new one.');
       } else {
-        setError(error.message || 'Verification failed. Please try again.');
+        setError(firebaseError.message || 'Verification failed. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -107,7 +121,10 @@ export default function VerifyForm() {
     }
   };
 
-  const verifyWithBackend = async (phoneNumber: string, role: 'user' | 'rider'): Promise<any> => {
+  const verifyWithBackend = async (
+    phoneNumber: string,
+    role: 'user' | 'rider',
+  ): Promise<BackendVerificationResponse> => {
     try {
       const endpoint = role === 'rider' ? '/riders/verify-phone' : '/users/verify-phone';
 

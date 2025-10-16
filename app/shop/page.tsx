@@ -207,7 +207,7 @@ export default function EcoShopPage() {
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-      <div className="dashboard-container min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
+      <div className="dashboard-container min-h-screen p-4 lg:p-6">
         <div className="mx-auto max-w-7xl space-y-6 lg:space-y-8">
           {/* Header */}
           <div className="mb-8 text-center lg:mb-12">

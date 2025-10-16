@@ -4,36 +4,42 @@ import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '../../components/layout/AppLayout';
-import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
+import {
+  getAuth,
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+  ConfirmationResult,
+} from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useAuthStore } from '@/lib/authStore';
+
+// Extend Window interface for recaptchaVerifier
+declare global {
+  interface Window {
+    recaptchaVerifier?: RecaptchaVerifier;
+  }
+}
+
+// Define Firebase Error interface
+interface FirebaseError extends Error {
+  code: string;
+  message: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
   const { setConfirmationResult } = useAuthStore();
 
   const [phone, setPhone] = useState('');
-
-  const handleSendOTP = async () => {
-  const [phone, setPhone] = useState('');
   const [role, setRole] = useState<'user' | 'rider'>('user');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const setupRecaptcha = () => {
+  const setupRecaptcha = (): RecaptchaVerifier => {
     const auth = getAuth(app);
-    const verifier = setUpRecaptcha('recaptcha-container');
-    try {
-      const confirmation = await signInWithPhoneNumber(auth, phone, verifier);
-      setConfirmationResult(confirmation);
-      localStorage.setItem('verificationId', confirmation.verificationId);
-      router.push('/auth/verify');
-    } catch (error) {
-      console.error('SMS not sent', error);
-    }
 
-    if (!(window as any).recaptchaVerifier) {
-      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
         callback: () => {
           console.log('reCAPTCHA verified');
@@ -44,7 +50,7 @@ export default function LoginPage() {
         },
       });
     }
-    return (window as any).recaptchaVerifier;
+    return window.recaptchaVerifier;
   };
 
   const handleSendOTP = async () => {
@@ -67,7 +73,7 @@ export default function LoginPage() {
       const verifier = setupRecaptcha();
 
       console.log('Sending OTP to:', phone);
-      const confirmation = await signInWithPhoneNumber(auth, phone, verifier);
+      const confirmation: ConfirmationResult = await signInWithPhoneNumber(auth, phone, verifier);
 
       setConfirmationResult(confirmation);
       localStorage.setItem('verificationId', confirmation.verificationId);
@@ -76,21 +82,22 @@ export default function LoginPage() {
 
       console.log('✅ OTP sent successfully');
       router.push('/auth/verify');
-    } catch (error: any) {
+    } catch (error) {
       console.error('❌ SMS not sent:', error);
+      const firebaseError = error as FirebaseError;
 
-      if (error.code === 'auth/invalid-phone-number') {
+      if (firebaseError.code === 'auth/invalid-phone-number') {
         setError('Invalid phone number format');
-      } else if (error.code === 'auth/too-many-requests') {
+      } else if (firebaseError.code === 'auth/too-many-requests') {
         setError('Too many attempts. Please try again later.');
       } else {
-        setError(error.message || 'Failed to send OTP. Please try again.');
+        setError(firebaseError.message || 'Failed to send OTP. Please try again.');
       }
 
       // Reset recaptcha
-      if ((window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier.clear();
-        (window as any).recaptchaVerifier = null;
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = undefined;
       }
     } finally {
       setLoading(false);
@@ -117,11 +124,7 @@ export default function LoginPage() {
 
           {/* Form Card */}
           <div className="rounded-2xl bg-white p-6">
-            {/* Progress Header */}
-          <div className="rounded-2xl bg-white p-6">
             <div className="mb-6">
-              <h2 className="font-space-grotesk mb-2 text-lg font-semibold text-black">Sign In</h2>
-              {/* Phone */}
               <h2 className="font-space-grotesk mb-2 text-lg font-semibold text-black">Sign In</h2>
 
               {/* Role Selection */}
@@ -168,8 +171,6 @@ export default function LoginPage() {
                     name="phone"
                     placeholder="+234 800 000 0000"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="font-inter w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 transition-colors focus:border-green-500 focus:outline-none"
                     onChange={(e) => {
                       setPhone(e.target.value);
                       setError('');
@@ -184,15 +185,6 @@ export default function LoginPage() {
                 <p className="font-inter mt-1 text-xs text-gray-500">
                   Include country code (e.g., +234 for Nigeria)
                 </p>
-              </div>
-              <div className="mt-6 space-y-3">
-                <button
-                  onClick={handleSendOTP}
-                  className="font-space-grotesk flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-gray-300"
-                >
-                  {' '}
-                  Submit
-                </button>
               </div>
 
               {/* Error Message */}
@@ -277,7 +269,5 @@ export default function LoginPage() {
         </div>
       </div>
     </AppLayout>
-  );
-};
   );
 }
