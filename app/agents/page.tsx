@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import StatCard, { StatCardProps } from '../components/ui/statCard';
+import { useAuthGuard } from '../hooks/useAuthGuard';
 import {
   Truck,
   DollarSign,
@@ -21,7 +22,7 @@ import {
 } from 'lucide-react';
 
 // Mock rider ID - will replace with actual auth id after firebase integration
-const RIDER_ID = 1759734077663;
+// const RIDER_ID = 1759734077663;
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 interface AgentStats {
@@ -52,6 +53,25 @@ export default function AgentDashboardPage() {
   const [availableJobs, setAvailableJobs] = useState<Pickup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { isAuthenticated, user, isLoading } = useAuthGuard('rider');
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect via useAuthGuard
+  }
+
+  // Get rider ID from auth store
+  const RIDER_ID = user?.riderId || 1759734077663;
 
   useEffect(() => {
     const fetchStats = async () => {

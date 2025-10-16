@@ -148,11 +148,54 @@ export default function TrackingPage() {
     { id: 'detailed-tracking', label: 'Detailed Tracking' },
     { id: 'order-history', label: 'Order History' },
   ];
+  const getTimeline = (pickup: PickupDetails) => {
+    const timeline = [
+      {
+        title: 'Request Submitted',
+        description: 'Your recycling request has been received',
+        timestamp: new Date(pickup.requestedAt).toLocaleString(),
+        completed: true,
+      },
+      {
+        title: 'Agent Assigned',
+        description: `${pickup.riderName || 'Agent'} assigned to your pickup`,
+        timestamp: pickup.acceptedAt ? new Date(pickup.acceptedAt).toLocaleString() : 'Pending',
+        completed: !!pickup.acceptedAt,
+        current: pickup.pickUpStatus === 'Pending',
+      },
+      {
+        title: 'Agent En Route',
+        description: 'Agent is on the way to pickup location',
+        timestamp: pickup.acceptedAt ? new Date(pickup.acceptedAt).toLocaleString() : 'Pending',
+        completed:
+          pickup.pickUpStatus === 'InTransit' ||
+          pickup.pickUpStatus === 'PickedUp' ||
+          pickup.pickUpStatus === 'Delivered',
+        current: pickup.pickUpStatus === 'InTransit',
+      },
+      {
+        title: 'Items Collected',
+        description: 'Items collected and being transported',
+        timestamp: pickup.collectedAt ? new Date(pickup.collectedAt).toLocaleString() : 'Pending',
+        completed: pickup.pickUpStatus === 'PickedUp' || pickup.pickUpStatus === 'Delivered',
+        current: pickup.pickUpStatus === 'PickedUp',
+      },
+      {
+        title: 'Delivered to Facility',
+        description: 'Items delivered to recycling facility',
+        timestamp: pickup.deliveredAt ? new Date(pickup.deliveredAt).toLocaleString() : 'Pending',
+        completed: pickup.pickUpStatus === 'Delivered',
+        current: false,
+      },
+    ];
+
+    return timeline;
+  };
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
-        <div className="mx-auto max-w-6xl space-y-6 lg:space-y-8">
+      <div className="min-h-screen overflow-hidden p-4 lg:p-6">
+        <div className="mx-auto max-w-7xl space-y-6 lg:space-y-8">
           {/* Header */}
           <div className="mb-8 text-center lg:mb-12">
             <h1 className="text-primary font-space-grotesk mb-4 flex items-center justify-center gap-3 text-3xl font-bold md:text-4xl lg:text-5xl">
@@ -224,7 +267,111 @@ export default function TrackingPage() {
             )}
             {activeTab === 'detailed-tracking' &&
               (selectedOrder ? (
-                <DetailedTrackingTab order={selectedOrder} />
+                <div className="space-y-6">
+                  {/* Timeline and Map Section */}
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    {/* Timeline - Takes 2/3 on large screens */}
+                    <div className="rounded-xl border border-[#A5D6A74D] bg-black p-6 lg:col-span-2">
+                      <h3 className="font-space-grotesk mb-6 flex items-center gap-2 font-semibold text-white">
+                        <Clock className="h-5 w-5" />
+                        Order Timeline -{' '}
+                        {selectedOrder.trackingId || selectedOrder.pickupId.slice(-8)}
+                      </h3>
+                      <div className="space-y-6">
+                        {getTimeline(selectedOrder).map((step, index) => (
+                          <div key={index} className="flex gap-4">
+                            <div className="flex flex-col items-center">
+                              <div
+                                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                                  step.completed
+                                    ? 'bg-green-500 text-white'
+                                    : step.current
+                                      ? 'bg-blue-500 text-white'
+                                      : 'bg-gray-600 text-gray-300'
+                                }`}
+                              >
+                                {step.completed ? (
+                                  <CheckCircle className="h-4 w-4" />
+                                ) : (
+                                  <div className="h-2 w-2 rounded-full bg-current" />
+                                )}
+                              </div>
+                              {index < getTimeline(selectedOrder).length - 1 && (
+                                <div
+                                  className={`mt-2 h-8 w-0.5 ${step.completed ? 'bg-green-500' : 'bg-gray-600'}`}
+                                />
+                              )}
+                            </div>
+                            <div className="flex-1 pb-8">
+                              <h4
+                                className={`font-medium ${step.completed || step.current ? 'text-white' : 'text-gray-400'}`}
+                              >
+                                {step.title}
+                              </h4>
+                              <p className="mt-1 text-sm text-gray-400">{step.description}</p>
+                              <p className="mt-2 text-xs text-gray-500">{step.timestamp}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Agent Info & Map - Takes 1/3 on large screens */}
+                    <div className="space-y-6">
+                      <div className="rounded-xl border border-[#A5D6A74D] bg-black p-6">
+                        <h3 className="font-space-grotesk mb-4 flex items-center gap-2 font-semibold text-white">
+                          <User className="h-5 w-5" />
+                          Assigned Agent
+                        </h3>
+                        <div className="mb-4 flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500">
+                            <User className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-white">
+                              {selectedOrder.riderName || 'TBA'}
+                            </h4>
+                            <p className="text-sm text-gray-400">
+                              {selectedOrder.riderPhoneNumber || 'Phone TBA'}
+                            </p>
+                          </div>
+                        </div>
+                        {selectedOrder.riderPhoneNumber && (
+                          <div className="grid grid-cols-2 gap-2">
+                            <a
+                              href={`tel:${selectedOrder.riderPhoneNumber}`}
+                              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                            >
+                              <Phone className="h-4 w-4" />
+                              Call
+                            </a>
+                            <a
+                              href={`sms:${selectedOrder.riderPhoneNumber}`}
+                              className="rounded-lg bg-green-600 px-3 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-green-700"
+                            >
+                              Message
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Live Map - Larger container */}
+                      <div className="h-96 rounded-xl border border-[#A5D6A74D] bg-black p-6 lg:h-[500px]">
+                        <h3 className="font-space-grotesk mb-4 flex items-center gap-2 font-semibold text-white">
+                          <MapPin className="h-5 w-5" />
+                          Live Location
+                        </h3>
+                        <div className="h-full overflow-hidden rounded-lg">
+                          <LiveMap
+                            riderId={selectedOrder.riderId}
+                            pickupAddress={selectedOrder.pickupAddress}
+                            pickupCoordinates={selectedOrder.pickupCoordinates}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <NoActiveTrackingTab onViewOrders={() => setActiveTab('active-orders')} />
               ))}

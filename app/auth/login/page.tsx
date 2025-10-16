@@ -4,18 +4,23 @@ import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AppLayout from '../../components/layout/AppLayout';
-import { getAuth, signInWithPhoneNumber } from 'firebase/auth';
-import { setUpRecaptcha } from '@/lib/firebaseRecaptcha';
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { useAuthStore } from '@/lib/authStore';
 
-const LoginPage = () => {
+export default function LoginPage() {
   const router = useRouter();
   const { setConfirmationResult } = useAuthStore();
 
   const [phone, setPhone] = useState('');
 
   const handleSendOTP = async () => {
+  const [phone, setPhone] = useState('');
+  const [role, setRole] = useState<'user' | 'rider'>('user');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const setupRecaptcha = () => {
     const auth = getAuth(app);
     const verifier = setUpRecaptcha('recaptcha-container');
     try {
@@ -25,6 +30,70 @@ const LoginPage = () => {
       router.push('/auth/verify');
     } catch (error) {
       console.error('SMS not sent', error);
+    }
+
+    if (!(window as any).recaptchaVerifier) {
+      (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          console.log('reCAPTCHA verified');
+        },
+        'expired-callback': () => {
+          console.log('reCAPTCHA expired');
+          setError('reCAPTCHA expired. Please try again.');
+        },
+      });
+    }
+    return (window as any).recaptchaVerifier;
+  };
+
+  const handleSendOTP = async () => {
+    if (!phone) {
+      setError('Please enter your phone number');
+      return;
+    }
+
+    // Validate phone format
+    if (!phone.startsWith('+')) {
+      setError('Phone number must start with country code (e.g., +234...)');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const auth = getAuth(app);
+      const verifier = setupRecaptcha();
+
+      console.log('Sending OTP to:', phone);
+      const confirmation = await signInWithPhoneNumber(auth, phone, verifier);
+
+      setConfirmationResult(confirmation);
+      localStorage.setItem('verificationId', confirmation.verificationId);
+      localStorage.setItem('phoneNumber', phone);
+      localStorage.setItem('role', role);
+
+      console.log('✅ OTP sent successfully');
+      router.push('/auth/verify');
+    } catch (error: any) {
+      console.error('❌ SMS not sent:', error);
+
+      if (error.code === 'auth/invalid-phone-number') {
+        setError('Invalid phone number format');
+      } else if (error.code === 'auth/too-many-requests') {
+        setError('Too many attempts. Please try again later.');
+      } else {
+        setError(error.message || 'Failed to send OTP. Please try again.');
+      }
+
+      // Reset recaptcha
+      if ((window as any).recaptchaVerifier) {
+        (window as any).recaptchaVerifier.clear();
+        (window as any).recaptchaVerifier = null;
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,9 +118,46 @@ const LoginPage = () => {
           {/* Form Card */}
           <div className="rounded-2xl bg-white p-6">
             {/* Progress Header */}
+          <div className="rounded-2xl bg-white p-6">
             <div className="mb-6">
               <h2 className="font-space-grotesk mb-2 text-lg font-semibold text-black">Sign In</h2>
               {/* Phone */}
+              <h2 className="font-space-grotesk mb-2 text-lg font-semibold text-black">Sign In</h2>
+
+              {/* Role Selection */}
+              <div className="mb-4">
+                <label className="font-inter mb-2 block text-sm font-medium text-black">
+                  I am a:
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRole('user')}
+                    className={`rounded-lg border-2 p-3 text-center transition-all ${
+                      role === 'user'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-300 hover:border-green-300'
+                    }`}
+                  >
+                    <div className="text-2xl">♻️</div>
+                    <div className="font-inter mt-1 text-sm font-medium">Recycler</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole('rider')}
+                    className={`rounded-lg border-2 p-3 text-center transition-all ${
+                      role === 'rider'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-300 hover:border-green-300'
+                    }`}
+                  >
+                    <div className="text-2xl">🚗</div>
+                    <div className="font-inter mt-1 text-sm font-medium">Agent</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Phone Number */}
               <div>
                 <label className="font-inter mb-2 block text-sm font-medium text-black">
                   Phone Number
@@ -60,15 +166,24 @@ const LoginPage = () => {
                   <input
                     type="tel"
                     name="phone"
-                    placeholder="+2340000000000"
+                    placeholder="+234 800 000 0000"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="font-inter w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 transition-colors focus:border-green-500 focus:outline-none"
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setError('');
+                    }}
+                    disabled={loading}
+                    className="font-inter w-full rounded-lg border border-gray-300 py-2 pr-3 pl-10 transition-colors focus:border-green-500 focus:outline-none disabled:bg-gray-100"
                   />
                   <div className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400">
                     📞
                   </div>
                 </div>
+                <p className="font-inter mt-1 text-xs text-gray-500">
+                  Include country code (e.g., +234 for Nigeria)
+                </p>
               </div>
               <div className="mt-6 space-y-3">
                 <button
@@ -79,11 +194,50 @@ const LoginPage = () => {
                   Submit
                 </button>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+              )}
+
+              {/* Submit Button */}
+              <div className="mt-6">
+                <button
+                  onClick={handleSendOTP}
+                  disabled={loading}
+                  className="font-space-grotesk flex w-full items-center justify-center gap-2 rounded-xl bg-green-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Sending OTP...
+                    </>
+                  ) : (
+                    'Send OTP'
+                  )}
+                </button>
+              </div>
             </div>
 
+            {/* Sign Up Link */}
             <div className="mt-6 space-y-2">
               <p className="font-inter text-center text-sm text-gray-600">
-                Don't have an account Sign up here?{' '}
+                Don't have an account?{' '}
                 <span
                   className="cursor-pointer text-green-500 hover:underline"
                   onClick={() => router.push('/auth/signup/recycler')}
@@ -125,5 +279,5 @@ const LoginPage = () => {
     </AppLayout>
   );
 };
-
-export default LoginPage;
+  );
+}
