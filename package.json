@@ -13,6 +13,14 @@
     "clean": "rm -rf .next node_modules/ .cache",
     "restart": "npm run clean && npm install  --legacy-peer-deps && npm run dev"
   },
+  "overrides": {
+    "use-sync-external-store": {
+      "react": "$react"
+    },
+    "valtio": {
+      "react": "$react"
+    }
+  },
   "dependencies": {
     "@hashgraph/hedera-wallet-connect": "^1.5.1",
     "@hashgraph/proto": "^2.23.0",
@@ -46,8 +54,8 @@
     "pinata": "^2.5.0",
     "postcss": "^8.5.6",
     "process": "^0.11.10",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "tailwindcss": "^4.1.12",
