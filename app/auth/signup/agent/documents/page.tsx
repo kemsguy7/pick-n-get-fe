@@ -13,10 +13,10 @@ import {
   RiderData,
   VehicleType,
 } from '../../../../services/riderService';
-import { validateFile, uploadToIPFS, testPinataConnection } from '../../../../apis/ipfsApi';
+// import { validateFile, uploadToIPFS, testPinataConnection } from '../../../../apis/ipfsApi';
 
 import AppLayout from '../../../../components/layout/AppLayout';
-
+import { uploadToHedera, validateFile } from '../../../../apis/hederaApi';
 interface DocumentUploadForm {
   driversLicense: File | null;
   vehicleRegistration: File | null;
@@ -94,22 +94,22 @@ export default function AgentSignupStep4(): React.JSX.Element {
     }
   }, [canProceedToStep, router]);
 
-  useEffect(() => {
-    // Test IPFS connection when component mounts
-    const testConnection = async () => {
-      try {
-        const connection = await testPinataConnection();
-        if (!connection.success) {
-          console.error('❌ IPFS connection failed:', connection.error);
-          setError('IPFS service unavailable. Please try again later.');
-        }
-      } catch (error) {
-        console.error('❌ IPFS connection test error:', error);
-      }
-    };
+  // useEffect(() => {
+  //   // Test IPFS connection when component mounts
+  //   const testConnection = async () => {
+  //     try {
+  //       const connection = await testPinataConnection();
+  //       if (!connection.success) {
+  //         console.error('❌ IPFS connection failed:', connection.error);
+  //         setError('IPFS service unavailable. Please try again later.');
+  //       }
+  //     } catch (error) {
+  //       console.error('❌ IPFS connection test error:', error);
+  //     }
+  //   };
 
-    testConnection();
-  }, []);
+  //   testConnection();
+  // }, []);
 
   const handleFileUpload = async (fieldName: keyof DocumentUploadForm, file: File | null) => {
     console.log(`📁 File upload initiated for ${fieldName}:`, file?.name);
@@ -160,32 +160,28 @@ export default function AgentSignupStep4(): React.JSX.Element {
     }));
 
     try {
-      console.log(`🚀 Starting IPFS upload for ${fieldName}...`);
+      console.log(`🚀 Starting Hedera File Service upload for ${fieldName}...`);
 
-      // Simulate progress during upload
-      const progressInterval = setInterval(() => {
+      // Upload to Hedera with progress tracking
+      const uploadResult = await uploadToHedera(file, (progress) => {
         setUploadProgress((prev) => ({
           ...prev,
           [fieldName]: {
             ...prev[fieldName],
-            progress: Math.min(prev[fieldName].progress + 10, 90),
+            uploading: true,
+            progress: progress,
           },
         }));
-      }, 500);
-
-      // Upload to IPFS - THIS IS THE MISSING PART!
-      const uploadResult = await uploadToIPFS(file, `${fieldName}-${Date.now()}-${file.name}`);
-
-      clearInterval(progressInterval);
+      });
 
       if (uploadResult.success) {
-        console.log(`✅ IPFS upload successful for ${fieldName}:`, uploadResult.cid);
+        console.log(`✅ Hedera upload successful for ${fieldName}:`, uploadResult.fileId);
         setUploadProgress((prev) => ({
           ...prev,
           [fieldName]: {
             uploading: false,
             progress: 100,
-            cid: uploadResult.cid,
+            cid: uploadResult.fileId, // Store fileId as 'cid' for compatibility
           },
         }));
 
@@ -193,12 +189,12 @@ export default function AgentSignupStep4(): React.JSX.Element {
         updateDocumentInfo({
           [fieldName]: {
             file,
-            cid: uploadResult.cid!,
-            url: uploadResult.url!,
+            cid: uploadResult.fileId!,
+            url: `hedera://file/${uploadResult.fileId}`,
           },
         });
       } else {
-        console.error(`❌ IPFS upload failed for ${fieldName}:`, uploadResult.error);
+        console.error(`❌ Hedera upload failed for ${fieldName}:`, uploadResult.error);
         setUploadProgress((prev) => ({
           ...prev,
           [fieldName]: {
@@ -486,7 +482,9 @@ export default function AgentSignupStep4(): React.JSX.Element {
               <Check className="h-4 w-4 text-green-500" />
             </div>
             <p className="font-inter text-sm font-medium text-green-600">{file?.name}</p>
-            <p className="font-inter text-xs text-gray-500">Uploaded to IPFS</p>
+            <p className="font-inter text-xs text-gray-500">
+              Uploaded to Hedera File System Succesfully{' '}
+            </p>
             <p className="mt-1 font-mono text-xs break-all text-green-500">
               {progress.cid.substring(0, 20)}...
             </p>
