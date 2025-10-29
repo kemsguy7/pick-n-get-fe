@@ -12,29 +12,6 @@ import Confirmation from '../components/recycle/confirmation';
 // import { WalletConnectContext } from "../contexts/WalletConnectContext"
 import { useWalletInterface } from '../services/wallets/useWalletInterface';
 
-// export interface RecycleFormData {
-//   category: {
-//     id: string;
-//     name: string;
-//     icon: string;
-//     rate: number;
-//     description: string;
-//     examples: string[];
-//   } | null;
-//   weight: string;
-//   description: string;
-//   address: string;
-//   date: string;
-//   time: string;
-//   requestId?: string;
-//   selectedDriver?: string;
-//   selectedRiderId?: number; // New field to store selected rider
-//   //  selectedDriver?: string;
-//   selectedVehicle?: 'bike' | 'car' | 'truck';
-//   pickupCoordinates?: { lat: number; lng: number }; // ✅ Add this
-//   photos?: string[]; // ✅ Add this if using photos ID
-// }
-
 export interface RecycleFormData {
   category: { id: string; name: string; rate: number; icon: string; description: string } | null;
   weight: string;
