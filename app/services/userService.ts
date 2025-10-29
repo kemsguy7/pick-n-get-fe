@@ -2,7 +2,7 @@ import { ContractId } from '@hashgraph/sdk';
 import { WalletInterface } from './wallets/walletInterface';
 import { ContractFunctionParameterBuilder } from './wallets/contractFunctionParameterBuilder';
 
-const CONTRACT_ADDRESS = '0.0.6960598';
+const CONTRACT_ADDRESS = '0.0.7153245';
 
 // Type definitions
 export interface UserData {

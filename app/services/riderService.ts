@@ -2,7 +2,8 @@ import { ContractId } from '@hashgraph/sdk';
 import { WalletInterface } from './wallets/walletInterface';
 import { ContractFunctionParameterBuilder } from './wallets/contractFunctionParameterBuilder';
 
-const CONTRACT_ADDRESS = '0.0.6960598';
+const CONTRACT_ADDRESS = '0.0.7153245';
+
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
 
 // Type definitions for rider registration
