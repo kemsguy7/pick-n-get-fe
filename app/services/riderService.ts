@@ -139,6 +139,11 @@ function ipfsHashToBytes(ipfsHash: string): string {
 /**
  * Save rider data to Web2 backend after successful blockchain registration
  */
+
+/**
+ * Save rider data to Web2 backend after successful blockchain registration
+ * NOW USES: POST /api/v1/auth/save-rider
+ */
 async function saveRiderToBackend(
   riderData: RiderData,
   walletAddress: string,
@@ -146,7 +151,7 @@ async function saveRiderToBackend(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`\n- Saving rider data to Web2 backend...`);
-    console.log(`  - Backend URL: ${BACKEND_API_URL}/riders`);
+    console.log(`  - Backend URL: ${BACKEND_API_URL}/auth/save-rider`);
 
     // Map vehicle type to backend format
     let backendVehicleType: string;
@@ -167,19 +172,19 @@ async function saveRiderToBackend(
         backendVehicleType = 'Car';
     }
 
-    // Prepare payload for backend
+    // Prepare payload for backend (simpler structure)
     const backendPayload = {
-      id: riderId,
+      riderId,
+      walletAddress,
       name: riderData.name,
-      phoneNumber: riderData.phoneNumber, // Now string, no conversion needed
+      phoneNumber: riderData.phoneNumber,
       vehicleNumber: riderData.vehicleNumber,
       homeAddress: riderData.homeAddress,
-      walletAddress: walletAddress,
       vehicleType: backendVehicleType,
       country: riderData.country,
       capacity: riderData.capacity,
 
-      // IPFS CIDs for documents
+      // Hedera File IDs for documents
       profileImage: riderData.profilePicture,
       driversLicense: riderData.driversLicense,
       vehicleRegistration: riderData.vehicleRegistration,
@@ -190,15 +195,11 @@ async function saveRiderToBackend(
       vehicleMakeModel: riderData.vehicleMakeModel,
       vehiclePlateNumber: riderData.vehiclePlateNumber,
       vehicleColor: riderData.vehicleColor,
-
-      // Status fields
-      riderStatus: 'Available',
-      approvalStatus: 'Pending',
     };
 
     console.log(`  - Payload prepared for backend`);
 
-    const response = await fetch(`${BACKEND_API_URL}/riders`, {
+    const response = await fetch(`${BACKEND_API_URL}/auth/save-rider`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
