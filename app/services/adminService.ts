@@ -385,171 +385,6 @@ export async function setRate(
 }
 
 /**
- * Fund the contract with HBAR
- * @param walletData - [accountId, walletInterface, network]
- * @param amount - Amount in HBAR (will be converted to tinybars)
- * @returns Promise<FundContractResult>
- */
-export async function fundContract(
-  walletData: WalletData,
-  amount: number,
-): Promise<FundContractResult> {
-  console.log(`\n=======================================`);
-  console.log(`- Funding contract...🟠`);
-
-  try {
-    const [accountId, walletInterface, network] = walletData;
-
-    if (!walletInterface) {
-      throw new Error('Wallet interface not available');
-    }
-
-    if (amount <= 0) {
-      throw new Error('Amount must be greater than 0');
-    }
-
-    console.log(`- Funding amount: ${amount} HBAR`);
-    console.log(`- Admin account: ${accountId}`);
-
-    // Build contract function parameters (empty for fundContract)
-    const functionParameters = new ContractFunctionParameterBuilder();
-
-    // Execute the contract function with value
-    const contractId = ContractId.fromString(CONTRACT_ADDRESS);
-    const gasLimit = 300000;
-
-    console.log(`- Executing fundContract function...`);
-    const transactionResult = await walletInterface.executeContractFunction(
-      contractId,
-      'fundContract',
-      functionParameters,
-      gasLimit,
-    );
-
-    if (!transactionResult) {
-      throw new Error('Transaction failed - no transaction ID returned');
-    }
-
-    const txHash = transactionResult.toString();
-    console.log(`- Transaction submitted: ${txHash}`);
-
-    // Wait for transaction to be processed
-    console.log(`- Waiting for transaction confirmation...`);
-    await delay(3000);
-
-    // Check transaction status
-    const success = await checkTransactionStatus(txHash, network);
-
-    if (success.isSuccessful) {
-      console.log(`- Contract funding completed successfully ✅`);
-
-      return {
-        success: true,
-        txHash: txHash,
-        amount: `${amount} HBAR`,
-      };
-    } else {
-      throw new Error(success.error || 'Transaction failed');
-    }
-  } catch (error: unknown) {
-    console.error(`- Fund contract error:`, error);
-
-    let errorMessage: string = 'Contract funding failed';
-
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
-    return {
-      success: false,
-      error: errorMessage,
-    };
-  }
-}
-
-/**
- * Get contract balance
- * @param walletData - [accountId, walletInterface, network]
- * @returns Promise<ContractBalanceResult>
- */
-export async function getContractBalance(walletData: WalletData): Promise<ContractBalanceResult> {
-  console.log(`\n=======================================`);
-  console.log(`- Getting contract balance...🟠`);
-
-  try {
-    const [accountId, walletInterface, network] = walletData;
-
-    if (!walletInterface) {
-      throw new Error('Wallet interface not available');
-    }
-
-    console.log(`- Admin account: ${accountId}`);
-
-    // Build contract function parameters
-    const functionParameters = new ContractFunctionParameterBuilder();
-
-    // Execute the contract function
-    const contractId = ContractId.fromString(CONTRACT_ADDRESS);
-    const gasLimit = 300000;
-
-    console.log(`- Executing contractBalance function...`);
-    const transactionResult = await walletInterface.executeContractFunction(
-      contractId,
-      'contractBalance',
-      functionParameters,
-      gasLimit,
-    );
-
-    if (!transactionResult) {
-      throw new Error('Transaction failed - no transaction ID returned');
-    }
-
-    const txHash = transactionResult.toString();
-    console.log(`- Transaction submitted: ${txHash}`);
-
-    // Wait for transaction to be processed
-    console.log(`- Waiting for transaction confirmation...`);
-    await delay(3000);
-
-    // Check transaction status
-    const success = await checkTransactionStatus(txHash, network);
-
-    if (success.isSuccessful) {
-      console.log(`- Contract balance retrieved successfully ✅`);
-
-      // Note: You would need to query the transaction result to get the actual balance
-      // This is a simplified version
-      return {
-        success: true,
-        balance: 'Balance retrieved - check transaction logs',
-      };
-    } else {
-      throw new Error(success.error || 'Transaction failed');
-    }
-  } catch (error: unknown) {
-    console.error(`- Get contract balance error:`, error);
-
-    let errorMessage: string = 'Failed to get contract balance';
-
-    if (error instanceof Error) {
-      const message = error.message.toLowerCase();
-
-      if (message.includes('not authorised') || message.includes('not authorized')) {
-        errorMessage =
-          'You are not authorized to view contract balance. Only admins can perform this action.';
-      } else {
-        errorMessage = error.message;
-      }
-    }
-
-    return {
-      success: false,
-      error: errorMessage,
-    };
-  }
-}
-
-/**
  * Check transaction status using Hedera Mirror Node
  */
 async function checkTransactionStatus(
@@ -639,6 +474,154 @@ function decodeContractError(errorHex: string): string | null {
   } catch (err) {
     console.log('Error decoding contract error:', err);
     return null;
+  }
+}
+
+// ✅ GET CONTRACT BALANCE
+export async function getContractBalance(walletData: WalletData): Promise<{
+  success: boolean;
+  balance?: string;
+  error?: string;
+}> {
+  try {
+    const [, walletInterface] = walletData;
+
+    if (!walletInterface) {
+      throw new Error('Wallet interface not available');
+    }
+
+    const functionParameters = new ContractFunctionParameterBuilder();
+    const contractId = ContractId.fromString(CONTRACT_ADDRESS);
+
+    const result = await walletInterface.executeContractFunction(
+      contractId,
+      'contractBalance',
+      functionParameters,
+      100000, // Lower gas for view function
+    );
+
+    return {
+      success: true,
+      balance: result ? `${result.toString()} HBAR` : '0 HBAR',
+    };
+  } catch (error) {
+    console.error('❌ Error getting contract balance:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Fund the contract with HBAR
+ * @param walletData - [accountId, walletInterface, network]
+ * @param amount - Amount in HBAR (will be converted to tinybars)
+ * @returns Promise<FundContractResult>
+ */
+
+export async function fundContract(
+  walletData: WalletData,
+  hbarAmount: number,
+): Promise<{
+  success: boolean;
+  txHash?: string;
+  error?: string;
+}> {
+  try {
+    const [, walletInterface] = walletData;
+
+    if (!walletInterface) {
+      throw new Error('Wallet interface not available');
+    }
+
+    const functionParameters = new ContractFunctionParameterBuilder();
+    const contractId = ContractId.fromString(CONTRACT_ADDRESS);
+
+    const result = await walletInterface.executeContractFunction(
+      contractId,
+      'fundContract',
+      functionParameters,
+      200000, // Gas limit
+    );
+
+    return {
+      success: true,
+      txHash: result?.toString(),
+    };
+  } catch (error) {
+    console.error('❌ Error funding contract:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+// ✅ UPDATE MATERIAL PRICE
+export async function updateMaterialPrice(
+  walletData: WalletData,
+  materialType: string,
+  priceInHbar: number,
+): Promise<{
+  success: boolean;
+  txHash?: string;
+  error?: string;
+}> {
+  try {
+    const [, walletInterface] = walletData;
+
+    if (!walletInterface) {
+      throw new Error('Wallet interface not available');
+    }
+
+    // Map frontend material types to contract ItemType enum
+    const getItemTypeEnum = (materialType: string): number => {
+      const itemTypeMap: { [key: string]: number } = {
+        'Paper & Cardboard': 0,
+        Plastic: 1,
+        Metal: 2,
+        Glass: 3,
+        Electronic: 4,
+        Textile: 5,
+      };
+      return itemTypeMap[materialType] ?? 0;
+    };
+
+    const priceInTinybars = Math.floor(priceInHbar * 100000000);
+    const itemTypeEnum = getItemTypeEnum(materialType);
+
+    const functionParameters = new ContractFunctionParameterBuilder()
+      .addParam({
+        type: 'uint8',
+        name: '_type',
+        value: itemTypeEnum,
+      })
+      .addParam({
+        type: 'uint256',
+        name: '_rateTinybarsPerKg',
+        value: priceInTinybars,
+      });
+
+    const contractId = ContractId.fromString(CONTRACT_ADDRESS);
+
+    const result = await walletInterface.executeContractFunction(
+      contractId,
+      'setRate', // Assuming you have a public setRate function
+      functionParameters,
+      300000, // Gas limit
+    );
+
+    return {
+      success: true,
+      txHash: result?.toString(),
+    };
+  } catch (error) {
+    console.error('❌ Error updating price:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 }
 
