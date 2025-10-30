@@ -522,7 +522,7 @@ export async function getContractBalance(walletData: WalletData): Promise<{
 
 export async function fundContract(
   walletData: WalletData,
-  hbarAmount: number,
+  // hbarAmount: number,
 ): Promise<{
   success: boolean;
   txHash?: string;

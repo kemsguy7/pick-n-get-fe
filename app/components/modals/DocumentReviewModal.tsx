@@ -20,7 +20,7 @@ interface DocumentViewerProps {
   riderData: {
     riderId: number;
     name: string;
-    documents: {
+    documents?: {
       profileImage?: string;
       driversLicense?: string;
       vehicleRegistration?: string;
@@ -60,31 +60,31 @@ export default function DocumentReviewModal({ isOpen, onClose, riderData }: Docu
   const documents: DocumentInfo[] = [
     {
       name: 'profileImage',
-      fileId: riderData.documents.profileImage || '',
+      fileId: riderData.documents?.profileImage || '',
       type: 'image' as const, // Use 'as const' to preserve literal type
       label: 'Profile Photo',
     },
     {
       name: 'driversLicense',
-      fileId: riderData.documents.driversLicense || '',
+      fileId: riderData.documents?.driversLicense || '',
       type: 'document' as const, //Use 'as const' to preserve literal type
       label: "Driver's License",
     },
     {
       name: 'vehicleRegistration',
-      fileId: riderData.documents.vehicleRegistration || '',
+      fileId: riderData.documents?.vehicleRegistration || '',
       type: 'document' as const, // ✅ Use 'as const' to preserve literal type
       label: 'Vehicle Registration',
     },
     {
       name: 'insuranceCertificate',
-      fileId: riderData.documents.insuranceCertificate || '',
+      fileId: riderData.documents?.insuranceCertificate || '',
       type: 'document' as const, // ✅ Use 'as const' to preserve literal type
       label: 'Insurance Certificate',
     },
     {
       name: 'vehiclePhotos',
-      fileId: riderData.documents.vehiclePhotos || '',
+      fileId: riderData.documents?.vehiclePhotos || '',
       type: 'image' as const, // ✅ Use 'as const' to preserve literal type
       label: 'Vehicle Photos',
     },

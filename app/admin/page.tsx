@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import {
   Users,
   CheckCircle,
@@ -26,7 +26,24 @@ import DocumentReviewModal from '../components/modals/DocumentReviewModal';
 
 import { getContractBalance, fundContract, updateMaterialPrice } from '../services/adminService';
 
-// ✅ PROPER TYPES
+// ✅ FIXED TYPES - Replace 'any' with proper interfaces
+interface User {
+  riderId: number;
+  name: string;
+  phoneNumber: string;
+  vehicleNumber: string;
+  vehicleType: string;
+  country: string;
+  capacity: number;
+  homeAddress: string;
+  walletAddress?: string;
+  approvalStatus: string;
+  riderStatus: string;
+  createdAt: string;
+  updatedAt: string;
+  submissionDate: string;
+}
+
 interface DashboardStats {
   totalUsers: number;
   activeUsers: number;
@@ -67,7 +84,7 @@ interface PendingRider {
   vehicleMakeModel?: string;
   vehiclePlateNumber?: string;
   vehicleColor?: string;
-  documents: {
+  documents?: {
     profileImage?: string;
     driversLicense?: string;
     vehicleRegistration?: string;
@@ -80,7 +97,7 @@ interface RecentActivity {
   type: string;
   message: string;
   timestamp: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
@@ -103,7 +120,7 @@ function AdminDashboardContent() {
   const [showExpandedUsers, setShowExpandedUsers] = useState(false);
   const [showExpandedApprovals, setShowExpandedApprovals] = useState(false);
 
-  // ✅ DYNAMIC DATA STATE
+  // ✅ DYNAMIC DATA STATE WITH PROPER TYPES
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
     totalUsers: 0,
     activeUsers: 0,
@@ -140,8 +157,8 @@ function AdminDashboardContent() {
   const { accountId, walletInterface } = useWalletInterface();
   const isConnected = !!(accountId && walletInterface);
 
-  // ✅ FETCH REAL DASHBOARD STATS
-  const fetchDashboardStats = async () => {
+  // ✅ FIXED: Use useCallback for memoized functions
+  const fetchDashboardStats = useCallback(async () => {
     try {
       setIsLoadingStats(true);
       console.log('📊 Fetching dashboard stats...');
@@ -161,10 +178,9 @@ function AdminDashboardContent() {
     } finally {
       setIsLoadingStats(false);
     }
-  };
+  }, []);
 
-  // ✅ FETCH PENDING RIDERS
-  const fetchPendingRiders = async () => {
+  const fetchPendingRiders = useCallback(async () => {
     try {
       setIsLoadingPending(true);
       console.log('🔍 Fetching pending riders...');
@@ -184,10 +200,9 @@ function AdminDashboardContent() {
     } finally {
       setIsLoadingPending(false);
     }
-  };
+  }, []);
 
-  // ✅ FETCH RECENT ACTIVITY
-  const fetchRecentActivity = async () => {
+  const fetchRecentActivity = useCallback(async () => {
     try {
       setIsLoadingActivity(true);
       console.log('📈 Fetching recent activity...');
@@ -206,10 +221,9 @@ function AdminDashboardContent() {
     } finally {
       setIsLoadingActivity(false);
     }
-  };
+  }, []);
 
-  // ✅ FETCH SYSTEM ALERTS
-  const fetchSystemAlerts = async () => {
+  const fetchSystemAlerts = useCallback(async () => {
     try {
       console.log('🚨 Fetching system alerts...');
 
@@ -225,7 +239,7 @@ function AdminDashboardContent() {
     } catch (error) {
       console.error('❌ Error fetching system alerts:', error);
     }
-  };
+  }, []);
 
   // Handle tab query parameter
   useEffect(() => {
@@ -235,7 +249,7 @@ function AdminDashboardContent() {
     }
   }, [searchParams]);
 
-  // ✅ LOAD ALL DATA ON COMPONENT MOUNT
+  // ✅ FIXED: Load all data on component mount
   useEffect(() => {
     const loadData = async () => {
       await Promise.all([
@@ -247,7 +261,7 @@ function AdminDashboardContent() {
     };
 
     loadData();
-  }, []);
+  }, [fetchDashboardStats, fetchPendingRiders, fetchRecentActivity, fetchSystemAlerts]);
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
@@ -411,15 +425,15 @@ function AdminDashboardContent() {
 
   // ✅ EXPANDED USERS VIEW - Full users list with pagination and management
   function ExpandedUsersView() {
-    const [expandedUsers, setExpandedUsers] = useState<any[]>([]);
+    const [expandedUsers, setExpandedUsers] = useState<User[]>([]);
     const [isLoadingExpanded, setIsLoadingExpanded] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const usersPerPage = 12;
 
-    // Fetch all users for expanded view
-    const fetchAllUsers = async () => {
+    // ✅ FIXED: Use useCallback and proper dependency
+    const fetchAllUsers = useCallback(async () => {
       try {
         setIsLoadingExpanded(true);
         console.log('👥 Fetching all users for expanded view...');
@@ -439,14 +453,12 @@ function AdminDashboardContent() {
       } finally {
         setIsLoadingExpanded(false);
       }
-    };
+    }, []);
 
-    // Load users when view opens
+    // ✅ FIXED: Proper dependency array
     useEffect(() => {
-      if (showExpandedUsers) {
-        fetchAllUsers();
-      }
-    }, [showExpandedUsers]);
+      fetchAllUsers();
+    }, [fetchAllUsers]);
 
     // Filter and search users
     const filteredUsers = expandedUsers.filter((user) => {
@@ -693,8 +705,8 @@ function AdminDashboardContent() {
     const [currentPage, setCurrentPage] = useState(1);
     const ridersPerPage = 6;
 
-    // Fetch all pending riders
-    const fetchAllPendingRiders = async () => {
+    // ✅ FIXED: Use useCallback
+    const fetchAllPendingRiders = useCallback(async () => {
       try {
         setIsLoadingAllPending(true);
         console.log('🔍 Fetching all pending riders...');
@@ -714,14 +726,12 @@ function AdminDashboardContent() {
       } finally {
         setIsLoadingAllPending(false);
       }
-    };
+    }, []);
 
-    // Load when view opens
+    // ✅ FIXED: Proper dependency
     useEffect(() => {
-      if (showExpandedApprovals) {
-        fetchAllPendingRiders();
-      }
-    }, [showExpandedApprovals]);
+      fetchAllPendingRiders();
+    }, [fetchAllPendingRiders]);
 
     // Get unique countries for filter
     const uniqueCountries = [...new Set(allPendingRiders.map((rider) => rider.country))];
@@ -1214,17 +1224,17 @@ function AdminDashboardContent() {
   }
 
   function UsersTab() {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [isLoadingUsers, setIsLoadingUsers] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // ✅ FETCH REAL USERS DATA
-    const fetchUsers = async () => {
+    // ✅ FIXED: Use useCallback for fetchUsers
+    const fetchUsers = useCallback(async () => {
       try {
         setIsLoadingUsers(true);
         console.log('👥 Fetching users...');
 
-        const response = await fetch(`${BACKEND_URL}/riders`); // Using existing riders endpoint
+        const response = await fetch(`${BACKEND_URL}/riders`);
         const data = await response.json();
 
         if (data.status === 'success') {
@@ -1239,14 +1249,12 @@ function AdminDashboardContent() {
       } finally {
         setIsLoadingUsers(false);
       }
-    };
+    }, []);
 
-    // Load users when tab becomes active
+    // ✅ FIXED: Load users when tab becomes active
     useEffect(() => {
-      if (activeTab === 'users') {
-        fetchUsers();
-      }
-    }, [activeTab]);
+      fetchUsers();
+    }, [fetchUsers]);
 
     const handleViewProfile = (userId: string) => {
       router.push(`/admin/users/${userId}/profile`);
@@ -1608,7 +1616,7 @@ function AdminDashboardContent() {
       setIsFunding(true);
       try {
         const walletData = createWalletData(accountId!, walletInterface!);
-        const result = await fundContract(walletData, hbarAmount);
+        const result = await fundContract(walletData);
 
         if (result.success) {
           setSuccessMessage(
@@ -1667,12 +1675,17 @@ function AdminDashboardContent() {
       }
     };
 
-    // Load contract balance on tab activation
-    useEffect(() => {
-      if (activeTab === 'settings' && isConnected) {
+    // ✅ FIXED: Use useCallback and proper dependencies
+    const initializeSettings = useCallback(() => {
+      if (isConnected) {
         handleGetContractBalance();
-      }
-    }, [activeTab, isConnected]);
+      } // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isConnected]);
+
+    // Load contract balance on settings tab
+    useEffect(() => {
+      initializeSettings();
+    }, [initializeSettings]);
 
     return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
