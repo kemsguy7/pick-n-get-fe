@@ -14,15 +14,15 @@ export interface RiderData {
   homeAddress: string;
   country: string;
   capacity: number; // uint256
-  vehicleImage: string; // IPFS CID
-  vehicleRegistration: string; // IPFS CID
+  vehicleImage: string; // HFS ID
+  vehicleRegistration: string; // HFS ID
   vehicleType: VehicleType;
-  profilePicture?: string; // IPFS CID - NEW FIELD
-  driversLicense?: string; // IPFS CID - for web2
-  insuranceCertificate?: string; // IPFS CID - for web2
-  vehicleMakeModel?: string; // for web2
-  vehiclePlateNumber?: string; // for web2
-  vehicleColor?: string; // for web2
+  profilePicture?: string; // HFS ID
+  driversLicense?: string; // HFS ID
+  insuranceCertificate?: string; // HFS ID
+  vehicleMakeModel?: string; // HFS ID
+  vehiclePlateNumber?: string; // HFS ID
+  vehicleColor?: string; // HFS ID
 }
 
 export enum VehicleType {
@@ -49,10 +49,10 @@ export interface RiderDetails {
   riderStatus: RiderStatus;
   country: string;
   capacity: number;
-  vehicleImage: string; // IPFS CID
-  vehicleRegistrationImage: string; // IPFS CID
+  vehicleImage: string; // HFS ID
+  vehicleRegistrationImage: string; // HFS ID
   vehicleType: VehicleType;
-  profilePicture?: string; // IPFS CID - NEW FIELD
+  profilePicture?: string; // HFS ID
 }
 
 export interface RiderRegistrationResult {

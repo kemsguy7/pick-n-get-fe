@@ -17,6 +17,7 @@ export interface ApproveRiderResult {
   txHash?: string;
   riderId?: number;
   error?: string;
+  message?: string;
 }
 
 export interface BanRiderResult {

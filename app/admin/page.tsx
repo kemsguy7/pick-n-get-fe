@@ -1,6 +1,5 @@
 'use client';
-import { Suspense } from 'react';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import {
   Users,
   CheckCircle,
@@ -11,8 +10,6 @@ import {
   Info,
   Clock,
   DollarSign,
-  Search,
-  Filter,
   X,
   Loader2,
   ChevronRight,
@@ -23,33 +20,67 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { WalletInterface } from '../services/wallets/walletInterface';
 import { useWalletInterface } from '../services/wallets/useWalletInterface';
 import { approveRider, banRider } from '../services/adminService';
+import DocumentReviewModal from '../components/modals/DocumentReviewModal'; // Adjust path as needed
 
-interface User {
-  id: string;
-  name: string;
-  location: string;
-  avatar: string;
-  status: 'ACTIVE' | 'PENDING' | 'AGENT';
-  userType: 'Recycler' | 'Vendor' | 'Agent';
-  recycled: string;
-  earned: string;
-  userId: string;
+// ✅ PROPER TYPES
+interface DashboardStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalRiders: number;
+  activeAgents: number;
+  verifiedVendors: number;
+  pendingApprovals: number;
+  platformRevenue: string;
+  totalEarnings: number;
+  userGrowthRate: string;
+  pickupGrowthRate: string;
+  approvedToday: number;
+  rejectedToday: number;
 }
 
-interface PendingApproval {
+interface SystemAlert {
   id: string;
+  type: 'error' | 'warning' | 'info';
+  title: string;
+  message: string;
+  timestamp: string;
+  priority: string;
+}
+
+interface PendingRider {
   riderId: number;
   name: string;
-  email: string;
-  location: string;
-  documents: number;
+  phoneNumber: string;
+  vehicleNumber: string;
+  vehicleType: string;
+  country: string;
+  capacity: number;
+  homeAddress: string;
+  walletAddress?: string;
+  approvalStatus: string;
+  riderStatus: string;
   submissionDate: string;
-  status: 'NEW' | 'PENDING';
-  avatar: string;
-  userType: 'agent' | 'vendor';
+  vehicleMakeModel?: string;
+  vehiclePlateNumber?: string;
+  vehicleColor?: string;
+  documents: {
+    profileImage?: string;
+    driversLicense?: string;
+    vehicleRegistration?: string;
+    insuranceCertificate?: string;
+    vehiclePhotos?: string;
+  };
 }
 
-// Convert wallet interface data to format expected by adminService
+interface RecentActivity {
+  type: string;
+  message: string;
+  timestamp: string;
+  details?: Record<string, any>;
+}
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
+
 const createWalletData = (
   accountId: string,
   walletInterface: WalletInterface | null,
@@ -57,14 +88,41 @@ const createWalletData = (
 ): [string, WalletInterface | null, string] => {
   return [accountId, walletInterface, network];
 };
+
 function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedMaterial, setSelectedMaterial] = useState('Paper & Cardboard');
   const [pricePerKg, setPricePerKg] = useState('$10/kg');
   const [fundingAmount, setFundingAmount] = useState('$1000');
+
+  // ✅ DYNAMIC DATA STATE
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalRiders: 0,
+    activeAgents: 0,
+    verifiedVendors: 0,
+    pendingApprovals: 0,
+    platformRevenue: '$0',
+    totalEarnings: 0,
+    userGrowthRate: '+0.0%',
+    pickupGrowthRate: '+0.0%',
+    approvedToday: 0,
+    rejectedToday: 0,
+  });
+
+  const [pendingRiders, setPendingRiders] = useState<PendingRider[]>([]);
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
+  const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [isLoadingPending, setIsLoadingPending] = useState(true);
+  const [isLoadingActivity, setIsLoadingActivity] = useState(true);
+
+  // Document review modal state
+  const [documentModalOpen, setDocumentModalOpen] = useState(false);
+  const [selectedRiderForReview, setSelectedRiderForReview] = useState<PendingRider | null>(null);
 
   // Approval state
   const [isProcessing, setIsProcessing] = useState(false);
@@ -74,9 +132,94 @@ function AdminDashboardContent() {
   const [actionType, setActionType] = useState<'approve' | 'ban' | null>(null);
 
   const { accountId, walletInterface } = useWalletInterface();
-
-  // Determine connection status
   const isConnected = !!(accountId && walletInterface);
+
+  // ✅ FETCH REAL DASHBOARD STATS
+  const fetchDashboardStats = async () => {
+    try {
+      setIsLoadingStats(true);
+      console.log('📊 Fetching dashboard stats...');
+
+      const response = await fetch(`${BACKEND_URL}/admin/stats/dashboard`);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setDashboardStats(data.data);
+        console.log('✅ Dashboard stats loaded');
+      } else {
+        throw new Error(data.message || 'Failed to fetch dashboard stats');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching dashboard stats:', error);
+      setErrorMessage('Failed to load dashboard statistics');
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // ✅ FETCH PENDING RIDERS
+  const fetchPendingRiders = async () => {
+    try {
+      setIsLoadingPending(true);
+      console.log('🔍 Fetching pending riders...');
+
+      const response = await fetch(`${BACKEND_URL}/admin/riders/pending`);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setPendingRiders(data.data.riders);
+        console.log(`✅ Loaded ${data.data.count} pending riders`);
+      } else {
+        throw new Error(data.message || 'Failed to fetch pending riders');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching pending riders:', error);
+      setErrorMessage('Failed to load pending riders');
+    } finally {
+      setIsLoadingPending(false);
+    }
+  };
+
+  // ✅ FETCH RECENT ACTIVITY
+  const fetchRecentActivity = async () => {
+    try {
+      setIsLoadingActivity(true);
+      console.log('📈 Fetching recent activity...');
+
+      const response = await fetch(`${BACKEND_URL}/admin/activity/recent?limit=5`);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setRecentActivity(data.data.activities);
+        console.log('✅ Recent activity loaded');
+      } else {
+        throw new Error(data.message || 'Failed to fetch recent activity');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching recent activity:', error);
+    } finally {
+      setIsLoadingActivity(false);
+    }
+  };
+
+  // ✅ FETCH SYSTEM ALERTS
+  const fetchSystemAlerts = async () => {
+    try {
+      console.log('🚨 Fetching system alerts...');
+
+      const response = await fetch(`${BACKEND_URL}/admin/alerts/system`);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setSystemAlerts(data.data.alerts);
+        console.log('✅ System alerts loaded');
+      } else {
+        throw new Error(data.message || 'Failed to fetch system alerts');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching system alerts:', error);
+    }
+  };
 
   // Handle tab query parameter
   useEffect(() => {
@@ -86,22 +229,36 @@ function AdminDashboardContent() {
     }
   }, [searchParams]);
 
+  // ✅ LOAD ALL DATA ON COMPONENT MOUNT
+  useEffect(() => {
+    const loadData = async () => {
+      await Promise.all([
+        fetchDashboardStats(),
+        fetchPendingRiders(),
+        fetchRecentActivity(),
+        fetchSystemAlerts(),
+      ]);
+    };
+
+    loadData();
+  }, []);
+
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     router.replace(`/admin?tab=${tabId}`, { scroll: false });
   };
 
-  // Stats data for admin dashboard
+  // ✅ DYNAMIC STATS DATA
   const statsData: StatCardProps[] = [
     {
       icon: Users,
-      iconColor: 'text-primary',
+      iconColor: 'text-green-600',
       iconBgColor: 'bg-green-100',
       title: 'Total Users',
       titleColor: 'text-green-600',
-      value: '12,450',
+      value: isLoadingStats ? '...' : dashboardStats.totalUsers.toLocaleString(),
       valueColor: 'text-green-600',
-      subtitle: '+15.2% from last month',
+      subtitle: dashboardStats.userGrowthRate + ' from last month',
       subtitleColor: 'text-green-500',
       backgroundColor: 'bg-green-50',
       borderColor: 'border-green-200',
@@ -112,7 +269,7 @@ function AdminDashboardContent() {
       iconBgColor: 'bg-blue-100',
       title: 'Active Agents',
       titleColor: 'text-blue-600',
-      value: '156',
+      value: isLoadingStats ? '...' : dashboardStats.activeAgents.toString(),
       valueColor: 'text-blue-600',
       subtitle: '89% completion rate',
       subtitleColor: 'text-blue-500',
@@ -125,7 +282,7 @@ function AdminDashboardContent() {
       iconBgColor: 'bg-purple-100',
       title: 'Verified Vendors',
       titleColor: 'text-purple-600',
-      value: '89',
+      value: isLoadingStats ? '...' : dashboardStats.verifiedVendors.toString(),
       valueColor: 'text-purple-600',
       subtitle: '4.8 avg rating',
       subtitleColor: 'text-purple-500',
@@ -138,9 +295,9 @@ function AdminDashboardContent() {
       iconBgColor: 'bg-green-100',
       title: 'Platform Revenue',
       titleColor: 'text-green-600',
-      value: '$245,780.5',
+      value: isLoadingStats ? '...' : dashboardStats.platformRevenue,
       valueColor: 'text-green-600',
-      subtitle: '+12% from last month',
+      subtitle: dashboardStats.pickupGrowthRate + ' from last month',
       subtitleColor: 'text-green-500',
       backgroundColor: 'bg-green-50',
       borderColor: 'border-green-200',
@@ -155,183 +312,39 @@ function AdminDashboardContent() {
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-  const systemAlerts = [
-    {
-      type: 'error',
-      title: 'Server Performance',
-      message: 'High CPU usage detected on main server',
-      time: '5 minutes ago',
-      icon: AlertTriangle,
-    },
-    {
-      type: 'warning',
-      title: 'Payment Gateway',
-      message: 'Increased transaction failures',
-      time: '1 hour ago',
-      icon: Info,
-    },
-    {
-      type: 'info',
-      title: 'Scheduled Maintenance',
-      message: 'Database backup completed successfully',
-      time: '3 hours ago',
-      icon: Clock,
-    },
-  ];
-  const users: User[] = [
-    {
-      id: '1',
-      name: 'Adaora Okafor',
-      location: 'Lagos, Nigeria',
-      avatar: '/api/placeholder/40/40',
-      status: 'ACTIVE',
-      userType: 'Recycler',
-      recycled: '47.3kg',
-      earned: '$156.75',
-      userId: '#U001',
-    },
-    {
-      id: '2',
-      name: 'Green Products Ltd',
-      location: 'Abuja, Nigeria',
-      avatar: '/api/placeholder/40/40',
-      status: 'PENDING',
-      userType: 'Vendor',
-      recycled: '32.1kg',
-      earned: '$98.5',
-      userId: '#V001',
-    },
-    {
-      id: '3',
-      name: 'Georgina Wilson',
-      location: 'Lagos, Nigeria',
-      avatar: '/api/placeholder/40/40',
-      status: 'AGENT',
-      userType: 'Agent',
-      recycled: '47.3kg',
-      earned: '$156.75',
-      userId: '#A002',
-    },
-  ];
-
-  const pendingApprovals: PendingApproval[] = [
-    {
-      id: '1',
-      riderId: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-      location: 'Lagos, Nigeria',
-      documents: 3,
-      submissionDate: '2025-01-15',
-      status: 'NEW',
-      avatar: '/api/placeholder/40/40',
-      userType: 'agent',
-    },
-    {
-      id: '2',
-      riderId: 2,
-      name: 'Green Products Ltd',
-      email: 'info@greenproducts.com',
-      location: 'Abuja, Nigeria',
-      documents: 5,
-      submissionDate: '2025-01-14',
-      status: 'PENDING',
-      avatar: '/api/placeholder/40/40',
-      userType: 'vendor',
-    },
-    {
-      id: '3',
-      riderId: 3,
-      name: 'Emma Wilson',
-      email: 'emma@example.com',
-      location: 'Kano, Nigeria',
-      documents: 4,
-      submissionDate: '2025-01-13',
-      status: 'NEW',
-      avatar: '/api/placeholder/40/40',
-      userType: 'agent',
-    },
-  ];
-
-  const revenueData = {
-    thisMonth: '125.6T',
-    thisWeek: '78.4T',
-    growthRate: '+15.2%',
+  // ✅ HANDLE DOCUMENT REVIEW
+  const handleReviewDocuments = (rider: PendingRider) => {
+    setSelectedRiderForReview(rider);
+    setDocumentModalOpen(true);
   };
 
-  const recentActivity = {
-    regularUsers: {
-      notification: 'New User Registered',
-      name: 'Sarah Johnson',
-      time: '2 minutes ago',
-    },
-    agents: {
-      notification: 'Agent Verification Pending',
-      name: 'Mike Chen',
-      time: '10 minutes ago',
-    },
-    vendors: { notification: 'Vendor Approved', name: 'EcoGreen Solutions', time: '5 minutes ago' },
-  };
-
-  const userDistribution = {
-    recyclers: {
-      label: 'Regular Users',
-      percentage: 65,
-    },
-    agents: {
-      label: 'Active Agents',
-      percentage: 25,
-    },
-    vendors: {
-      label: 'Verified Vendors',
-      percentage: 10,
-    },
-  };
-
-  const performanceMetrics = [
-    { label: 'User Engagement', percentage: 87 },
-    { label: 'System Uptime', percentage: 99.8 },
-    { label: 'Transaction Success', percentage: 96.2 },
-  ];
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'ACTIVE':
-        return 'bg-[#DCFCE7] text-primary border border-green-200';
-      case 'PENDING':
-        return 'bg-orange-100 text-orange-600 border border-orange-200';
-      case 'AGENT':
-        return 'bg-blue-100 text-blue-600 border border-blue-200';
-      case 'NEW':
-        return 'bg-orange-100 text-orange-600 border border-orange-200';
-      default:
-        return 'bg-gray-100 text-gray-600 border border-gray-200';
-    }
-  };
-
-  const handleApprove = async (approval: PendingApproval) => {
+  // ✅ APPROVAL HANDLERS
+  const handleApprove = async (rider: PendingRider) => {
     if (!isConnected) {
       setErrorMessage('Please connect your wallet first');
       return;
     }
 
-    console.log(`🎯 Starting approval process for rider ID: ${approval.riderId}`);
+    console.log(`🎯 Starting approval process for rider ID: ${rider.riderId}`);
 
     setIsProcessing(true);
-    setProcessingId(approval.id);
+    setProcessingId(rider.riderId.toString());
     setActionType('approve');
     setErrorMessage('');
     setSuccessMessage('');
 
     try {
       const walletData = createWalletData(accountId!, walletInterface!);
-      const result = await approveRider(walletData, approval.riderId);
+      const result = await approveRider(walletData, rider.riderId);
 
       if (result.success) {
         setSuccessMessage(
-          `✅ Successfully approved ${approval.name}! Transaction: ${result.txHash?.substring(0, 10)}...`,
+          `✅ Successfully approved ${rider.name}! Transaction: ${result.txHash?.substring(0, 10)}...`,
         );
-        console.log(`🎉 Approval successful for ${approval.name}`);
+        console.log(`🎉 Approval successful for ${rider.name}`);
+
+        // Refresh data after approval
+        await Promise.all([fetchPendingRiders(), fetchDashboardStats()]);
 
         setTimeout(() => setSuccessMessage(''), 5000);
       } else {
@@ -339,8 +352,8 @@ function AdminDashboardContent() {
       }
     } catch (error) {
       console.error('❌ Approval error:', error);
-      const ErrorMessage = error instanceof Error ? error.message : ' Failed to approve rider';
-      setErrorMessage(ErrorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to approve rider';
+      setErrorMessage(errorMessage);
     } finally {
       setIsProcessing(false);
       setProcessingId(null);
@@ -348,29 +361,32 @@ function AdminDashboardContent() {
     }
   };
 
-  const handleReject = async (approval: PendingApproval) => {
+  const handleReject = async (rider: PendingRider) => {
     if (!isConnected) {
       setErrorMessage('Please connect your wallet first');
       return;
     }
 
-    console.log(`🎯 Starting ban process for rider ID: ${approval.riderId}`);
+    console.log(`🎯 Starting rejection process for rider ID: ${rider.riderId}`);
 
     setIsProcessing(true);
-    setProcessingId(approval.id);
+    setProcessingId(rider.riderId.toString());
     setActionType('ban');
     setErrorMessage('');
     setSuccessMessage('');
 
     try {
       const walletData = createWalletData(accountId!, walletInterface!);
-      const result = await banRider(walletData, approval.riderId);
+      const result = await banRider(walletData, rider.riderId);
 
       if (result.success) {
         setSuccessMessage(
-          `✅ Successfully rejected ${approval.name}! Transaction: ${result.txHash?.substring(0, 10)}...`,
+          `✅ Successfully rejected ${rider.name}! Transaction: ${result.txHash?.substring(0, 10)}...`,
         );
-        console.log(`🎉 Rejection successful for ${approval.name}`);
+        console.log(`🎉 Rejection successful for ${rider.name}`);
+
+        // Refresh data after rejection
+        await Promise.all([fetchPendingRiders(), fetchDashboardStats()]);
 
         setTimeout(() => setSuccessMessage(''), 5000);
       } else {
@@ -378,8 +394,8 @@ function AdminDashboardContent() {
       }
     } catch (error) {
       console.error('❌ Rejection error:', error);
-      const ErrorMessage = error instanceof Error ? error.message : 'Failed to reject rider';
-      setErrorMessage(ErrorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reject rider';
+      setErrorMessage(errorMessage);
     } finally {
       setIsProcessing(false);
       setProcessingId(null);
@@ -435,6 +451,12 @@ function AdminDashboardContent() {
             <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4">
               <AlertTriangle className="h-5 w-5 text-red-600" />
               <span className="font-medium text-red-700">{errorMessage}</span>
+              <button
+                onClick={() => setErrorMessage('')}
+                className="ml-auto rounded p-1 hover:bg-red-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           )}
 
@@ -442,13 +464,15 @@ function AdminDashboardContent() {
           <div className="rounded-2xl border border-orange-200 bg-[#FFF4E8E5] p-6">
             <div className="mb-4 flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-orange-600" />
-              <h3 className="font-inter font-semibold text-[#FF8C00]">System Alerts (3)</h3>
+              <h3 className="font-inter font-semibold text-[#FF8C00]">
+                System Alerts ({systemAlerts.length})
+              </h3>
             </div>
 
             <div className="space-y-3">
-              {systemAlerts.map((alert, index) => (
+              {systemAlerts.slice(0, 3).map((alert) => (
                 <div
-                  key={index}
+                  key={alert.id}
                   className="flex items-center justify-between rounded-lg bg-white p-4"
                 >
                   <div className="flex items-center gap-3">
@@ -461,22 +485,22 @@ function AdminDashboardContent() {
                             : 'bg-blue-100'
                       }`}
                     >
-                      <alert.icon
-                        className={`h-5 w-5 ${
-                          alert.type === 'error'
-                            ? 'text-red-600'
-                            : alert.type === 'warning'
-                              ? 'text-orange-600'
-                              : 'text-blue-600'
-                        }`}
-                      />
+                      {alert.type === 'error' ? (
+                        <AlertTriangle className="h-5 w-5 text-red-600" />
+                      ) : alert.type === 'warning' ? (
+                        <Info className="h-5 w-5 text-orange-600" />
+                      ) : (
+                        <Clock className="h-5 w-5 text-blue-600" />
+                      )}
                     </div>
                     <div>
                       <p className="font-inter text-base font-medium text-black">{alert.title}</p>
                       <p className="font-inter text-xs text-[#1E2A28CC]">{alert.message}</p>
                     </div>
                   </div>
-                  <span className="font-inter text-xs text-[#1E2A28CC]">{alert.time}</span>
+                  <span className="font-inter text-xs text-[#1E2A28CC]">
+                    {new Date(alert.timestamp).toLocaleTimeString()}
+                  </span>
                 </div>
               ))}
             </div>
@@ -510,82 +534,70 @@ function AdminDashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* Document Review Modal */}
+      {selectedRiderForReview && (
+        <DocumentReviewModal
+          isOpen={documentModalOpen}
+          onClose={() => {
+            setDocumentModalOpen(false);
+            setSelectedRiderForReview(null);
+          }}
+          riderData={selectedRiderForReview}
+        />
+      )}
     </AppLayout>
   );
-  // Tab Components
+
+  // ✅ TAB COMPONENTS
   function OverviewTab() {
     return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Revenue Analytics */}
+        {/* Environmental Impact */}
         <div className="rounded-2xl border border-slate-700/50 bg-black/80 p-6">
           <div className="mb-6 flex items-center gap-2">
             <BarChart3 className="text-primary h-5 w-5" />
-            <h3 className="font-space-grotesk text-primary font-semibold"> Environmental Impact</h3>
+            <h3 className="font-space-grotesk text-primary font-semibold">Environmental Impact</h3>
           </div>
 
           <div className="font-inter mb-6 grid grid-cols-2 gap-4">
             <div className="rounded-2xl bg-white p-4 text-center">
-              <p className="text-primary text-base font-semibold">{revenueData.thisMonth}</p>
-              <p className="font-inter text-primary text-xs font-normal">125.6T</p>
+              <p className="text-primary text-base font-semibold">125.6T</p>
+              <p className="font-inter text-primary text-xs font-normal">Materials Recycled</p>
             </div>
             <div className="text-info-darker rounded-2xl bg-white p-4 text-center">
-              <p className="font-inter text-base font-bold">{revenueData.thisWeek}</p>
+              <p className="font-inter text-base font-bold">78.4T</p>
               <p className="font-inter text-xs font-normal">CO2 Saved</p>
             </div>
           </div>
 
           <div className="rounded-2xl bg-white text-center">
             <div className="font-inter text-info-purple flex flex-col items-center gap-1 py-4 font-semibold">
-              <div className="text-base font-semibold"> 3564 </div>
-              <div className="text-xs font-normal"> Trees Equivalent</div>
+              <div className="text-base font-semibold">3564</div>
+              <div className="text-xs font-normal">Trees Equivalent</div>
             </div>
           </div>
         </div>
 
-        {/* User Distribution */}
+        {/* Recent Activity */}
         <div className="font-inter rounded-2xl border border-slate-700/50 bg-black/80 p-6">
           <div className="mb-6 flex items-center gap-2">
             <h3 className="text-base font-medium text-white">Recent Activity</h3>
+            {isLoadingActivity && <Loader2 className="h-4 w-4 animate-spin text-green-500" />}
           </div>
 
           <div className="space-y-4">
-            {Object.entries(recentActivity).map(([key, data]) => (
+            {recentActivity.slice(0, 3).map((activity, index) => (
               <div
-                key={key}
+                key={index}
                 className="font-inter notification-border flex items-center justify-between rounded-lg border p-4 text-white"
               >
                 <div className="flex flex-col">
-                  <div className="text-sm font-medium text-white">{data.notification}</div>
-                  <div className="lighter-green-text text-xs font-normal">{data.name}</div>
+                  <div className="text-sm font-medium text-white">{activity.message}</div>
+                  <div className="lighter-green-text text-xs font-normal">{activity.type}</div>
                 </div>
-
-                <div className="lighter-green-text text-xs font-normal">{data.time}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Platform Performance Metrics */}
-        <div className="rounded-2xl border border-slate-700/50 bg-black/80 p-6 lg:col-span-2">
-          <h3 className="font-space-grotesk mb-6 font-semibold text-white">
-            Platform Performance Metrics
-          </h3>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {performanceMetrics.map((metric, index) => (
-              <div key={index}>
-                <div className="font-inter mb-1 flex items-center justify-between">
-                  <div className="text-xs font-normal text-white">{metric.label} </div>
-                  <div className="mb-2 text-[13px] font-semibold text-white">
-                    {metric.percentage}%
-                  </div>
-                </div>
-
-                <div className="bg-inactive mb-2 h-3 w-full rounded-full">
-                  <div
-                    className="h-3 rounded-full bg-white transition-all duration-500"
-                    style={{ width: `${metric.percentage}%` }}
-                  />
+                <div className="lighter-green-text text-xs font-normal">
+                  {new Date(activity.timestamp).toLocaleTimeString()}
                 </div>
               </div>
             ))}
@@ -596,280 +608,173 @@ function AdminDashboardContent() {
   }
 
   function UsersTab() {
-    const handleViewProfile = (userId: string) => {
-      router.push(`/admin/users/${userId}/profile`);
-    };
-
-    const handleManageUser = (userId: string) => {
-      router.push(`/admin/users/${userId}`);
-    };
-
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="font-space-grotesk text-2xl font-semibold text-white">User Management</h3>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="min-w-[250px] rounded-lg border border-slate-600 bg-[#1a2928] py-2 pr-4 pl-10 text-white placeholder-gray-400 focus:border-green-500 focus:outline-none"
-              />
-            </div>
-            <button className="flex items-center gap-2 rounded-lg border border-slate-600 bg-black px-4 py-2 text-white transition-colors hover:bg-slate-700">
-              <Filter className="h-4 w-4" />
-              Filter
-            </button>
-          </div>
+          <button
+            onClick={() => router.push('/admin/users')}
+            className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+          >
+            View All Users
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {users.map((user) => (
-            <div
-              key={user.id}
-              className="rounded-xl border border-slate-700/50 bg-black p-6 transition-all hover:border-green-500/30"
-            >
-              <div className="mb-4 flex items-start gap-3">
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="h-12 w-12 rounded-full object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-center justify-between">
-                    <h4 className="font-space-grotesk truncate text-lg font-semibold text-white">
-                      {user.name}
-                    </h4>
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusBadge(user.status)}`}
-                    >
-                      {user.status}
-                    </span>
-                  </div>
-                  <p className="font-inter text-sm text-gray-400">{user.location}</p>
-                  <p className="font-inter text-sm text-gray-500">{user.userId}</p>
-                </div>
-              </div>
-
-              <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="block text-gray-400">Recycled:</span>
-                  <span className="font-semibold text-white">{user.recycled}</span>
-                </div>
-                <div>
-                  <span className="block text-gray-400">{user.userType}</span>
-                  <span className="font-semibold text-green-400">Earned: {user.earned}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleViewProfile(user.id)}
-                  className="w-full rounded-lg border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
-                >
-                  View Profile
-                </button>
-                <button
-                  onClick={() => handleManageUser(user.id)}
-                  className="w-full rounded-lg border border-slate-600 bg-transparent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
-                >
-                  Manage
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="rounded-xl border border-slate-700/50 bg-black/80 p-6">
+          <p className="text-white">User management content will be loaded here...</p>
+          <p className="mt-2 text-sm text-gray-400">
+            Click "View All Users" to see detailed user management.
+          </p>
         </div>
       </div>
     );
   }
+
   function ApprovalsTab() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="font-space-grotesk text-2xl font-bold text-white">
-            Pending Approvals ({pendingApprovals.length})
+            Pending Approvals ({isLoadingPending ? '...' : pendingRiders.length})
           </h3>
           <button
             onClick={() => router.push('/admin/approvals')}
-            className="gradient-button font-space-grotesk font-inter flex items-center gap-2 rounded-lg px-6 py-3 font-semibold text-black transition-all duration-200 hover:shadow-lg"
+            className="gradient-button font-space-grotesk flex items-center gap-2 rounded-lg px-6 py-3 font-semibold text-black transition-all duration-200 hover:shadow-lg"
           >
             View All Approvals
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="space-y-4">
-          {pendingApprovals.map((approval) => (
-            <div
-              key={approval.id}
-              className="rounded-xl border border-slate-700/50 bg-black p-6 transition-all hover:border-green-500/30"
-            >
-              {/* Header Section with User Info */}
-              <div className="mb-6 flex items-start gap-4">
-                <img
-                  src={approval.avatar}
-                  alt={approval.name}
-                  className="h-16 w-16 rounded-full object-cover"
-                />
-                <div className="flex-1">
-                  <div className="mb-2 flex items-center gap-3">
-                    <h4 className="font-inter text-sm font-medium text-white">{approval.name}</h4>
-                    <span
-                      className={`rounded-lg px-3 py-1 text-xs font-medium ${
-                        approval.userType === 'vendor'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}
-                    >
-                      {approval.userType}
+        {/* Loading State */}
+        {isLoadingPending && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+            <span className="ml-2 text-gray-400">Loading pending approvals...</span>
+          </div>
+        )}
+
+        {/* No Pending Approvals */}
+        {!isLoadingPending && pendingRiders.length === 0 && (
+          <div className="rounded-xl border border-slate-700/50 bg-black/80 p-12 text-center">
+            <CheckCircle className="mx-auto mb-4 h-12 w-12 text-gray-500" />
+            <h3 className="mb-2 text-lg font-semibold text-white">No Pending Approvals</h3>
+            <p className="text-gray-400">All rider applications have been processed.</p>
+          </div>
+        )}
+
+        {/* Approval Cards - Show only first 3 */}
+        {!isLoadingPending && pendingRiders.length > 0 && (
+          <div className="space-y-4">
+            {pendingRiders.slice(0, 3).map((rider) => (
+              <div
+                key={rider.riderId}
+                className="rounded-xl border border-slate-700/50 bg-black/80 p-6 transition-all hover:border-green-500/30"
+              >
+                <div className="mb-6 flex items-start gap-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-700">
+                    <span className="text-lg font-bold text-white">
+                      {rider.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <p className="font-inter mb-1 text-xs font-normal text-white/80">
-                    {approval.email}
-                  </p>
-                  <div className="flex items-center gap-3 text-xs text-white/80">
-                    <span>{approval.location}</span>
-                    <span>•</span>
-                    <span>{approval.documents} documents</span>
-                    <span>•</span>
-                    <span>Rider #{approval.riderId}</span>
-                    <span>•</span>
-                    <span>{approval.submissionDate}</span>
+                  <div className="flex-1">
+                    <div className="mb-2 flex items-center gap-3">
+                      <h4 className="font-inter text-lg font-medium text-white">{rider.name}</h4>
+                      <span
+                        className={`rounded-lg px-3 py-1 text-xs font-medium ${
+                          rider.vehicleType === 'Car'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}
+                      >
+                        {rider.vehicleType}
+                      </span>
+                    </div>
+                    <p className="font-inter mb-1 text-sm font-normal text-white/80">
+                      {rider.phoneNumber}
+                    </p>
+                    <div className="flex items-center gap-3 text-xs text-white/80">
+                      <span>{rider.country}</span>
+                      <span>•</span>
+                      <span>{rider.vehicleNumber}</span>
+                      <span>•</span>
+                      <span>Capacity: {rider.capacity}kg</span>
+                      <span>•</span>
+                      <span>Rider #{rider.riderId}</span>
+                    </div>
                   </div>
                 </div>
+
+                <div className="flex gap-3">
+                  {/* ✅ UPDATED REVIEW DOCUMENTS BUTTON */}
+                  <button
+                    onClick={() => handleReviewDocuments(rider)}
+                    className="font-inter notification-border flex flex-1 items-center justify-center gap-2 rounded-lg border px-6 py-3 text-base font-normal text-white transition-colors hover:bg-gray-800"
+                  >
+                    Review Documents
+                  </button>
+
+                  <button
+                    onClick={() => handleApprove(rider)}
+                    disabled={isProcessing || !isConnected}
+                    className="font-space-grotesk secondary-green-bg flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-6 py-3 text-base font-medium text-black transition-colors hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:bg-gray-600"
+                  >
+                    {isProcessing &&
+                    processingId === rider.riderId.toString() &&
+                    actionType === 'approve' ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-5 w-5 rounded-full text-black" />
+                        Approve
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => handleReject(rider)}
+                    disabled={isProcessing || !isConnected}
+                    className="font-inter notification-border flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-6 py-3 text-base font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-600"
+                  >
+                    {isProcessing &&
+                    processingId === rider.riderId.toString() &&
+                    actionType === 'ban' ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Rejecting...
+                      </>
+                    ) : (
+                      <>
+                        <X className="error-border text-error font-space-grotesk h-5 w-5 rounded-full border" />
+                        Reject
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-
-              {/* Action Buttons - New Layout */}
-              <div className="flex gap-3">
-                {/* Large Review Documents Button */}
-                <button
-                  onClick={() => {
-                    // TODO: This will open modal/view with IPFS documents
-                    console.log(`Review documents for rider ${approval.riderId}`);
-                  }}
-                  className="font-inter notification-border flex flex-1 items-center justify-center gap-2 rounded-lg border px-6 py-3 text-base font-normal text-white transition-colors hover:bg-gray-800"
-                >
-                  Review Documents
-                </button>
-
-                {/* Approve Button */}
-                <button
-                  onClick={() => handleApprove(approval)}
-                  disabled={isProcessing || !isConnected}
-                  className="font-space-grotesk secondary-green-bg flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-6 py-3 text-base font-medium text-black transition-colors hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:bg-gray-600"
-                >
-                  {isProcessing && processingId === approval.id && actionType === 'approve' ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Approving...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="rounded-fulltext-black h-5 w-5" />
-                      Approve
-                    </>
-                  )}
-                </button>
-
-                {/* Reject Button */}
-                <button
-                  onClick={() => handleReject(approval)}
-                  disabled={isProcessing || !isConnected}
-                  className="font-inter notification-border flex min-w-[140px] items-center justify-center gap-2 rounded-lg px-6 py-3 text-base font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-600"
-                >
-                  {isProcessing && processingId === approval.id && actionType === 'ban' ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Rejecting...
-                    </>
-                  ) : (
-                    <>
-                      <X className="error-border text-error font-space-grotesk h-5 w-5 rounded-full border" />
-                      Reject
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
+
   function AnalyticsTab() {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Revenue Analytics */}
-          <div className="rounded-xl border border-slate-700/50 bg-black p-6">
-            <div className="mb-6 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-green-400" />
-              <h3 className="font-space-grotesk text-lg font-semibold text-green-400">
-                Revenue Analytics
-              </h3>
-            </div>
-
-            <div className="mb-6 grid grid-cols-2 gap-4">
-              <div className="rounded-lg bg-white p-6 text-center">
-                <p className="font-space-grotesk mb-1 text-3xl font-bold text-green-600">
-                  {revenueData.thisMonth}
-                </p>
-                <p className="font-inter text-sm font-medium text-green-600">This Month</p>
-              </div>
-              <div className="rounded-lg bg-white p-6 text-center">
-                <p className="font-space-grotesk mb-1 text-3xl font-bold text-blue-600">
-                  {revenueData.thisWeek}
-                </p>
-                <p className="font-inter text-sm font-medium text-blue-600">This Week</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="font-inter font-medium text-white">Growth Rate</span>
-                <span className="text-lg font-semibold text-green-400">
-                  {revenueData.growthRate}
-                </span>
-              </div>
-              <div className="h-3 w-full rounded-full bg-white">
-                <div className="h-3 rounded-full bg-green-500" style={{ width: '75%' }}></div>
-              </div>
-            </div>
-          </div>
-
-          {/* User Distribution */}
-          <div className="rounded-xl border border-slate-700/50 bg-black p-6">
-            <div className="mb-6 flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-400" />
-              <h3 className="font-space-grotesk text-lg font-semibold text-blue-400">
-                User Distribution
-              </h3>
-            </div>
-
-            <div className="space-y-6">
-              {Object.entries(userDistribution).map(([key, data]) => (
-                <div key={key} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-inter font-medium text-white">{data.label}</span>
-                    <span className="text-lg font-bold text-white">{data.percentage}%</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-slate-700">
-                    <div
-                      className="h-2 rounded-full bg-white transition-all duration-500"
-                      style={{ width: `${data.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        <h3 className="font-space-grotesk text-2xl font-semibold text-white">
+          Analytics Dashboard
+        </h3>
+        <div className="rounded-xl border border-slate-700/50 bg-black/80 p-6">
+          <p className="text-white">Analytics and reporting features coming soon...</p>
         </div>
       </div>
     );
   }
+
   function SettingsTab() {
     return (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -937,96 +842,6 @@ function AdminDashboardContent() {
               <button className="text-primary font-inter w-full rounded-lg border border-slate-600 bg-gray-800 px-4 py-3 font-semibold transition-colors hover:bg-gray-700">
                 Get Contract Balance
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Platform Settings */}
-        <div className="rounded-xl border border-slate-700/50 bg-black p-6">
-          <div className="mb-6 flex items-center gap-2">
-            <Settings className="text-primary h-5 w-5" />
-            <h3 className="text-primary font-space-grotesk text-lg font-semibold">
-              Platform Settings
-            </h3>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-inter font-medium text-white">Maintenance Mode</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-inter min-w-[70px] text-right text-sm text-gray-400">
-                  Disabled
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-inter font-medium text-white">Auto Approvals</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-inter min-w-[70px] text-right text-sm text-gray-400">
-                  Enabled
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-inter font-medium text-white">Email Notifications</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-inter min-w-[70px] text-right text-sm text-gray-400">
-                  Enabled
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Security Settings */}
-        <div className="rounded-xl border border-slate-700/50 bg-black p-6">
-          <div className="mb-6 flex items-center gap-2">
-            <Settings className="h-5 w-5 text-red-400" />
-            <h3 className="font-space-grotesk text-lg font-semibold text-red-400">
-              Security Settings
-            </h3>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-inter font-medium text-white">Two-Factor Auth</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-inter rounded-lg bg-green-500 px-3 py-1 text-sm font-medium text-black">
-                  Enabled
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-inter font-medium text-white">API Rate Limiting</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-inter rounded-lg bg-green-500 px-3 py-1 text-sm font-medium text-black">
-                  Active
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="font-inter font-medium text-white">Audit Logging</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="font-inter rounded-lg bg-green-500 px-3 py-1 text-sm font-medium text-black">
-                  Active
-                </span>
-              </div>
             </div>
           </div>
         </div>
