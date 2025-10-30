@@ -74,11 +74,19 @@ export const uploadToHedera = async (
       mimeType: result.data.mimeType,
       uploadedAt: result.data.uploadedAt,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ Hedera upload error:', error);
+
+    let errorMessage = 'Failed to upload to Hedera';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    }
+
     return {
       success: false,
-      error: error.message || 'Failed to upload to Hedera',
+      error: errorMessage,
     };
   }
 };
@@ -150,10 +158,4 @@ export const validateFile = (
     isValid: errors.length === 0,
     errors: errors.length > 0 ? errors : undefined,
   };
-};
-
-export default {
-  uploadToHedera,
-  uploadMultipleToHedera,
-  validateFile,
 };

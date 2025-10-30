@@ -1,4 +1,4 @@
-// app/contexts/AuthContext.tsx
+/* eslint-disable react-refresh/only-export-components */
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
