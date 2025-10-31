@@ -5,6 +5,7 @@ import type { RecycleFormData } from '../../recycle/page';
 import { Truck, MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { calculateVehicleType } from '../../utils/vehicleCalculator';
 
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 interface PickupScheduleProps {
   formData: RecycleFormData;
   updateFormData: (data: Partial<RecycleFormData>) => void;
@@ -61,13 +62,14 @@ export default function PickupSchedule({
     setIsLoadingRiders(true);
     setRidersError('');
     setAvailableRiders([]);
+    setSelectedRider(null);
 
     try {
       const weight = parseFloat(formData.weight);
       const calculatedVehicleType = calculateVehicleType(weight);
       setVehicleType(calculatedVehicleType);
 
-      const response = await fetch('/api/v1/pickups/find-riders', {
+      const response = await fetch(`${baseUrl}/pickups/find-riders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,14 +88,15 @@ export default function PickupSchedule({
       }
 
       if (data.data.riders.length === 0) {
-        setRidersError(
-          'No available riders found in your area. Please try again later or contact support.',
-        );
+        setRidersError('No available riders found in your area.');
+        setAvailableRiders([]); //Ensure empty
       } else {
         setAvailableRiders(data.data.riders);
+        setRidersError(''); //Clear error on success
       }
     } catch (error) {
       console.error('Error fetching riders:', error);
+      setAvailableRiders([]); // ✅ Clear riders on error
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setRidersError(errorMessage || 'Failed to load available riders');
     } finally {
@@ -101,24 +104,72 @@ export default function PickupSchedule({
     }
   };
 
+  // const handleRiderSelect = (riderId: number) => {
+  //   setSelectedRider(riderId);
+  //   const rider = availableRiders.find((r) => r.riderId === riderId);
+  //   if (rider) {
+  //     updateFormData({
+  //       selectedDriver: rider.name,
+  //       selectedVehicle: rider.vehicleType.toLowerCase() as 'bike' | 'car' | 'truck',
+  //     });
+  //   }
+  // };
   const handleRiderSelect = (riderId: number) => {
     setSelectedRider(riderId);
     const rider = availableRiders.find((r) => r.riderId === riderId);
     if (rider) {
-      updateFormData({
+      const updateData = {
         selectedDriver: rider.name,
+        selectedRiderId: riderId,
         selectedVehicle: rider.vehicleType.toLowerCase() as 'bike' | 'car' | 'truck',
-      });
+      };
+      console.log('🔍 DEBUG: Calling updateFormData with:', updateData);
+      updateFormData(updateData);
     }
   };
 
+  // const handleContinue = () => {
+  //   if (!address || !selectedRider) {
+  //     alert('Please enter pickup address and select a rider');
+  //     return;
+  //   }
+
+  //   updateFormData({ address, date, time });
+  //   onSubmit();
+  // };
   const handleContinue = () => {
-    if (!address || !selectedRider) {
-      alert('Please enter pickup address and select a rider');
+    if (!address) {
+      alert('Please enter pickup address');
       return;
     }
 
-    updateFormData({ address, date, time });
+    if (!selectedRider) {
+      alert('Please select a rider');
+      return;
+    }
+
+    const rider = availableRiders.find((r) => r.riderId === selectedRider);
+
+    if (!rider) {
+      console.error('❌ Rider not found in availableRiders');
+      alert('Selected rider not found');
+      return;
+    }
+
+    console.log('🔍 DEBUG: handleContinue - rider ID:', rider.riderId);
+    console.log('🔍 DEBUG: Current formData:', formData);
+
+    // Update form data with ALL required fields
+    updateFormData({
+      address,
+      date,
+      time,
+      selectedDriver: rider.name,
+      selectedRiderId: rider.riderId, // ✅ Ensure ID is passed
+      selectedVehicle: rider.vehicleType.toLowerCase() as 'bike' | 'car' | 'truck',
+    });
+
+    console.log('🔍 DEBUG: After updateFormData, calling onSubmit...');
     onSubmit();
   };
 
@@ -132,6 +183,7 @@ export default function PickupSchedule({
         return '🚐';
       case 'truck':
         return '🚚';
+
       default:
         return '🚗';
     }

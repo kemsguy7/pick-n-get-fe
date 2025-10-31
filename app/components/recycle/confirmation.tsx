@@ -9,6 +9,8 @@ import { useWalletInterface } from '../../services/wallets/useWalletInterface';
 import { recycleItem, RecycleItemData } from '../../services/recycleService';
 import { WalletInterface } from '../../services/wallets/walletInterface';
 
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+
 interface ConfirmationProps {
   formData: RecycleFormData;
   onReset: () => void;
@@ -103,28 +105,48 @@ export default function Confirmation({ formData, onReset }: ConfirmationProps) {
       setSubmitStatus('pickup');
       setLoadingMessage('Creating pickup request...');
 
-      // Get selected rider from formData
-      const selectedRiderData = formData.selectedDriver; // This should contain rider info
+      // Get user data from wallet context
+      // const userId = metamaskCtx.userBlockchainId || walletConnectCtx.userBlockchainId || 1;
+      // const userName = metamaskCtx.userName || walletConnectCtx.userName || 'User';
+      // const userPhone = metamaskCtx.userPhone || '+234000000000';
 
-      // TODO: Get user ID from backend/context (for now using mock)
-      const userId = 1; // This should come from authenticated user
+      console.log('🔍 DEBUG: FormData in confirmation:', formData);
+      console.log('🔍 DEBUG: Selected Rider ID from formData:', formData.selectedRiderId);
+
+      const userId = 1; // TODO: Get from user context after login
+      const userName = 'Test User';
+      const userPhone = '+2341234567890';
+
+      // Get selected rider ID from formData (it's stored during rider selection)
+      const selectedRiderId = formData.selectedRiderId;
+
+      // Validate riderId exists and is a number
+      if (!selectedRiderId || typeof selectedRiderId !== 'number') {
+        console.error('❌ Invalid rider ID:', selectedRiderId);
+        console.error('❌ Full formData:', formData);
+        throw new Error('No rider selected. Please go back and select a rider.');
+      }
 
       const pickupPayload = {
         userId: userId,
         itemId: blockchainResult.itemId || 1,
-        customerName: 'John Doe', // TODO: Get from user profile
-        customerPhoneNumber: '+234123456789', // TODO: Get from user profile
+        customerName: userName,
+        customerPhoneNumber: userPhone,
         pickupAddress: formData.address,
-        pickupCoordinates: undefined, // Backend will geocode if needed
+        pickupCoordinates: formData.pickupCoordinates, // ✅ Add this
         itemCategory: formData.category.id,
         itemWeight: parseFloat(formData.weight),
-        itemDescription: formData.description,
-        itemImages: [], // TODO: Handle photo uploads to IPFS
+        itemDescription: formData.description || '',
+        itemImages: formData.photos || [],
         estimatedEarnings: estimatedEarnings,
-        riderId: parseInt(selectedRiderData || '1'), // Should be rider ID from selection
+        riderId: selectedRiderId,
       };
 
-      const pickupResponse = await fetch('/api/v1/pickups/create', {
+      console.log('🔍 DEBUG: Final pickup payload:', pickupPayload);
+      console.log('🔍 DEBUG: riderId type:', typeof pickupPayload.riderId);
+      console.log('🔍 DEBUG: riderId value:', pickupPayload.riderId);
+
+      const pickupResponse = await fetch(`${baseUrl}/pickups/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,17 +154,20 @@ export default function Confirmation({ formData, onReset }: ConfirmationProps) {
         body: JSON.stringify(pickupPayload),
       });
 
+      console.log('🔍 DEBUG: Pickup response status:', pickupResponse.status);
+
       const pickupData = await pickupResponse.json();
+      console.log('🔍 DEBUG: Pickup response data:', pickupData);
 
       if (!pickupResponse.ok) {
         throw new Error(pickupData.message || 'Failed to create pickup request');
       }
 
       // Store pickup data
-      setTrackingId(pickupData.data.trackingId);
+      setTrackingId(pickupData.data.pickupId);
       setRiderName(pickupData.data.riderName);
 
-      console.log('✅ Pickup created successfully:', pickupData.data.trackingId);
+      console.log('✅ Pickup created successfully:', pickupData.data.pickupId);
 
       // ==================== SUCCESS ====================
       setSubmitStatus('success');

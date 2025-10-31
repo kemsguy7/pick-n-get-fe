@@ -2,7 +2,25 @@ const webpack = require('webpack');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config:any, { isServer }:any) => {
+  // Force dynamic rendering for auth pages to prevent Firebase SSR issues
+  experimental: {
+    esmExternals: 'loose',
+  },
+
+  webpack: (config: any, { isServer }: any) => {
+    // Handle Lightning CSS binary issues for Tailwind v4
+    config.externals = [...(config.externals || []), 'lightningcss'];
+
+    // Ignore native binaries that cause Vercel build issues
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /lightningcss\.linux-x64-gnu\.node$/,
+      }),
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^lightningcss$/,
+      }),
+    );
+
     // Only apply polyfills for client-side builds
     if (!isServer) {
       config.resolve.fallback = {
@@ -34,7 +52,7 @@ const nextConfig = {
         new webpack.ProvidePlugin({
           Buffer: ['buffer', 'Buffer'],
           process: 'process/browser',
-        })
+        }),
       );
 
       // Ignore grpc and other problematic native modules
@@ -45,15 +63,31 @@ const nextConfig = {
         }),
         new webpack.IgnorePlugin({
           resourceRegExp: /^http2$/,
-        })
+        }),
       );
     }
 
     return config;
   },
-  // Important: Exclude Hedera SDK from server-side rendering
-  experimental: {
-    esmExternals: 'loose'
+
+  // Configure CSS processing to avoid Lightning CSS issues
+  sassOptions: {
+    includePaths: ['./app'],
+  },
+
+  // Disable static optimization for pages that use Firebase
+  async headers() {
+    return [
+      {
+        source: '/auth/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+        ],
+      },
+    ];
   },
 };
 

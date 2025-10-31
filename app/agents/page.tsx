@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import StatCard, { StatCardProps } from '../components/ui/statCard';
+import { useAuthGuard } from '../hooks/useAuthGuard';
 import {
   Truck,
   DollarSign,
@@ -20,8 +21,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-// Mock rider ID - will replace with actual auth id after firebase integration
-const RIDER_ID = 123;
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 interface AgentStats {
   totalPickups: number;
@@ -51,39 +51,16 @@ export default function AgentDashboardPage() {
   const [availableJobs, setAvailableJobs] = useState<Pickup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { isAuthenticated, user, isLoading } = useAuthGuard('rider');
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`/api/v1/agents/${RIDER_ID}/stats`);
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data.data);
-        }
-      } catch (err) {
-        console.error('Error fetching stats:', err);
-      }
-    };
-    fetchStats();
-  }, []);
+  // Get rider ID from auth store
+  const RIDER_ID = user?.riderId || 1759734077663;
 
-  useEffect(() => {
-    if (activeTab === 'active-pickups') {
-      fetchActivePickups();
-    }
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (activeTab === 'available-jobs') {
-      fetchAvailableJobs();
-    }
-  }, [activeTab]);
-
-  const fetchActivePickups = async () => {
+  const fetchActivePickups = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/active`);
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/active`);
       if (response.ok) {
         const data = await response.json();
         setActivePickups(data.data.pickups);
@@ -96,13 +73,13 @@ export default function AgentDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [RIDER_ID]);
 
-  const fetchAvailableJobs = async () => {
+  const fetchAvailableJobs = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/available`);
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/available`);
       if (response.ok) {
         const data = await response.json();
         setAvailableJobs(data.data.jobs);
@@ -115,11 +92,41 @@ export default function AgentDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [RIDER_ID]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/stats`);
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+
+    if (RIDER_ID) {
+      fetchStats();
+    }
+  }, [RIDER_ID]);
+
+  useEffect(() => {
+    if (activeTab === 'active-pickups') {
+      fetchActivePickups();
+    }
+  }, [activeTab, fetchActivePickups]);
+
+  useEffect(() => {
+    if (activeTab === 'available-jobs') {
+      fetchAvailableJobs();
+    }
+  }, [activeTab, fetchAvailableJobs]);
 
   const handleAcceptJob = async (pickupId: string) => {
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/${pickupId}/accept`, {
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/${pickupId}/accept`, {
         method: 'POST',
       });
       if (response.ok) {
@@ -137,7 +144,7 @@ export default function AgentDashboardPage() {
 
   const handleUpdateStatus = async (pickupId: string, status: string) => {
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/${pickupId}/status`, {
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/${pickupId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -153,6 +160,22 @@ export default function AgentDashboardPage() {
       alert('Error updating status');
     }
   };
+
+  // Early returns after all hooks are defined
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect via useAuthGuard
+  }
 
   const statsData: StatCardProps[] = [
     {

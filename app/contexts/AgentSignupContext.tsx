@@ -7,7 +7,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface PersonalInfo {
   firstName: string;
   lastName: string;
-  phoneNumber: string; // This will be used as string for blockchain
+  phoneNumber: string;
   homeAddress: string;
   country: string;
   nationalIdNumber: string;
@@ -300,6 +300,8 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
 
   return <AgentSignupContext.Provider value={contextValue}>{children}</AgentSignupContext.Provider>;
 }
+
+
 
 // Custom hook to use the context
 export function useAgentSignup() {

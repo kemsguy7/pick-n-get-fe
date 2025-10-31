@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Users,
   CheckCircle,
@@ -16,21 +16,35 @@ import { WalletInterface } from '../../services/wallets/walletInterface';
 import { useWalletInterface } from '../../services/wallets/useWalletInterface';
 import { approveRider, banRider } from '../../services/adminService';
 
-interface PendingApproval {
-  id: string;
+// ✅ NEW: Real pending rider interface
+interface PendingRider {
   riderId: number;
   name: string;
-  email: string;
-  location: string;
-  documents: number;
+  phoneNumber: string;
+  vehicleNumber: string;
+  vehicleType: string;
+  country: string;
+  capacity: number;
+  homeAddress: string;
+  walletAddress?: string;
+  approvalStatus: string;
+  riderStatus: string;
   submissionDate: string;
-  status: 'NEW' | 'PENDING';
-  avatar: string;
-  userType: 'agent' | 'vendor';
+  vehicleMakeModel?: string;
+  vehiclePlateNumber?: string;
+  vehicleColor?: string;
+  documents: {
+    profileImage?: string;
+    driversLicense?: string;
+    vehicleRegistration?: string;
+    insuranceCertificate?: string;
+    vehiclePhotos?: string;
+  };
 }
 
-// Convert wallet interface data to format expected by adminService
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
 
+// Convert wallet interface data to format expected by adminService
 const createWalletData = (
   accountId: string,
   walletInterface: WalletInterface | null,
@@ -38,18 +52,58 @@ const createWalletData = (
 ): [string, WalletInterface | null, string] => {
   return [accountId, walletInterface, network];
 };
+
 export default function AdminApprovalsPage() {
   const [activeTab, setActiveTab] = useState('approvals');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [processingId, setProcessingId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [actionType, setActionType] = useState<'approve' | 'ban' | null>(null);
+
+  // ✅ NEW: State for real pending riders
+  const [pendingRiders, setPendingRiders] = useState<PendingRider[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({
+    pending: 0,
+    approvedToday: 0,
+    rejectedToday: 0,
+    avgApprovalTime: '2.5 hrs',
+  });
 
   const { accountId, walletInterface } = useWalletInterface();
 
   // Determine connection status
   const isConnected = !!(accountId && walletInterface);
+
+  // ✅ NEW: Fetch pending riders from backend
+  const fetchPendingRiders = async () => {
+    try {
+      setIsLoading(true);
+      console.log('🔍 Fetching pending riders from backend...');
+
+      const response = await fetch(`${BACKEND_URL}/admin/riders/pending`);
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        setPendingRiders(data.data.riders);
+        setStats((prev) => ({ ...prev, pending: data.data.count }));
+        console.log(`✅ Loaded ${data.data.count} pending riders`);
+      } else {
+        throw new Error(data.message || 'Failed to fetch pending riders');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching pending riders:', error);
+      setErrorMessage('Failed to load pending riders');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ✅ Load pending riders on component mount
+  useEffect(() => {
+    fetchPendingRiders();
+  }, []);
 
   // Stats data for approvals page
   const statsData: StatCardProps[] = [
@@ -59,9 +113,9 @@ export default function AdminApprovalsPage() {
       iconBgColor: 'bg-orange-100',
       title: 'Pending Approvals',
       titleColor: 'text-orange-600',
-      value: '23',
+      value: stats.pending.toString(),
       valueColor: 'text-orange-600',
-      subtitle: '15 agents, 8 vendors',
+      subtitle: `${pendingRiders.filter((r) => r.vehicleType === 'Car').length} cars, ${pendingRiders.filter((r) => r.vehicleType === 'Bike').length} bikes`,
       subtitleColor: 'text-orange-500',
       backgroundColor: 'bg-orange-50',
       borderColor: 'border-orange-200',
@@ -72,9 +126,9 @@ export default function AdminApprovalsPage() {
       iconBgColor: 'bg-blue-100',
       title: 'Approved Today',
       titleColor: 'text-blue-600',
-      value: '8',
+      value: stats.approvedToday.toString(),
       valueColor: 'text-blue-600',
-      subtitle: '6 agents, 2 vendors',
+      subtitle: 'Blockchain synced',
       subtitleColor: 'text-blue-500',
       backgroundColor: 'bg-blue-50',
       borderColor: 'border-blue-200',
@@ -85,9 +139,9 @@ export default function AdminApprovalsPage() {
       iconBgColor: 'bg-red-100',
       title: 'Rejected Today',
       titleColor: 'text-red-600',
-      value: '2',
+      value: stats.rejectedToday.toString(),
       valueColor: 'text-red-600',
-      subtitle: '1 agent, 1 vendor',
+      subtitle: 'Reasons documented',
       subtitleColor: 'text-red-500',
       backgroundColor: 'bg-red-50',
       borderColor: 'border-red-200',
@@ -98,51 +152,12 @@ export default function AdminApprovalsPage() {
       iconBgColor: 'bg-green-100',
       title: 'Avg. Approval Time',
       titleColor: 'text-green-600',
-      value: '2.5 hrs',
+      value: stats.avgApprovalTime,
       valueColor: 'text-green-600',
       subtitle: 'Down 30% this week',
       subtitleColor: 'text-green-500',
       backgroundColor: 'bg-green-50',
       borderColor: 'border-green-200',
-    },
-  ];
-
-  const pendingApprovals: PendingApproval[] = [
-    {
-      id: '1',
-      riderId: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-      location: 'Lagos, Nigeria',
-      documents: 3,
-      submissionDate: '2025-01-15',
-      status: 'NEW',
-      avatar: '/api/placeholder/40/40',
-      userType: 'agent',
-    },
-    {
-      id: '2',
-      riderId: 2,
-      name: 'Green Products Ltd',
-      email: 'info@greenproducts.com',
-      location: 'Abuja, Nigeria',
-      documents: 5,
-      submissionDate: '2025-01-14',
-      status: 'PENDING',
-      avatar: '/api/placeholder/40/40',
-      userType: 'vendor',
-    },
-    {
-      id: '3',
-      riderId: 3,
-      name: 'Emma Wilson',
-      email: 'emma@example.com',
-      location: 'Kano, Nigeria',
-      documents: 4,
-      submissionDate: '2025-01-13',
-      status: 'NEW',
-      avatar: '/api/placeholder/40/40',
-      userType: 'agent',
     },
   ];
 
@@ -156,44 +171,75 @@ export default function AdminApprovalsPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'NEW':
+      case 'Pending':
         return 'bg-orange-100 text-orange-600 border border-orange-200';
-      case 'PENDING':
-        return 'bg-blue-100 text-blue-600 border border-blue-200';
+      case 'Approved':
+        return 'bg-green-100 text-green-600 border border-green-200';
+      case 'Rejected':
+        return 'bg-red-100 text-red-600 border border-red-200';
       default:
         return 'bg-gray-100 text-gray-600 border border-gray-200';
     }
   };
 
-  const handleApprove = async (approval: PendingApproval) => {
+  // ✅ UPDATED: Handle approve with backend sync
+  const handleApprove = async (rider: PendingRider) => {
     if (!isConnected) {
       setErrorMessage('Please connect your wallet first');
       return;
     }
 
-    console.log(`🎯 Starting approval process for rider ID: ${approval.riderId}`);
+    console.log(`🎯 Starting approval process for rider ID: ${rider.riderId}`);
 
     setIsProcessing(true);
-    setProcessingId(approval.id);
+    setProcessingId(rider.riderId);
     setActionType('approve');
     setErrorMessage('');
     setSuccessMessage('');
 
     try {
+      // Step 1: Approve on blockchain
       const walletData = createWalletData(accountId!, walletInterface!);
-      const result = await approveRider(walletData, approval.riderId);
+      const blockchainResult = await approveRider(walletData, rider.riderId);
 
-      if (result.success) {
-        setSuccessMessage(
-          `✅ Successfully approved ${approval.name}! Transaction: ${result.txHash?.substring(0, 10)}...`,
-        );
-        console.log(`🎉 Approval successful for ${approval.name}`);
-
-        // Clear success message after 5 seconds
-        setTimeout(() => setSuccessMessage(''), 5000);
-      } else {
-        throw new Error(result.error || 'Approval failed');
+      if (!blockchainResult.success) {
+        throw new Error(blockchainResult.error || 'Blockchain approval failed');
       }
+
+      console.log('✅ Blockchain approval successful');
+
+      // Step 2: Sync with backend
+      console.log('🔄 Syncing approval with backend...');
+      const backendResponse = await fetch(`${BACKEND_URL}/admin/riders/${rider.riderId}/approval`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'approve',
+          adminWallet: accountId,
+        }),
+      });
+
+      const backendResult = await backendResponse.json();
+
+      if (backendResult.status === 'success') {
+        setSuccessMessage(
+          `✅ Successfully approved ${rider.name}! Blockchain Tx: ${blockchainResult.txHash?.substring(0, 10)}...`,
+        );
+        console.log(`🎉 Full approval completed for ${rider.name}`);
+
+        // Refresh the pending riders list
+        await fetchPendingRiders();
+      } else {
+        console.warn('⚠️ Blockchain approved but backend sync failed:', backendResult.message);
+        setSuccessMessage(
+          `⚠️ Blockchain approved but backend sync failed: ${blockchainResult.message}`,
+        );
+      }
+
+      // Clear success message after 5 seconds
+      setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to approve rider';
       console.error('❌ Approval error:', error);
@@ -205,34 +251,63 @@ export default function AdminApprovalsPage() {
     }
   };
 
-  const handleReject = async (approval: PendingApproval) => {
+  // ✅ UPDATED: Handle reject with backend sync
+  const handleReject = async (rider: PendingRider) => {
     if (!isConnected) {
       setErrorMessage('Please connect your wallet first');
       return;
     }
 
-    console.log(`🎯 Starting ban process for rider ID: ${approval.riderId}`);
+    console.log(`🎯 Starting rejection process for rider ID: ${rider.riderId}`);
 
     setIsProcessing(true);
-    setProcessingId(approval.id);
+    setProcessingId(rider.riderId);
     setActionType('ban');
     setErrorMessage('');
     setSuccessMessage('');
 
     try {
+      // Step 1: Ban on blockchain
       const walletData = createWalletData(accountId!, walletInterface!);
-      const result = await banRider(walletData, approval.riderId);
+      const blockchainResult = await banRider(walletData, rider.riderId);
 
-      if (result.success) {
-        setSuccessMessage(
-          `✅ Successfully rejected ${approval.name}! Transaction: ${result.txHash?.substring(0, 10)}...`,
-        );
-        console.log(`🎉 Rejection successful for ${approval.name}`);
-
-        setTimeout(() => setSuccessMessage(''), 5000);
-      } else {
-        throw new Error(result.error || 'Rejection failed');
+      if (!blockchainResult.success) {
+        throw new Error(blockchainResult.error || 'Blockchain rejection failed');
       }
+
+      console.log('✅ Blockchain rejection successful');
+
+      // Step 2: Sync with backend
+      console.log('🔄 Syncing rejection with backend...');
+      const backendResponse = await fetch(`${BACKEND_URL}/admin/riders/${rider.riderId}/approval`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'reject',
+          adminWallet: accountId,
+        }),
+      });
+
+      const backendResult = await backendResponse.json();
+
+      if (backendResult.status === 'success') {
+        setSuccessMessage(
+          `✅ Successfully rejected ${rider.name}! Blockchain Tx: ${blockchainResult.txHash?.substring(0, 10)}...`,
+        );
+        console.log(`🎉 Full rejection completed for ${rider.name}`);
+
+        // Refresh the pending riders list
+        await fetchPendingRiders();
+      } else {
+        console.warn('⚠️ Blockchain rejected but backend sync failed:', backendResult.message);
+        setSuccessMessage(
+          `⚠️ Blockchain rejected but backend sync failed: ${backendResult.message}`,
+        );
+      }
+
+      setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error: unknown) {
       console.error('❌ Rejection error:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to reject rider');
@@ -254,7 +329,7 @@ export default function AdminApprovalsPage() {
                 Pending Approvals
               </h1>
               <p className="secondary-text font-inter text-lg">
-                Review and approve agent and vendor applications
+                Review and approve agent applications
               </p>
             </div>
             <div className="flex gap-3">
@@ -316,116 +391,143 @@ export default function AdminApprovalsPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="font-space-grotesk text-xl font-semibold text-white">
-                Review Applications ({pendingApprovals.length})
+                Review Applications ({isLoading ? '...' : pendingRiders.length})
               </h3>
+              <button
+                onClick={fetchPendingRiders}
+                disabled={isLoading}
+                className="flex items-center gap-2 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:cursor-not-allowed"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Refresh
+              </button>
             </div>
 
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-green-500" />
+                <span className="ml-2 text-gray-400">Loading pending riders...</span>
+              </div>
+            )}
+
+            {/* No Pending Riders */}
+            {!isLoading && pendingRiders.length === 0 && (
+              <div className="rounded-xl border border-slate-700/50 bg-black/80 p-12 text-center">
+                <CheckCircle className="mx-auto mb-4 h-12 w-12 text-gray-500" />
+                <h3 className="mb-2 text-lg font-semibold text-white">No Pending Approvals</h3>
+                <p className="text-gray-400">All rider applications have been processed.</p>
+              </div>
+            )}
+
             {/* Approval Cards */}
-            <div className="space-y-4">
-              {pendingApprovals.map((approval) => (
-                <div
-                  key={approval.id}
-                  className="rounded-xl border border-slate-700/50 bg-black/80 p-6 transition-all hover:border-green-500/30"
-                >
-                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex flex-1 items-center gap-4">
-                      <img
-                        src={approval.avatar}
-                        alt={approval.name}
-                        className="h-14 w-14 rounded-full object-cover"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex items-center gap-2">
-                          <h4 className="font-space-grotesk text-lg font-semibold text-white">
-                            {approval.name}
-                          </h4>
-                          <span
-                            className={`rounded-lg px-3 py-1 text-xs font-medium ${
-                              approval.userType === 'vendor'
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-blue-100 text-blue-800'
-                            }`}
-                          >
-                            {approval.userType}
+            {!isLoading && pendingRiders.length > 0 && (
+              <div className="space-y-4">
+                {pendingRiders.map((rider) => (
+                  <div
+                    key={rider.riderId}
+                    className="rounded-xl border border-slate-700/50 bg-black/80 p-6 transition-all hover:border-green-500/30"
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex flex-1 items-center gap-4">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-700">
+                          <span className="text-lg font-bold text-white">
+                            {rider.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <p className="font-inter mb-1 text-sm text-gray-400">{approval.email}</p>
-                        <div className="flex items-center gap-3 text-sm">
-                          <span className="font-inter text-gray-500">{approval.location}</span>
-                          <span className="text-gray-600">•</span>
-                          <span className="font-inter text-gray-500">
-                            {approval.documents} documents
-                          </span>
-                          <span className="text-gray-600">•</span>
-                          <span className="font-inter text-gray-500">
-                            Rider ID: #{approval.riderId}
-                          </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center gap-2">
+                            <h4 className="font-space-grotesk text-lg font-semibold text-white">
+                              {rider.name}
+                            </h4>
+                            <span className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                              {rider.vehicleType}
+                            </span>
+                          </div>
+                          <p className="font-inter mb-1 text-sm text-gray-400">
+                            {rider.phoneNumber}
+                          </p>
+                          <div className="flex items-center gap-3 text-sm">
+                            <span className="font-inter text-gray-500">{rider.country}</span>
+                            <span className="text-gray-600">•</span>
+                            <span className="font-inter text-gray-500">{rider.vehicleNumber}</span>
+                            <span className="text-gray-600">•</span>
+                            <span className="font-inter text-gray-500">
+                              Capacity: {rider.capacity}kg
+                            </span>
+                            <span className="text-gray-600">•</span>
+                            <span className="font-inter text-gray-500">
+                              Rider ID: #{rider.riderId}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`rounded-lg px-3 py-1 text-xs font-medium ${getStatusBadge(approval.status)}`}
-                      >
-                        {approval.status}
-                      </span>
-                      <span className="font-inter text-sm whitespace-nowrap text-gray-400">
-                        {approval.submissionDate}
-                      </span>
-
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => window.open(`/admin/approvals/${approval.id}`, '_blank')}
-                          className="flex items-center gap-1 rounded-lg border border-slate-600 bg-gray-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`rounded-lg px-3 py-1 text-xs font-medium ${getStatusBadge(rider.approvalStatus)}`}
                         >
-                          Review
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
+                          {rider.approvalStatus}
+                        </span>
+                        <span className="font-inter text-sm whitespace-nowrap text-gray-400">
+                          {new Date(rider.submissionDate).toLocaleDateString()}
+                        </span>
 
-                        <button
-                          onClick={() => handleApprove(approval)}
-                          disabled={isProcessing || !isConnected}
-                          className="flex min-w-[100px] items-center justify-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-600"
-                        >
-                          {isProcessing &&
-                          processingId === approval.id &&
-                          actionType === 'approve' ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              Approving...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="h-4 w-4" />
-                              Approve
-                            </>
-                          )}
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => window.open(`/admin/riders/${rider.riderId}`, '_blank')}
+                            className="flex items-center gap-1 rounded-lg border border-slate-600 bg-gray-800 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-700"
+                          >
+                            Review
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
 
-                        <button
-                          onClick={() => handleReject(approval)}
-                          disabled={isProcessing || !isConnected}
-                          className="flex min-w-[100px] items-center justify-center gap-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-600"
-                        >
-                          {isProcessing && processingId === approval.id && actionType === 'ban' ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              Rejecting...
-                            </>
-                          ) : (
-                            <>
-                              <X className="h-4 w-4" />
-                              Reject
-                            </>
-                          )}
-                        </button>
+                          <button
+                            onClick={() => handleApprove(rider)}
+                            disabled={isProcessing || !isConnected}
+                            className="flex min-w-[100px] items-center justify-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-600"
+                          >
+                            {isProcessing &&
+                            processingId === rider.riderId &&
+                            actionType === 'approve' ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Approving...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-4 w-4" />
+                                Approve
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            onClick={() => handleReject(rider)}
+                            disabled={isProcessing || !isConnected}
+                            className="flex min-w-[100px] items-center justify-center gap-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-600"
+                          >
+                            {isProcessing &&
+                            processingId === rider.riderId &&
+                            actionType === 'ban' ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Rejecting...
+                              </>
+                            ) : (
+                              <>
+                                <X className="h-4 w-4" />
+                                Reject
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

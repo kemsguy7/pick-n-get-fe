@@ -2,7 +2,8 @@ import { ContractId } from '@hashgraph/sdk';
 import { WalletInterface } from './wallets/walletInterface';
 import { ContractFunctionParameterBuilder } from './wallets/contractFunctionParameterBuilder';
 
-const CONTRACT_ADDRESS = '0.0.6960598';
+const CONTRACT_ADDRESS = '0.0.7153245';
+
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
 
 // Type definitions for rider registration
@@ -13,15 +14,15 @@ export interface RiderData {
   homeAddress: string;
   country: string;
   capacity: number; // uint256
-  vehicleImage: string; // IPFS CID
-  vehicleRegistration: string; // IPFS CID
+  vehicleImage: string; // HFS ID
+  vehicleRegistration: string; // HFS ID
   vehicleType: VehicleType;
-  profilePicture?: string; // IPFS CID - NEW FIELD
-  driversLicense?: string; // IPFS CID - for web2
-  insuranceCertificate?: string; // IPFS CID - for web2
-  vehicleMakeModel?: string; // for web2
-  vehiclePlateNumber?: string; // for web2
-  vehicleColor?: string; // for web2
+  profilePicture?: string; // HFS ID
+  driversLicense?: string; // HFS ID
+  insuranceCertificate?: string; // HFS ID
+  vehicleMakeModel?: string; // HFS ID
+  vehiclePlateNumber?: string; // HFS ID
+  vehicleColor?: string; // HFS ID
 }
 
 export enum VehicleType {
@@ -48,10 +49,10 @@ export interface RiderDetails {
   riderStatus: RiderStatus;
   country: string;
   capacity: number;
-  vehicleImage: string; // IPFS CID
-  vehicleRegistrationImage: string; // IPFS CID
+  vehicleImage: string; // HFS ID
+  vehicleRegistrationImage: string; // HFS ID
   vehicleType: VehicleType;
-  profilePicture?: string; // IPFS CID - NEW FIELD
+  profilePicture?: string; // HFS ID
 }
 
 export interface RiderRegistrationResult {
@@ -138,6 +139,11 @@ function ipfsHashToBytes(ipfsHash: string): string {
 /**
  * Save rider data to Web2 backend after successful blockchain registration
  */
+
+/**
+ * Save rider data to Web2 backend after successful blockchain registration
+ * NOW USES: POST /api/v1/auth/save-rider
+ */
 async function saveRiderToBackend(
   riderData: RiderData,
   walletAddress: string,
@@ -145,7 +151,7 @@ async function saveRiderToBackend(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`\n- Saving rider data to Web2 backend...`);
-    console.log(`  - Backend URL: ${BACKEND_API_URL}/riders`);
+    console.log(`  - Backend URL: ${BACKEND_API_URL}/auth/save-rider`);
 
     // Map vehicle type to backend format
     let backendVehicleType: string;
@@ -166,19 +172,19 @@ async function saveRiderToBackend(
         backendVehicleType = 'Car';
     }
 
-    // Prepare payload for backend
+    // Prepare payload for backend (simpler structure)
     const backendPayload = {
-      id: riderId,
+      riderId,
+      walletAddress,
       name: riderData.name,
-      phoneNumber: riderData.phoneNumber, // Now string, no conversion needed
+      phoneNumber: riderData.phoneNumber,
       vehicleNumber: riderData.vehicleNumber,
       homeAddress: riderData.homeAddress,
-      walletAddress: walletAddress,
       vehicleType: backendVehicleType,
       country: riderData.country,
       capacity: riderData.capacity,
 
-      // IPFS CIDs for documents
+      // Hedera File IDs for documents
       profileImage: riderData.profilePicture,
       driversLicense: riderData.driversLicense,
       vehicleRegistration: riderData.vehicleRegistration,
@@ -189,15 +195,11 @@ async function saveRiderToBackend(
       vehicleMakeModel: riderData.vehicleMakeModel,
       vehiclePlateNumber: riderData.vehiclePlateNumber,
       vehicleColor: riderData.vehicleColor,
-
-      // Status fields
-      riderStatus: 'Available',
-      approvalStatus: 'Pending',
     };
 
     console.log(`  - Payload prepared for backend`);
 
-    const response = await fetch(`${BACKEND_API_URL}/riders`, {
+    const response = await fetch(`${BACKEND_API_URL}/auth/save-rider`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
