@@ -2,7 +2,7 @@ import { ContractId } from '@hashgraph/sdk';
 import { WalletInterface } from './wallets/walletInterface';
 import { ContractFunctionParameterBuilder } from './wallets/contractFunctionParameterBuilder';
 
-const CONTRACT_ADDRESS = '0.0.7153245';
+const CONTRACT_ADDRESS = '0.0.7162853';
 
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
 
@@ -142,7 +142,7 @@ function ipfsHashToBytes(ipfsHash: string): string {
 
 /**
  * Save rider data to Web2 backend after successful blockchain registration
- * NOW USES: POST /api/v1/auth/save-rider
+ *
  */
 async function saveRiderToBackend(
   riderData: RiderData,
@@ -151,7 +151,7 @@ async function saveRiderToBackend(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`\n- Saving rider data to Web2 backend...`);
-    console.log(`  - Backend URL: ${BACKEND_API_URL}/auth/save-rider`);
+    console.log(`  - Backend URL: ${BACKEND_API_URL}/delivery/riders`);
 
     // Map vehicle type to backend format
     let backendVehicleType: string;
@@ -199,7 +199,7 @@ async function saveRiderToBackend(
 
     console.log(`  - Payload prepared for backend`);
 
-    const response = await fetch(`${BACKEND_API_URL}/auth/save-rider`, {
+    const response = await fetch(`${BACKEND_API_URL}/delivery/riders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
