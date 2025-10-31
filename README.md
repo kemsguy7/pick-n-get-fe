@@ -1,13 +1,13 @@
 ```markdown
-# EcoCleans - Web3 Recycling & Waste Management Platform
+# Pick-n-Get - Web3 Recycling & Waste Management Platform
 
 **Turning Waste into Wealth Through Blockchain Technology**
 
-EcoCleans Get is a comprehensive Web3-powered recycling and waste management platform built on U2U Network that transforms how individuals and communities manage waste, earn rewards, and support environmental sustainability. By leveraging blockchain technology and smart contracts, we create a transparent, incentive-driven recycling ecosystem where environmental responsibility meets economic opportunity.
+Pick-n-Get Get is a comprehensive Web3-powered recycling and waste management platform built on U2U Network that transforms how individuals and communitieEs manage waste, earn rewards, and support environmental sustainability. By leveraging blockchain technology and smart contracts, we create a transparent, incentive-driven recycling ecosystem where environmental responsibility meets economic opportunity.
 
 ## 🎯 Project Overview
 
-EcoCleans Get empowers users to:
+Pick-n-Get Get empowers users to:
 
 - Recycle waste materials (plastic, iron, nylon, bottles, electronics, paper, etc.)
 - Earn cryptocurrency rewards based on waste weight and type
@@ -15,7 +15,7 @@ EcoCleans Get empowers users to:
 - Track environmental impact with transparent blockchain records
 - Connect with verified pickup agents for convenient waste collection
 
-Through verified delivery agents, embedded crypto wallets, IPFS document storage, and trackable delivery systems, EcoCleans enables individuals to turn waste into wealth while actively combating pollution and fostering a circular economy.
+Through verified delivery agents, embedded crypto wallets, IPFS document storage, and trackable delivery systems, Pick-n-Get enables individuals to turn waste into wealth while actively combating pollution and fostering a circular economy.
 
 ## 🚀 Key Features
 
@@ -192,7 +192,7 @@ npm start
 
 ```bash
 # Navigate to backend directory
-cd ecocleans-n-get-be
+cd Pick-n-Get-n-get-be
 
 # Install dependencies
 npm install
@@ -238,7 +238,7 @@ NEXT_PUBLIC_GATEWAY_URL=https://gateway.pinata.cloud
 # Google Maps (for agent routing)
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_key
 MAP_ID=your_map_id
-MAP_ID_NAME=ecocleans
+MAP_ID_NAME=Pick-n-Get
 ```
 
 ### Backend (.env)
@@ -249,7 +249,7 @@ PORT=5000
 NODE_ENV=development
 
 # MongoDB
-MONGODB_URI=mongodb://localhost:27017/ecocleans
+MONGODB_URI=mongodb://localhost:27017/Pick-n-Get
 
 # Firebase
 DATABASE_URL=https://your-project.firebaseio.com/
@@ -416,13 +416,13 @@ This project is licensed under the MIT License - see LICENSE file for details.
 - **Documentation**: Check /docs for detailed guides
 - **GitHub Issues**: Report bugs or request features
 - **Discord**: Join our community (link TBD)
-- **Email**: support@ecocleans.io (for technical support)
+- **Email**: support@Pick-n-Get.io (for technical support)
 
 ---
 
 **Built with sustainability in mind, powered by blockchain, designed for global impact.**
 
-**EcoCleans - Where waste becomes wealth, and everyone wins. 🌍♻️💚**
+**Pick-n-Get - Where waste becomes wealth, and everyone wins. 🌍♻️💚**
 
 ```
 

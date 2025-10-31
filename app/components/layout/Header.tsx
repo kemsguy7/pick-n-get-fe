@@ -176,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="flex items-center sm:h-10">
                   <Link href="/" passHref>
-                    <Image src="/EcoCleanLogo.png" width={150} height={150} alt="EcoCleans Logo" />
+                    <Image src="/EcoCleanLogo.png" width={150} height={150} alt="Pick-n-Get Logo" />
                   </Link>
                 </div>
               </div>

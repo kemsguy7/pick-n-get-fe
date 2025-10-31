@@ -19,6 +19,9 @@ import { appConfig } from '../../../config';
 import { SignClientTypes } from '@walletconnect/types';
 import { DAppConnector, HederaSessionEvent, HederaChainId } from '@hashgraph/hedera-wallet-connect';
 import EventEmitter from 'events';
+
+const base_url = process.env.PUBLIC_BACKEND_API_URL;
+
 /* eslint-disable react-refresh/only-export-components */
 
 // Created refreshEvent because `dappConnector.walletConnectClient.on(eventName, syncWithWalletConnectContext)` would not call syncWithWalletConnectContext
@@ -30,16 +33,13 @@ const currentNetworkConfig = appConfig.networks.testnet;
 const hederaNetwork = currentNetworkConfig.network;
 // const hederaClient = Client.forName(hederaNetwork);
 
-// const metadata: SignClientTypes.Metadata = {
-//   name: "Pick'n'Get",
-//   description: "Recycling Platform",
-//   url: window.location.origin,
-//   icons: [window.location.origin + "/logo192.png"],
-// }
 const metadata: SignClientTypes.Metadata = {
-  name: 'EcoCleans',
+  name: 'Pick-n-Get',
   description: 'Recycling Platform',
-  url: typeof window !== 'undefined' ? window.location.origin : 'https://localhost:3000',
+  url:
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : (base_url ?? 'https://pick-n-get-fe.vercel.app/'),
   icons: [typeof window !== 'undefined' ? window.location.origin + '/logo192.png' : '/logo192.png'],
 };
 
