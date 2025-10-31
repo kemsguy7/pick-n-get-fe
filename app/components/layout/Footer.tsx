@@ -39,7 +39,7 @@ const Footer = () => {
             <div className="mb-4 flex items-center gap-3">
               {/*  Logo Icon */}
 
-              <Image src="/EcoCleanLogo.png" width={150} height={150} alt="Pick-n-Get Logo" />
+              <Image src="/PickLogo.png" width={120} height={120} alt="Pick-n-Get Logo" />
             </div>
 
             <p className="mb-6 leading-relaxed text-gray-300">

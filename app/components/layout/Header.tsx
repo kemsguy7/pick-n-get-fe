@@ -176,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
               <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="flex items-center sm:h-10">
                   <Link href="/" passHref>
-                    <Image src="/EcoCleanLogo.png" width={150} height={150} alt="Pick-n-Get Logo" />
+                    <Image src="/PickLogo.png" width={120} height={120} alt="Pick-n-Get Logo" />
                   </Link>
                 </div>
               </div>
@@ -200,11 +200,11 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
             </nav>
 
             {/* Right Section */}
-            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="focus-visible flex-shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2"
+                className="focus-visible shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2"
                 aria-label="Toggle theme"
               >
                 {isDarkMode ? (
@@ -216,25 +216,25 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
 
               {/* Wallet Connected State - ✅ NOW USES AUTH USER */}
               {user && accountId ? (
-                <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+                <div className="flex shrink-0 items-center gap-1 sm:gap-2">
                   {/* Token Balance */}
-                  <div className="hidden flex-shrink-0 items-center gap-1 rounded-lg border border-green-500/30 bg-green-500/20 px-2 py-1 sm:flex">
-                    <div className="h-2 w-2 flex-shrink-0 rounded-full bg-green-400"></div>
+                  <div className="hidden shrink-0 items-center gap-1 rounded-lg border border-green-500/30 bg-green-500/20 px-2 py-1 sm:flex">
+                    <div className="h-2 w-2 shrink-0 rounded-full bg-green-400"></div>
                     <span className="text-xs font-medium whitespace-nowrap text-green-400">
                       {walletData.balance}ECO
                     </span>
                   </div>
 
                   {/* CO2 Saved */}
-                  <div className="hidden flex-shrink-0 items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-500/20 px-2 py-1 lg:flex">
-                    <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-400"></div>
+                  <div className="hidden shrink-0 items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-500/20 px-2 py-1 lg:flex">
+                    <div className="h-2 w-2 shrink-0 rounded-full bg-blue-400"></div>
                     <span className="text-xs font-medium whitespace-nowrap text-blue-400">
                       {walletData.co2Saved}CO₂
                     </span>
                   </div>
 
                   {/* Notification Bell */}
-                  <button className="relative flex-shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2">
+                  <button className="relative shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2">
                     <Bell className="h-4 w-4 text-white sm:h-5 sm:w-5" />
                     {walletData.notifications > 0 && (
                       <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
@@ -245,8 +245,8 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
 
                   {/* User Profile / Wallet Info */}
                   <div className="group relative">
-                    <div className="flex max-w-[120px] flex-shrink-0 cursor-pointer items-center gap-1 rounded-lg p-1 transition-colors duration-200 hover:bg-white/10 sm:gap-2">
-                      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-purple-400 to-blue-400 sm:h-8 sm:w-8">
+                    <div className="flex max-w-[120px] shrink-0 cursor-pointer items-center gap-1 rounded-lg p-1 transition-colors duration-200 hover:bg-white/10 sm:gap-2">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-r from-purple-400 to-blue-400 sm:h-8 sm:w-8">
                         <Wallet className="h-4 w-4 text-white" />
                       </div>
                       <div className="hidden text-left sm:block">
@@ -280,7 +280,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
                 <button
                   onClick={handleConnect}
                   disabled={isLoading}
-                  className="gradient-button focus-visible flex-shrink-0 rounded-lg px-2 py-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 hover:shadow-lg disabled:opacity-50 sm:px-3 sm:py-1.5 sm:text-sm lg:text-base"
+                  className="gradient-button focus-visible shrink-0 rounded-lg px-2 py-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 hover:shadow-lg disabled:opacity-50 sm:px-3 sm:py-1.5 sm:text-sm lg:text-base"
                 >
                   {isLoading ? 'Loading...' : 'Connect Wallet'}
                 </button>
@@ -343,7 +343,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
                 {user && accountId && (
                   <div className="mb-2 flex items-center justify-between rounded-lg bg-white/10 p-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-400 to-blue-400">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-r from-purple-400 to-blue-400">
                         <Wallet className="h-4 w-4 text-white" />
                       </div>
                       <div>

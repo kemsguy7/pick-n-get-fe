@@ -407,7 +407,7 @@ export default function Confirmation({ formData, onReset }: ConfirmationProps) {
           </button>
           <button
             onClick={onReset}
-            className="font-inter flex items-center justify-center rounded-lg bg-gradient-to-r from-yellow-400 to-green-500 px-6 py-3 font-semibold text-black transition-all hover:from-yellow-500 hover:to-green-600"
+            className="font-inter bg-linear-gradient-to-r flex items-center justify-center rounded-lg from-yellow-400 to-green-500 px-6 py-3 font-semibold text-black transition-all hover:from-yellow-500 hover:to-green-600"
           >
             <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path
