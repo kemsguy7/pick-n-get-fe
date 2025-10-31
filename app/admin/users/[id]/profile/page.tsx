@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, Phone, MapPin, Truck, Calendar, Shield, FileText } from 'lucide-react';
+import { ArrowLeft, Shield, FileText } from 'lucide-react';
 import AppLayout from '../../../../components/layout/AppLayout';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
@@ -67,7 +67,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     if (userId) {
       fetchUserData();
-    }
+    } // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const getStatusBadge = (status: string) => {
