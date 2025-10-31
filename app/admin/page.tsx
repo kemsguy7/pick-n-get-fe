@@ -1017,7 +1017,7 @@ function AdminDashboardContent() {
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h1 className="text-green-gradient font-space-grotesk mb-2 bg-transparent bg-clip-text text-3xl font-bold md:text-4xl lg:text-5xl">
-                Welcome, Kemsguy
+                Welcome, Admin
               </h1>
               <p className="secondary-text font-inter text-lg">
                 Manage and monitor the Pick-n-Get platform
