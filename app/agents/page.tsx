@@ -295,12 +295,12 @@ export default function AgentDashboardPage() {
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-      <div className="dashboard-container min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
+      <div className="dashboard-container min-h-screen bg-linear-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
         <div className="mx-auto max-w-7xl space-y-6 lg:space-y-8">
           {/* Header with Real Rider Data */}
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 lg:h-20 lg:w-20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-green-400 to-green-600 lg:h-20 lg:w-20">
                 <User className="h-8 w-8 text-white lg:h-10 lg:w-10" />
               </div>
               <div>

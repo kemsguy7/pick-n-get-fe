@@ -109,7 +109,7 @@ export default function SignupMainPage(): React.JSX.Element {
                   >
                     <div className="flex items-center gap-3">
                       {role.selected && (
-                        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-500">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500">
                           <Check className="h-4 w-4 text-white" />
                         </div>
                       )}

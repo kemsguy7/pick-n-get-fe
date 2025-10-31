@@ -152,7 +152,7 @@ export default function UserProfilePage() {
           {/* User Profile Card */}
           <div className="rounded-xl border border-slate-700/50 bg-black p-6">
             <div className="mb-8 flex items-start gap-6">
-              <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-purple-400 to-blue-400">
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-linear-to-r from-purple-400 to-blue-400">
                 <span className="text-2xl font-bold text-white">
                   {userData.name.charAt(0).toUpperCase()}
                 </span>

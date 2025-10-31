@@ -46,7 +46,8 @@ export default function AgentSignupStep1(): React.JSX.Element {
 
   useEffect(() => {
     setCurrentStep(1);
-  }); //removed dependency array
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (isConnected && accountId && walletInterface) {
