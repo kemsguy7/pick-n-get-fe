@@ -116,18 +116,22 @@ export default function VendorSignupPage(): React.JSX.Element {
         throw new Error(contractResult.error || 'Blockchain registration failed');
       }
 
-      console.log('✅ Smart contract registration successful:', contractResult.txHash);
-      // Store the result in state so it can be used in JSX
-      setContractResult(contractResult);
+      // ✅ Check if already saved by productService
+      if (contractResult.web2Saved) {
+        console.log('✅ Already saved to backend by productService');
+        setSuccess(
+          `Registration successful! Transaction: ${contractResult.txHash?.substring(0, 10)}...`,
+        );
+        // Skip duplicate save, go straight to redirect
+        setTimeout(() => router.push('/vendors'), 2000);
+        return; // ✅ Exit early
+      }
 
-      // Step 2: Save to Backend
+      // Otherwise save to backend
       setLoadingMessage('Saving to database...');
-
       const response = await fetch(`${BACKEND_URL}/products/producers`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           registrationId: contractResult.registrationId || Date.now(),
           walletAddress: accountId,
