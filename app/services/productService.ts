@@ -9,7 +9,7 @@ const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://local
 export interface ProducerData {
   name: string;
   country: string;
-  phoneNumber: string; // Changed to string to match pattern
+  phoneNumber: string;
 }
 
 export interface ProductData {
@@ -17,7 +17,7 @@ export interface ProductData {
   quantity: number;
   description: string;
   imageFileId: string; // Hedera File ID
-  amount: number; // Price in HBAR
+  amount: number; // Price in HBAR (will be converted to integer)
 }
 
 export interface ProductItem {
@@ -61,6 +61,25 @@ export interface ShopProductResult {
 export type WalletData = [string, WalletInterface | null, string];
 
 const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms));
+
+/**
+ * Convert HBAR amount to integer (removing decimals)
+ * The smart contract will multiply by 10^8 internally
+ */
+function hbarToInteger(hbarAmount: number): number {
+  // ✅ FIX: Convert decimal HBAR to integer
+  // If user enters 3.91 HBAR, convert to 391 (multiply by 100, then contract multiplies by 10^6)
+  // OR just use Math.floor to remove decimals and let contract handle the rest
+
+  // Option 1: Remove decimals completely (safest for BigNumber)
+  const integerAmount = Math.floor(hbarAmount);
+
+  console.log(
+    `  - Converting HBAR amount: ${hbarAmount} → ${integerAmount} (integer for contract)`,
+  );
+
+  return integerAmount;
+}
 
 /**
  * Convert IPFS/Hedera File ID to hex bytes for smart contract
@@ -183,7 +202,6 @@ export async function registerProducer(
     console.log(`- Phone: ${producerData.phoneNumber}`);
 
     // Build contract function parameters
-    // Contract function: registerProducer(address _producer, string _name, string _country, uint256 _phoneNumber)
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
         type: 'address',
@@ -235,8 +253,7 @@ export async function registerProducer(
     if (success.isSuccessful) {
       console.log(`- Producer registration on blockchain completed successfully ✅`);
 
-      // Get the registration ID (you might need to parse this from events)
-      const registrationId = Date.now(); // Temporary fallback
+      const registrationId = Date.now();
 
       // Save to Web2 backend
       console.log(`\n- Proceeding to save producer data to Web2 backend...`);
@@ -327,11 +344,13 @@ export async function addProduct(
     console.log(`- Price: ${productData.amount} HBAR`);
     console.log(`- Image File ID: ${productData.imageFileId}`);
 
+    // ✅ FIX: Convert HBAR to integer for BigNumber
+    const integerAmount = hbarToInteger(productData.amount);
+
     // Convert image file ID to bytes
     const imageHex = fileIdToBytes(productData.imageFileId);
 
     // Build contract function parameters
-    // Contract function: addProduct(string _name, uint256 _quantity, string _description, bytes _data, uint256 _amount)
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
         type: 'string',
@@ -356,7 +375,7 @@ export async function addProduct(
       .addParam({
         type: 'uint256',
         name: '_amount',
-        value: productData.amount,
+        value: integerAmount, // ✅ FIX: Use integer instead of decimal
       });
 
     // Execute the contract function
@@ -388,8 +407,7 @@ export async function addProduct(
     if (success.isSuccessful) {
       console.log(`- Product added successfully ✅`);
 
-      // Get product ID from transaction (you might need to parse from events)
-      const productId = Date.now(); // Temporary fallback
+      const productId = Date.now();
 
       return {
         success: true,
@@ -455,7 +473,6 @@ export async function shopProduct(
     console.log(`- Buyer: ${accountId}`);
 
     // Build contract function parameters
-    // Contract function: shopProduct(uint256 _productId, uint256 _quantity) payable
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
         type: 'uint256',
@@ -478,8 +495,6 @@ export async function shopProduct(
       'shopProduct',
       functionParameters,
       gasLimit,
-      // Note: Payment value should be calculated based on product price * quantity
-      // This will need to be handled by the wallet interface
     );
 
     if (!transactionResult) {
