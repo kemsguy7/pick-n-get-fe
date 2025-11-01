@@ -129,6 +129,8 @@ export default function VendorSignupPage(): React.JSX.Element {
 
       // Otherwise save to backend
       setLoadingMessage('Saving to database...');
+      setContractResult(contractResult);
+      console.log(contractResult);
       const response = await fetch(`${BACKEND_URL}/products/producers`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -108,7 +108,7 @@ export default function EcoShopPage() {
 
   // Fetch products from backend
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(); // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, sortBy]);
 
   const fetchProducts = async () => {
