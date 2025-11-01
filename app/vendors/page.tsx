@@ -73,11 +73,9 @@ export default function VendorDashboardPage() {
 
     try {
       const response = await fetch(`${baseUrl}/products/vendors/${accountId}/stats`);
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.data);
-      } else {
-        // Use mock data if backend fails
+
+      if (response.status === 404) {
+        // ✅ Vendor not found, use empty stats
         setStats({
           totalProducts: 0,
           totalRevenue: 0,
@@ -85,10 +83,18 @@ export default function VendorDashboardPage() {
           avgRating: 0,
           monthlyGrowth: 0,
         });
+        return;
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.data);
+      } else {
+        throw new Error('Failed to fetch stats');
       }
     } catch (err) {
       console.error('Error fetching stats:', err);
-      // Use mock data if backend fails
+      // Fallback to empty stats
       setStats({
         totalProducts: 0,
         totalRevenue: 0,
@@ -100,7 +106,6 @@ export default function VendorDashboardPage() {
       setLoading(false);
     }
   }, [accountId]);
-
   // Fetch vendor products
   const fetchProducts = useCallback(async () => {
     if (!accountId) return;
