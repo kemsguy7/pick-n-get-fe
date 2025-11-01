@@ -42,7 +42,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const params = useParams(); // ✅ Use useParams hook
   const productId = params.id as string; // ✅ Get id from params
-  
+
   const { accountId, walletInterface } = useWalletInterface();
   const isConnected = !!(accountId && walletInterface);
 
@@ -300,7 +300,7 @@ export default function ProductDetailPage() {
                     <span className="text-sm text-green-400">{success}</span>
                   </div>
                   {txHash && (
-                    
+                    <a
                       href={`https://hashscan.io/testnet/transaction/${txHash}`}
                       target="_blank"
                       rel="noopener noreferrer"
