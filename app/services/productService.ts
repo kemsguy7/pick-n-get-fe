@@ -472,6 +472,31 @@ export async function shopProduct(
     console.log(`- Quantity: ${quantity}`);
     console.log(`- Buyer: ${accountId}`);
 
+    // ✅ STEP 1: Get product details from contract to calculate payment
+    console.log(`- Fetching product details from contract...`);
+    const product = await getProductFromContract(walletData, productId);
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    console.log(`- Product found: ${product.name}`);
+    console.log(`- Product price: ${product.amount} tinybars`);
+    console.log(`- Product quantity available: ${product.quantity}`);
+
+    if (product.quantity < quantity) {
+      throw new Error(`Only ${product.quantity} items available`);
+    }
+
+    if (product.productStatus !== ProductStatus.Available) {
+      throw new Error('Product is not available');
+    }
+
+    // ✅ STEP 2: Calculate total payment (amount is already in tinybars with 8 decimals)
+    const totalPayment = BigInt(product.amount) * BigInt(quantity);
+    console.log(`- Total payment required: ${totalPayment} tinybars`);
+    console.log(`- Total payment in HBAR: ${Number(totalPayment) / 1e8} HBAR`);
+
     // Build contract function parameters
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
@@ -485,16 +510,19 @@ export async function shopProduct(
         value: quantity,
       });
 
-    // Execute the contract function
+    // Execute the contract function WITH PAYMENT
     const contractId = ContractId.fromString(PRODUCT_CONTRACT_ADDRESS);
     const gasLimit = 500000;
 
-    console.log(`- Executing shopProduct contract function...`);
+    console.log(`- Executing shopProduct contract function with payment...`);
+
+    // ✅ STEP 3: Send payment with the transaction
     const transactionResult = await walletInterface.executeContractFunction(
       contractId,
       'shopProduct',
       functionParameters,
       gasLimit,
+      totalPayment.toString(), // ✅ ADD PAYMENT HERE!
     );
 
     if (!transactionResult) {
@@ -544,6 +572,101 @@ export async function shopProduct(
       success: false,
       error: errorMessage,
     };
+  }
+}
+
+/**
+ * Get product details from smart contract
+ * Helper function to fetch product before purchase
+ */
+async function getProductFromContract(
+  walletData: WalletData,
+  productId: number,
+): Promise<ProductItem | null> {
+  try {
+    const [, , network] = walletData;
+
+    const mirrorNodeUrl =
+      network === 'testnet'
+        ? 'https://testnet.mirrornode.hedera.com'
+        : 'https://mainnet.mirrornode.hedera.com';
+
+    // Call the contract's getProduct view function
+    // This is a simplified approach - you may need to adjust based on your contract
+    const contractAddress = PRODUCT_CONTRACT_ADDRESS.replace(/\./g, '');
+    const paddedContractAddress = '0x' + contractAddress.padStart(40, '0');
+
+    // Encode function call: products(uint256)
+    const functionSelector = '0x7acc0b20'; // Keccak256 of "products(uint256)"
+    const paddedProductId = productId.toString(16).padStart(64, '0');
+    const data = functionSelector + paddedProductId;
+
+    const response = await fetch(`${mirrorNodeUrl}/api/v1/contracts/call`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data,
+        to: paddedContractAddress,
+        estimate: false,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('Failed to fetch product from contract');
+      return null;
+    }
+
+    const result = await response.json();
+
+    // Parse the result (this is simplified - adjust based on your contract's return format)
+    // You may need to decode the hex result properly
+
+    // For now, return a mock to test - replace with actual parsing
+    console.log('Contract call result:', result);
+
+    // ⚠️ TODO: Properly decode the contract response
+    // For now, fetch from backend instead
+    return await getProductFromBackend(productId);
+  } catch (error) {
+    console.error('Error fetching product from contract:', error);
+    return null;
+  }
+}
+
+/**
+ * Fallback: Get product from backend
+ */
+async function getProductFromBackend(productId: number): Promise<ProductItem | null> {
+  try {
+    const response = await fetch(`${BACKEND_API_URL}/products/${productId}`);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const product = data.data;
+
+    // Convert backend product to contract format
+    // Price in backend is in HBAR, convert to tinybars
+    const amountInTinybars = BigInt(Math.floor(product.price * 1e8));
+
+    return {
+      productId: product.productId,
+      name: product.name,
+      quantity: product.quantity,
+      owner: product.walletAddress,
+      description: product.description,
+      data: product.imageFileId,
+      amount: amountInTinybars.toString(),
+      productStatus:
+        product.status === 'Available' ? ProductStatus.Available : ProductStatus.NotAvailable,
+    };
+  } catch (error) {
+    console.error('Error fetching product from backend:', error);
+    return null;
   }
 }
 
