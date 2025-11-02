@@ -173,22 +173,21 @@ export default function EcoShopPage() {
 
   // Convert backend product to ProductCard format
   const convertToProductCard = (product: BackendProduct): ProductCardProps => {
-    // Fix image URL - use Hedera mirror node
-    const imageUrl = product.imageFileId
-      ? `https://testnet.mirrornode.hedera.com/api/v1/contracts/${product.imageFileId}/results/contents`
-      : '/placeholder-product.png';
+    const imageUrl = product.imageUrl || '/placeholder-product.png';
+
+    console.log('🖼️ Converting product:', product.name, 'Image URL:', imageUrl);
 
     return {
       id: product.productId.toString(),
       image: imageUrl,
       name: product.name,
       description: product.description,
-      price: product.priceUSD || product.price * 0.05, // Use USD price or convert
+      price: product.priceUSD || product.price * 0.05,
       currency: '$',
       originalPrice: undefined,
-      rating: 4.5, // Default for now
+      rating: 4.5,
       reviewCount: product.views || 0,
-      brand: 'Eco Vendor', // TODO: Get from vendor data
+      brand: 'Eco Vendor',
       inStock: product.quantity,
       recycledPercentage: product.recycledPercentage || 80,
       isVerified: true,

@@ -12,6 +12,7 @@ export interface WalletInterface {
     functionName: string,
     functionParameters: ContractFunctionParameterBuilder,
     gasLimit: number,
+    payableAmount?: string | number,
   ) => Promise<TransactionId | string | null>;
   disconnect: () => void;
   transferHBAR: (toAddress: AccountId, amount: number) => Promise<TransactionId | string | null>;

@@ -13,6 +13,7 @@ import {
   TransferTransaction,
   TransactionReceipt,
   TransactionReceiptQuery,
+  Hbar,
 } from '@hashgraph/sdk';
 import { ContractFunctionParameterBuilder } from '../contractFunctionParameterBuilder';
 import { appConfig } from '../../../config';
@@ -21,6 +22,7 @@ import { DAppConnector, HederaSessionEvent, HederaChainId } from '@hashgraph/hed
 import EventEmitter from 'events';
 
 const base_url = process.env.PUBLIC_BACKEND_API_URL;
+console.log(Hbar);
 
 /* eslint-disable react-refresh/only-export-components */
 
@@ -143,11 +145,21 @@ class WalletConnectWallet implements WalletInterface {
     functionName: string,
     functionParameters: ContractFunctionParameterBuilder,
     gasLimit: number,
+    payableAmount?: string | number, // ✅ ADD THIS PARAMETER
   ) {
     const tx = new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gasLimit)
       .setFunction(functionName, functionParameters.buildHAPIParams());
+
+    // ✅ ADD PAYMENT IF PROVIDED
+    if (payableAmount !== undefined && payableAmount !== null) {
+      // Import Hbar at the top: import { Hbar } from '@hashgraph/sdk';
+      const { Hbar } = await import('@hashgraph/sdk');
+      const hbarAmount = Hbar.fromTinybars(payableAmount.toString());
+      tx.setPayableAmount(hbarAmount);
+      console.log(`💰 Sending payment: ${payableAmount} tinybars with contract call`);
+    }
 
     const signer = this.getSigner();
     await tx.freezeWithSigner(signer);

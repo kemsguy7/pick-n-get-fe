@@ -166,23 +166,6 @@ export default function VendorDashboardPage() {
     }
   }, [activeTab, fetchOrders]);
 
-  // Check wallet connection
-  // if (!isConnected) {
-  //   return (
-  //     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-  //       <div className="flex min-h-screen items-center justify-center">
-  //         <div className="text-center">
-  //           <AlertCircle className="mx-auto mb-4 h-16 w-16 text-yellow-400" />
-  //           <h2 className="mb-4 text-2xl font-bold text-yellow-400">Connect Wallet</h2>
-  //           <p className="text-gray-400">
-  //             Please connect your wallet to access the co.
-  //           </p>
-  //         </div>
-  //       </div>
-  //     </AppLayout>
-  //   );
-  // }
-
   //Add role checking
   useEffect(() => {
     const checkVendorRole = async () => {

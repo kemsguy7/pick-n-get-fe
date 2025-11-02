@@ -199,13 +199,14 @@ class MetaMaskWallet implements WalletInterface {
     return hash;
   }
 
-  // Purpose: build contract execute transaction and send to hashconnect for signing and execution
-  // Returns: Promise<TransactionId | null>
+  // Purpose: build contract execute transaction and send to metamask for signing and execution
+  // Returns: Promise<string | null>
   async executeContractFunction(
     contractId: ContractId,
     functionName: string,
     functionParameters: ContractFunctionParameterBuilder,
     gasLimit: number,
+    payableAmount?: string | number,
   ) {
     const provider = getProvider();
     const signer = await provider.getSigner();
@@ -213,11 +214,26 @@ class MetaMaskWallet implements WalletInterface {
 
     // create contract instance for the contract id
     // to call the function, use contract[functionName](...functionParameters, ethersOverrides)
-    const contract = new ethers.Contract(`0x${contractId.toSolidityAddress()}`, abi, signer);
+    const contract = new ethers.Contract(`0x${contractId.toEvmAddress()}`, abi, signer);
     try {
-      const txResult = await contract[functionName](...functionParameters.buildEthersParams(), {
+      //Build ethers overrides with value if payableAmount is provided
+      const ethersOverrides: { gasLimit?: number; value?: ethers.BigNumber } = {
         gasLimit: gasLimit === -1 ? undefined : gasLimit,
-      });
+      };
+
+      // ADD PAYMENT IF PROVIDED
+      if (payableAmount !== undefined && payableAmount !== null) {
+        // Convert to BigNumber if it's a string
+        ethersOverrides.value = ethers.BigNumber.from(payableAmount.toString());
+        console.log(`💰 Sending payment: ${payableAmount} tinybars with contract call`);
+      }
+
+      const txResult = await contract[functionName](
+        ...functionParameters.buildEthersParams(),
+        ethersOverrides,
+      );
+
+      console.log(`✅ Transaction hash: ${txResult.hash}`);
       return txResult.hash;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -226,7 +242,6 @@ class MetaMaskWallet implements WalletInterface {
       return null;
     }
   }
-
   disconnect() {
     alert('Please disconnect using the Metamask extension.');
   }

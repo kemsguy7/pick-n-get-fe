@@ -522,7 +522,7 @@ export async function shopProduct(
       'shopProduct',
       functionParameters,
       gasLimit,
-      totalPayment.toString(), // ✅ ADD PAYMENT HERE!
+      totalPayment.toString(),
     );
 
     if (!transactionResult) {
