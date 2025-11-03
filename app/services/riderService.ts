@@ -89,7 +89,7 @@ const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res
 function ipfsHashToBytes(ipfsHash: string): string {
   try {
     if (!ipfsHash || ipfsHash.trim().length === 0) {
-      throw new Error('Empty IPFS hash provided');
+      throw new Error('Empty  hash provided');
     }
 
     const encoder = new TextEncoder();
@@ -102,43 +102,15 @@ function ipfsHashToBytes(ipfsHash: string): string {
         .join('');
 
     console.log(
-      `  - Converted IPFS hash "${ipfsHash}" to hex (${bytes.length} bytes): ${hexString.substring(0, 20)}...`,
+      `  - Converted Image hash "${ipfsHash}" to hex (${bytes.length} bytes): ${hexString.substring(0, 20)}...`,
     );
 
     return hexString;
   } catch (error) {
-    console.error('Error converting IPFS hash to bytes:', error);
-    throw new Error(`Failed to convert IPFS hash to bytes: ${error}`);
+    console.error('Error converting Image hash to bytes:', error);
+    throw new Error(`Failed to convert Image hash to bytes: ${error}`);
   }
 }
-
-/**
- * Map frontend vehicle type string to VehicleType enum
- */
-// function mapVehicleTypeToEnum(vehicleTypeString: string): VehicleType {
-//   const normalizedType = vehicleTypeString.toLowerCase().trim();
-
-//   const typeMap: { [key: string]: VehicleType } = {
-//     bike: VehicleType.Bike,
-//     car: VehicleType.Car,
-//     truck: VehicleType.Truck,
-//     van: VehicleType.Van,
-//   };
-
-//   const mappedType = typeMap[normalizedType];
-
-//   if (mappedType === undefined) {
-//     throw new Error(
-//       `Invalid vehicle type: ${vehicleTypeString}. Must be one of: ${Object.keys(typeMap).join(', ')}`,
-//     );
-//   }
-
-//   return mappedType;
-// }
-
-/**
- * Save rider data to Web2 backend after successful blockchain registration
- */
 
 /**
  * Save rider data to Web2 backend after successful blockchain registration
@@ -282,23 +254,18 @@ export async function registerRider(
     console.log(`- Vehicle: ${riderData.vehicleNumber} (${VehicleType[riderData.vehicleType]})`);
     console.log(`- Phone: ${riderData.phoneNumber}`);
     console.log(`- Capacity: ${riderData.capacity} kg`);
-    console.log(`- Vehicle Image IPFS: ${riderData.vehicleImage}`);
-    console.log(`- Vehicle Registration IPFS: ${riderData.vehicleRegistration}`);
-    console.log(`- Profile Picture IPFS: ${riderData.profilePicture || 'Not provided'}`);
+    console.log(`- Vehicle Image Hedera HFS: ${riderData.vehicleImage}`);
+    console.log(`- Vehicle Registration HFS: ${riderData.vehicleRegistration}`);
+    console.log(`- Profile Picture HFS: ${riderData.profilePicture || 'Not provided'}`);
 
     // Convert IPFS hashes to hex strings (ethers.js compatible format)
-    console.log(`- Converting IPFS hashes to hex strings...`);
+    console.log(`- Converting HFS hashes to hex strings...`);
     const vehicleImageHex = ipfsHashToBytes(riderData.vehicleImage);
     const vehicleRegistrationHex = ipfsHashToBytes(riderData.vehicleRegistration);
     const profilePictureHex = riderData.profilePicture
       ? ipfsHashToBytes(riderData.profilePicture)
       : '0x'; // Empty bytes if no profile picture
 
-    // Build contract function parameters
-    // Contract function signature:
-    // riderApplication(string _name, string _number, string _vehicleNumber,
-    //                  string _homeAddress, string _country, uint256 _capacity,
-    //                  bytes _image, bytes _vehicleRegistration, uint8 _vehicleType, bytes _picture)
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
         type: 'string',
@@ -508,7 +475,7 @@ export function validateRiderData(riderData: RiderData): { isValid: boolean; err
 
   // Profile picture is optional, but validate if provided
   if (riderData.profilePicture && riderData.profilePicture.trim().length === 0) {
-    errors.push('Profile picture IPFS hash is invalid');
+    errors.push('Profile picture HFS hash is invalid');
   }
 
   return {

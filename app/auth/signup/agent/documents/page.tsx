@@ -14,8 +14,6 @@ import {
   RiderData,
   VehicleType,
 } from '../../../../services/riderService';
-// import { validateFile, uploadToIPFS, testPinataConnection } from '../../../../apis/ipfsApi';
-
 import AppLayout from '../../../../components/layout/AppLayout';
 import { uploadToHedera, validateFile } from '../../../../apis/hederaApi';
 interface DocumentUploadForm {
@@ -582,7 +580,7 @@ export default function AgentSignupStep4(): React.JSX.Element {
                 </h3>
                 <p className="font-inter text-sm text-gray-600">
                   Provide valid documents to become a verified agent. Files will be securely stored
-                  on IPFS.
+                  on HFS.
                 </p>
               </div>
 
