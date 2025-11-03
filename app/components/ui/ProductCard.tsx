@@ -58,7 +58,6 @@ export default function ProductCard({
             target.src =
               'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23334155" width="400" height="400"/%3E%3Ctext fill="%239CA3AF" font-family="sans-serif" font-size="20" x="50%" y="50%" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
           }}
-          onLoad={() => console.log('✅ Image loaded successfully:', image)} // ✅ Success log
         />
 
         {/* Badges */}
