@@ -370,7 +370,7 @@ export default function AgentSignupStep4(): React.JSX.Element {
         throw new Error(validation.errors.join(', '));
       }
 
-      setLoadingMessage('Submitting registration to blockchain...');
+      setLoadingMessage('Submitting registration to Hedera DLT...');
 
       // Register rider on blockchain
       const walletData = createWalletData(accountId, walletInterface);
@@ -401,7 +401,7 @@ export default function AgentSignupStep4(): React.JSX.Element {
         let successMessage = `Registration successful! Your rider ID is: ${result.riderId}. Transaction: ${result.txHash}`;
 
         if (result.web2Error) {
-          successMessage += ` Note: Data was saved to blockchain but backend sync failed. Please contact support.`;
+          successMessage += ` Note: Data was saved to Hedera DLT  but backend sync failed. Please contact support.`;
         }
 
         setSuccess(successMessage);
