@@ -186,7 +186,6 @@ class MetaMaskWallet implements WalletInterface {
 
     return hash;
   }
-
   async executeContractFunction(
     contractId: ContractId,
     functionName: string,
@@ -254,10 +253,21 @@ class MetaMaskWallet implements WalletInterface {
       console.error('❌ MetaMask execution error:');
       console.error('Error:', error);
 
+      // ✅ Fix TypeScript error with proper typing
       if (error && typeof error === 'object') {
-        const err = error as any;
+        const err = error as {
+          data?: unknown;
+          error?: unknown;
+          reason?: string;
+          code?: string | number;
+          message?: string;
+        };
+
         if (err.data) console.error('Error data:', err.data);
+        if (err.error) console.error('Inner error:', err.error);
         if (err.reason) console.error('Reason:', err.reason);
+        if (err.code) console.error('Code:', err.code);
+        if (err.message) console.error('Message:', err.message);
       }
 
       return null;
