@@ -55,7 +55,7 @@ export const switchToHederaNetwork = async (ethereum: EthereumProvider) => {
   }
 };
 
-// FIXED: Move window access inside functions, not at module level
+// Move window access inside functions, not at module level
 const getProvider = () => {
   if (typeof window === 'undefined') {
     throw new Error('This function can only be called in the browser environment');
@@ -218,13 +218,24 @@ class MetaMaskWallet implements WalletInterface {
         gasLimit: gasLimit === -1 ? undefined : gasLimit,
       };
 
-      //FIX: Convert HBAR to Wei (18 decimals for MetaMask)
+      //FIX: Handle HBAR payment correctly
       if (payableAmount !== undefined && payableAmount !== null) {
-        // Convert HBAR to Wei (1 HBAR = 10^18 Wei in MetaMask's representation)
-        ethersOverrides.value = ethers.utils.parseEther(payableAmount.toString());
-        console.log(
-          `💰 Sending payment: ${payableAmount} HBAR (${ethersOverrides.value.toString()} Wei)`,
-        );
+        let valueInTinybars: string;
+
+        if (typeof payableAmount === 'string') {
+          // Already in tinybars as string
+          valueInTinybars = payableAmount;
+        } else {
+          // Convert HBAR to tinybars (1 HBAR = 100,000,000 tinybars)
+          valueInTinybars = Math.floor(payableAmount * 1e8).toString();
+        }
+
+        console.log(`💰 Payment details:`);
+        console.log(`   - Amount: ${Number(valueInTinybars) / 1e8} HBAR`);
+        console.log(`   - Tinybars: ${valueInTinybars}`);
+
+        // ✅ Use tinybars directly (Hedera uses 8 decimals, not 18 like Ethereum)
+        ethersOverrides.value = ethers.BigNumber.from(valueInTinybars);
       }
 
       const txResult = await contract[functionName](
@@ -232,7 +243,13 @@ class MetaMaskWallet implements WalletInterface {
         ethersOverrides,
       );
 
-      console.log(`✅ Transaction hash: ${txResult.hash}`);
+      console.log(`✅ Transaction submitted: ${txResult.hash}`);
+
+      // Wait for transaction confirmation
+      console.log(`⏳ Waiting for confirmation...`);
+      await provider.waitForTransaction(txResult.hash);
+      console.log(`✅ Transaction confirmed!`);
+
       return txResult.hash;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -241,6 +258,7 @@ class MetaMaskWallet implements WalletInterface {
       return null;
     }
   }
+
   disconnect() {
     alert('Please disconnect using the Metamask extension.');
   }
