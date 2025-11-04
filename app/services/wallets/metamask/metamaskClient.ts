@@ -202,7 +202,7 @@ class MetaMaskWallet implements WalletInterface {
       `function ${functionName}(${functionParameters.buildAbiFunctionParams()})${payableKeyword}`,
     ];
 
-    console.log(`📝 ABI: ${abi[0]}`);
+    console.log(`ABI: ${abi[0]}`);
 
     const contract = new ethers.Contract(`0x${contractId.toEvmAddress()}`, abi, signer);
 
@@ -228,14 +228,23 @@ class MetaMaskWallet implements WalletInterface {
         console.log(`   - Amount: ${hbarAmount} HBAR`);
         console.log(`   - Tinybars: ${tinybars}`);
 
-        // ✅ Use the tinybars value directly (8 decimals)
-        ethersOverrides.value = ethers.BigNumber.from(tinybars);
+        // Convert tinybars to weibars for Hedera JSON-RPC
+        // Hedera: 1 HBAR = 10^8 tinybars
+        // Ethereum: 1 ETH = 10^18 Wei
+        // Difference: 10^10
+        // So: tinybars * 10^10 = weibars (for RPC compatibility)
+        const weibars = ethers.BigNumber.from(tinybars).mul(ethers.BigNumber.from('10000000000'));
 
-        console.log(`   - Contract value: ${ethersOverrides.value.toString()}`);
-        console.log(`   - Verification: ${ethersOverrides.value.toNumber() / 1e8} HBAR`);
+        ethersOverrides.value = weibars;
+
+        console.log(`   - Weibars (for RPC): ${weibars.toString()}`);
+        console.log(
+          `   - Verification: ${weibars.div(ethers.BigNumber.from('10000000000')).toNumber() / 1e8} HBAR`,
+        );
       }
 
       console.log(`🚀 Executing contract function: ${functionName}`);
+      console.log(`📊 Contract: 0x${contractId.toEvmAddress()}`);
 
       const txResult = await contract[functionName](
         ...functionParameters.buildEthersParams(),
@@ -253,7 +262,6 @@ class MetaMaskWallet implements WalletInterface {
       console.error('❌ MetaMask execution error:');
       console.error('Error:', error);
 
-      // ✅ Fix TypeScript error with proper typing
       if (error && typeof error === 'object') {
         const err = error as {
           data?: unknown;
