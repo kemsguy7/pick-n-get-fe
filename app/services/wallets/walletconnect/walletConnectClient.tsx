@@ -145,20 +145,22 @@ class WalletConnectWallet implements WalletInterface {
     functionName: string,
     functionParameters: ContractFunctionParameterBuilder,
     gasLimit: number,
-    payableAmount?: string | number, // ✅ ADD THIS PARAMETER
+    payableAmount?: string | number,
   ) {
     const tx = new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gasLimit)
       .setFunction(functionName, functionParameters.buildHAPIParams());
 
-    // ✅ ADD PAYMENT IF PROVIDED
+    // ✅ FIX: Use Hbar.from() with HbarUnit
     if (payableAmount !== undefined && payableAmount !== null) {
-      // Import Hbar at the top: import { Hbar } from '@hashgraph/sdk';
-      const { Hbar } = await import('@hashgraph/sdk');
-      const hbarAmount = Hbar.fromTinybars(payableAmount.toString());
-      tx.setPayableAmount(hbarAmount);
-      console.log(`💰 Sending payment: ${payableAmount} tinybars with contract call`);
+      const hbarAmount =
+        typeof payableAmount === 'string' ? parseFloat(payableAmount) : payableAmount;
+
+      // ✅ CORRECT: Specify HbarUnit.Hbar as the second parameter
+      const { HbarUnit } = await import('@hashgraph/sdk');
+      tx.setPayableAmount(Hbar.from(hbarAmount, HbarUnit.Hbar));
+      console.log(`💰 Sending payment: ${hbarAmount} HBAR`);
     }
 
     const signer = this.getSigner();

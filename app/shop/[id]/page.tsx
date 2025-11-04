@@ -94,7 +94,6 @@ export default function ProductDetailPage() {
     setSuccess('');
 
     try {
-      // Import productService
       const { shopProduct } = await import('../../services/productService');
 
       const productIdNum = product.productId;
@@ -104,7 +103,10 @@ export default function ProductDetailPage() {
         'testnet',
       ];
 
-      // Call smart contract
+      console.log(`Purchasing ${quantity} x ${product.name}`);
+      console.log(`Total: ${product.price * quantity} HBAR`);
+
+      // ✅ Call smart contract with correct parameters
       const result = await shopProduct(walletData, productIdNum, quantity);
 
       if (!result.success) {
@@ -120,7 +122,7 @@ export default function ProductDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           quantity,
-          totalAmount: product.price * quantity,
+          totalAmount: product.price * quantity, //In HBAR
           customerWalletAddress: accountId,
           customerName: 'Customer',
           deliveryAddress: 'To be provided',
@@ -129,7 +131,6 @@ export default function ProductDetailPage() {
       });
 
       setSuccess('Purchase successful! Transaction confirmed on blockchain.');
-
       setTimeout(() => fetchProduct(), 2000);
     } catch (err) {
       console.error('Purchase error:', err);

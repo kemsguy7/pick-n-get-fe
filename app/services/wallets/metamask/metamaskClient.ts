@@ -212,20 +212,19 @@ class MetaMaskWallet implements WalletInterface {
     const signer = await provider.getSigner();
     const abi = [`function ${functionName}(${functionParameters.buildAbiFunctionParams()})`];
 
-    // create contract instance for the contract id
-    // to call the function, use contract[functionName](...functionParameters, ethersOverrides)
     const contract = new ethers.Contract(`0x${contractId.toEvmAddress()}`, abi, signer);
     try {
-      //Build ethers overrides with value if payableAmount is provided
       const ethersOverrides: { gasLimit?: number; value?: ethers.BigNumber } = {
         gasLimit: gasLimit === -1 ? undefined : gasLimit,
       };
 
-      // ADD PAYMENT IF PROVIDED
+      //FIX: Convert HBAR to Wei (18 decimals for MetaMask)
       if (payableAmount !== undefined && payableAmount !== null) {
-        // Convert to BigNumber if it's a string
-        ethersOverrides.value = ethers.BigNumber.from(payableAmount.toString());
-        console.log(`💰 Sending payment: ${payableAmount} tinybars with contract call`);
+        // Convert HBAR to Wei (1 HBAR = 10^18 Wei in MetaMask's representation)
+        ethersOverrides.value = ethers.utils.parseEther(payableAmount.toString());
+        console.log(
+          `💰 Sending payment: ${payableAmount} HBAR (${ethersOverrides.value.toString()} Wei)`,
+        );
       }
 
       const txResult = await contract[functionName](
@@ -237,8 +236,8 @@ class MetaMaskWallet implements WalletInterface {
       return txResult.hash;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.warn(message);
-
+      console.error('❌ MetaMask execution error:', message);
+      console.error('Full error:', error);
       return null;
     }
   }

@@ -461,18 +461,11 @@ export async function shopProduct(
       throw new Error('Wallet interface not available');
     }
 
-    if (productId <= 0) {
-      throw new Error('Invalid product ID');
-    }
-    if (quantity <= 0) {
-      throw new Error('Quantity must be greater than 0');
-    }
-
     console.log(`- Purchasing product ID: ${productId}`);
     console.log(`- Quantity: ${quantity}`);
     console.log(`- Buyer: ${accountId}`);
 
-    // ✅ FIX: Get product details from backend (more reliable)
+    // Get product details from backend
     const product = await getProductFromBackend(productId);
 
     if (!product) {
@@ -480,8 +473,7 @@ export async function shopProduct(
     }
 
     console.log(`- Product found: ${product.name}`);
-    console.log(`- Product price from backend: ${product.amount} tinybars`);
-    console.log(`- Product quantity available: ${product.quantity}`);
+    console.log(`- Product price: ${product.amount} tinybars`);
 
     if (product.quantity < quantity) {
       throw new Error(`Only ${product.quantity} items available`);
@@ -491,20 +483,14 @@ export async function shopProduct(
       throw new Error('Product is not available');
     }
 
-    // ✅ FIX: Calculate payment correctly
-    // Backend stores price in HBAR (e.g., 1 HBAR)
-    // We need to multiply by quantity and keep it in HBAR for the contract
-    const pricePerItem = BigInt(product.amount); // Already in tinybars (100000000)
-    const totalPaymentTinybars = pricePerItem * BigInt(quantity);
+    //Calculate payment in HBAR (not tinybars!)
+    const pricePerItemTinybars = BigInt(product.amount);
+    const totalPaymentTinybars = pricePerItemTinybars * BigInt(quantity);
+    const totalPaymentHBAR = Number(totalPaymentTinybars) / 1e8; // Convert to HBAR
 
-    // ✅ IMPORTANT: Convert tinybars to HBAR for the contract call
-    // Contract expects HBAR amount, not tinybars
-    const totalPaymentHBAR = Number(totalPaymentTinybars) / 1e8;
+    console.log(`- Price per item: ${Number(pricePerItemTinybars) / 1e8} HBAR`);
+    console.log(`- Total payment: ${totalPaymentHBAR} HBAR`);
 
-    console.log(`- Price per item: ${pricePerItem} tinybars (${Number(pricePerItem) / 1e8} HBAR)`);
-    console.log(`- Total payment: ${totalPaymentTinybars} tinybars (${totalPaymentHBAR} HBAR)`);
-
-    // Build contract function parameters - pass productId and quantity
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
         type: 'uint256',
@@ -520,10 +506,9 @@ export async function shopProduct(
     const contractId = ContractId.fromString(PRODUCT_CONTRACT_ADDRESS);
     const gasLimit = 500000;
 
-    console.log(`- Executing shopProduct contract function...`);
-    console.log(`- Payment amount: ${totalPaymentHBAR} HBAR`);
+    console.log(`- Executing shopProduct with payment: ${totalPaymentHBAR} HBAR`);
 
-    // ✅ FIX: Pass HBAR amount (not tinybars) as 5th parameter
+    //Pass HBAR amount as a NUMBER
     const transactionResult = await walletInterface.executeContractFunction(
       contractId,
       'shopProduct',
@@ -539,16 +524,13 @@ export async function shopProduct(
     const txHash = transactionResult.toString();
     console.log(`- Transaction submitted: ${txHash}`);
 
-    // Wait for transaction confirmation
-    console.log(`- Waiting for transaction confirmation...`);
+    // Wait for confirmation
     await delay(3000);
 
-    // Check transaction status
     const success = await checkTransactionStatus(txHash, network);
 
     if (success.isSuccessful) {
       console.log(`- Product purchased successfully ✅`);
-
       return {
         success: true,
         txHash: txHash,
@@ -564,14 +546,10 @@ export async function shopProduct(
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
 
-      if (message.includes('sold out') || message.includes('not available')) {
-        errorMessage = 'Product is sold out';
-      } else if (message.includes('insufficient stock')) {
-        errorMessage = 'Insufficient stock available';
-      } else if (message.includes('incorrect payment') || message.includes('insufficient')) {
-        errorMessage = 'Insufficient HBAR balance or incorrect payment amount';
-      } else if (message.includes('non-payable')) {
-        errorMessage = 'Payment error: Please ensure you have sufficient HBAR balance';
+      if (message.includes('non-payable')) {
+        errorMessage = 'Contract function is not payable. Check smart contract configuration.';
+      } else if (message.includes('insufficient')) {
+        errorMessage = 'Insufficient HBAR balance';
       } else {
         errorMessage = error.message;
       }
