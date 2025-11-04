@@ -26,7 +26,7 @@ export const switchToHederaNetwork = async (ethereum: EthereumProvider) => {
   try {
     await ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: currentNetworkConfig.chainId }], // chainId must be in hexadecimal numbers
+      params: [{ chainId: currentNetworkConfig.chainId }],
     });
   } catch (error) {
     const err = error as { code?: number };
@@ -55,7 +55,6 @@ export const switchToHederaNetwork = async (ethereum: EthereumProvider) => {
   }
 };
 
-// Move window access inside functions, not at module level
 const getProvider = () => {
   if (typeof window === 'undefined') {
     throw new Error('This function can only be called in the browser environment');
@@ -68,10 +67,7 @@ const getProvider = () => {
   return new ethers.providers.Web3Provider(ethereum);
 };
 
-// returns a list of accounts
-// otherwise empty array
 export const connectToMetamask = async () => {
-  // FIXED: Add client-side check
   if (typeof window === 'undefined') {
     console.warn('MetaMask can only be accessed in the browser');
     return [];
@@ -94,7 +90,6 @@ export const connectToMetamask = async () => {
   } catch (error) {
     const err = error as { code?: number };
     if (err.code === 4001) {
-      // EIP-1193 userRejectedRequest error
       console.warn('Please connect to Metamask.');
     } else {
       console.error('Error connecting to MetaMask:', error);
@@ -113,19 +108,14 @@ class MetaMaskWallet implements WalletInterface {
     return `0x${accountIdString}`;
   }
 
-  // Purpose: Transfer HBAR
-  // Returns: Promise<string>
-  // Note: Use JSON RPC Relay to search by transaction hash
   async transferHBAR(toAddress: AccountId, amount: number) {
     const provider = getProvider();
     const signer = await provider.getSigner();
-    // build the transaction
     const tx = await signer.populateTransaction({
       to: this.convertAccountIdToSolidityAddress(toAddress),
       value: ethers.utils.parseEther(amount.toString()),
     });
     try {
-      // send the transaction
       const { hash } = await signer.sendTransaction(tx);
       await provider.waitForTransaction(hash);
 
@@ -187,8 +177,6 @@ class MetaMaskWallet implements WalletInterface {
   }
 
   async associateToken(tokenId: TokenId) {
-    // send the transaction
-    // convert tokenId to contract id
     const hash = await this.executeContractFunction(
       ContractId.fromString(tokenId.toString()),
       'associate',
@@ -199,8 +187,7 @@ class MetaMaskWallet implements WalletInterface {
     return hash;
   }
 
-  // Purpose: build contract execute transaction and send to metamask for signing and execution
-  // Returns: Promise<string | null>
+  // FIXED: Added payableAmount parameter and proper ABI construction
   async executeContractFunction(
     contractId: ContractId,
     functionName: string,
@@ -210,16 +197,25 @@ class MetaMaskWallet implements WalletInterface {
   ) {
     const provider = getProvider();
     const signer = await provider.getSigner();
-    const abi = [`function ${functionName}(${functionParameters.buildAbiFunctionParams()})`];
+
+    // FIX: Add "payable" keyword to ABI when payment is included
+    const isPayable = payableAmount !== undefined && payableAmount !== null;
+    const payableKeyword = isPayable ? ' payable' : '';
+    const abi = [
+      `function ${functionName}(${functionParameters.buildAbiFunctionParams()})${payableKeyword}`,
+    ];
+
+    console.log(`📝 ABI: ${abi[0]}`);
 
     const contract = new ethers.Contract(`0x${contractId.toEvmAddress()}`, abi, signer);
+
     try {
       const ethersOverrides: { gasLimit?: number; value?: ethers.BigNumber } = {
         gasLimit: gasLimit === -1 ? undefined : gasLimit,
       };
 
-      //FIX: Handle HBAR payment correctly
-      if (payableAmount !== undefined && payableAmount !== null) {
+      // Handle HBAR payment
+      if (isPayable) {
         let valueInTinybars: string;
 
         if (typeof payableAmount === 'string') {
@@ -234,9 +230,11 @@ class MetaMaskWallet implements WalletInterface {
         console.log(`   - Amount: ${Number(valueInTinybars) / 1e8} HBAR`);
         console.log(`   - Tinybars: ${valueInTinybars}`);
 
-        // ✅ Use tinybars directly (Hedera uses 8 decimals, not 18 like Ethereum)
+        // Use tinybars directly
         ethersOverrides.value = ethers.BigNumber.from(valueInTinybars);
       }
+
+      console.log(`🚀 Executing contract function: ${functionName}`);
 
       const txResult = await contract[functionName](
         ...functionParameters.buildEthersParams(),
@@ -247,8 +245,8 @@ class MetaMaskWallet implements WalletInterface {
 
       // Wait for transaction confirmation
       console.log(`⏳ Waiting for confirmation...`);
-      await provider.waitForTransaction(txResult.hash);
-      console.log(`✅ Transaction confirmed!`);
+      const receipt = await provider.waitForTransaction(txResult.hash);
+      console.log(`✅ Transaction confirmed in block ${receipt.blockNumber}`);
 
       return txResult.hash;
     } catch (error) {
@@ -270,10 +268,8 @@ export const MetaMaskClient = () => {
   const { setMetamaskAccountAddress } = useContext(MetamaskContext);
 
   useEffect(() => {
-    // FIXED: Only run on client side
     if (typeof window === 'undefined') return;
 
-    // set the account address if already connected
     try {
       const { ethereum } = window;
       if (!ethereum) {
@@ -290,7 +286,6 @@ export const MetaMaskClient = () => {
         }
       });
 
-      // listen for account changes and update the account address
       const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length !== 0) {
           setMetamaskAccountAddress(accounts[0]);
@@ -301,7 +296,6 @@ export const MetaMaskClient = () => {
 
       ethereum.on('accountsChanged', handleAccountsChanged);
 
-      // cleanup by removing listeners
       return () => {
         if (ethereum?.removeListener) {
           ethereum.removeListener('accountsChanged', handleAccountsChanged);
