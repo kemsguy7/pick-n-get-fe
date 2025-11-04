@@ -472,16 +472,15 @@ export async function shopProduct(
     console.log(`- Quantity: ${quantity}`);
     console.log(`- Buyer: ${accountId}`);
 
-    // ✅ STEP 1: Get product details from contract to calculate payment
-    console.log(`- Fetching product details from contract...`);
-    const product = await getProductFromContract(walletData, productId);
+    // ✅ FIX: Get product details from backend (more reliable)
+    const product = await getProductFromBackend(productId);
 
     if (!product) {
       throw new Error('Product not found');
     }
 
     console.log(`- Product found: ${product.name}`);
-    console.log(`- Product price: ${product.amount} tinybars`);
+    console.log(`- Product price from backend: ${product.amount} tinybars`);
     console.log(`- Product quantity available: ${product.quantity}`);
 
     if (product.quantity < quantity) {
@@ -492,12 +491,20 @@ export async function shopProduct(
       throw new Error('Product is not available');
     }
 
-    // ✅ STEP 2: Calculate total payment (amount is already in tinybars with 8 decimals)
-    const totalPayment = BigInt(product.amount) * BigInt(quantity);
-    console.log(`- Total payment required: ${totalPayment} tinybars`);
-    console.log(`- Total payment in HBAR: ${Number(totalPayment) / 1e8} HBAR`);
+    // ✅ FIX: Calculate payment correctly
+    // Backend stores price in HBAR (e.g., 1 HBAR)
+    // We need to multiply by quantity and keep it in HBAR for the contract
+    const pricePerItem = BigInt(product.amount); // Already in tinybars (100000000)
+    const totalPaymentTinybars = pricePerItem * BigInt(quantity);
 
-    // Build contract function parameters
+    // ✅ IMPORTANT: Convert tinybars to HBAR for the contract call
+    // Contract expects HBAR amount, not tinybars
+    const totalPaymentHBAR = Number(totalPaymentTinybars) / 1e8;
+
+    console.log(`- Price per item: ${pricePerItem} tinybars (${Number(pricePerItem) / 1e8} HBAR)`);
+    console.log(`- Total payment: ${totalPaymentTinybars} tinybars (${totalPaymentHBAR} HBAR)`);
+
+    // Build contract function parameters - pass productId and quantity
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
         type: 'uint256',
@@ -510,19 +517,19 @@ export async function shopProduct(
         value: quantity,
       });
 
-    // Execute the contract function WITH PAYMENT
     const contractId = ContractId.fromString(PRODUCT_CONTRACT_ADDRESS);
     const gasLimit = 500000;
 
-    console.log(`- Executing shopProduct contract function with payment...`);
+    console.log(`- Executing shopProduct contract function...`);
+    console.log(`- Payment amount: ${totalPaymentHBAR} HBAR`);
 
-    // ✅ STEP 3: Send payment with the transaction
+    // ✅ FIX: Pass HBAR amount (not tinybars) as 5th parameter
     const transactionResult = await walletInterface.executeContractFunction(
       contractId,
       'shopProduct',
       functionParameters,
       gasLimit,
-      totalPayment.toString(),
+      totalPaymentHBAR, // ✅ Pass as number in HBAR
     );
 
     if (!transactionResult) {
@@ -532,7 +539,7 @@ export async function shopProduct(
     const txHash = transactionResult.toString();
     console.log(`- Transaction submitted: ${txHash}`);
 
-    // Wait for transaction to be processed
+    // Wait for transaction confirmation
     console.log(`- Waiting for transaction confirmation...`);
     await delay(3000);
 
@@ -561,8 +568,10 @@ export async function shopProduct(
         errorMessage = 'Product is sold out';
       } else if (message.includes('insufficient stock')) {
         errorMessage = 'Insufficient stock available';
-      } else if (message.includes('incorrect payment')) {
-        errorMessage = 'Incorrect payment amount';
+      } else if (message.includes('incorrect payment') || message.includes('insufficient')) {
+        errorMessage = 'Insufficient HBAR balance or incorrect payment amount';
+      } else if (message.includes('non-payable')) {
+        errorMessage = 'Payment error: Please ensure you have sufficient HBAR balance';
       } else {
         errorMessage = error.message;
       }
@@ -649,9 +658,15 @@ async function getProductFromBackend(productId: number): Promise<ProductItem | n
     const data = await response.json();
     const product = data.data;
 
-    // Convert backend product to contract format
-    // Price in backend is in HBAR, convert to tinybars
-    const amountInTinybars = BigInt(Math.floor(product.price * 1e8));
+    // ✅ FIX: Backend stores price in HBAR (e.g., 1 HBAR)
+    // Convert to tinybars for internal calculations
+    const priceInHBAR = product.price; // e.g., 1
+    const amountInTinybars = BigInt(Math.floor(priceInHBAR * 1e8)); // Convert to 100000000
+
+    console.log(`📦 Product from backend:`);
+    console.log(`   - Name: ${product.name}`);
+    console.log(`   - Price: ${priceInHBAR} HBAR`);
+    console.log(`   - Amount in tinybars: ${amountInTinybars}`);
 
     return {
       productId: product.productId,

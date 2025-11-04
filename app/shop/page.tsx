@@ -173,7 +173,9 @@ export default function EcoShopPage() {
 
   // Convert backend product to ProductCard format
   const convertToProductCard = (product: BackendProduct): ProductCardProps => {
-    const imageUrl = product.imageUrl || '/placeholder-product.png';
+    const imageUrl = product.imageFileId
+      ? `https://testnet.mirrornode.hedera.com/api/v1/contracts/${product.imageFileId}/results/contents`
+      : '/placeholder-product.png';
 
     console.log('🖼️ Converting product:', product.name, 'Image URL:', imageUrl);
 
