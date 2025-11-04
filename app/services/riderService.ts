@@ -113,7 +113,7 @@ function ipfsHashToBytes(ipfsHash: string): string {
 }
 
 /**
- * Save rider data to Web2 backend after successful blockchain registration
+ * Save rider data to Web2 backend after successful hedera DLT registration
  *
  */
 async function saveRiderToBackend(
@@ -146,7 +146,7 @@ async function saveRiderToBackend(
 
     // Prepare payload for backend (simpler structure)
     const backendPayload = {
-      riderId,
+      id: riderId,
       walletAddress,
       name: riderData.name,
       phoneNumber: riderData.phoneNumber,
@@ -209,7 +209,7 @@ async function saveRiderToBackend(
 }
 
 /**
- * Register a new rider/agent on the blockchain with profile picture
+ * Register a new rider/agent on the hedera DLT with profile picture
  * @param walletData - [accountId, walletInterface, network]
  * @param riderData - Rider registration data
  * @returns Promise<RiderRegistrationResult>
@@ -219,7 +219,7 @@ export async function registerRider(
   riderData: RiderData,
 ): Promise<RiderRegistrationResult> {
   console.log(`\n=======================================`);
-  console.log(`- Registering rider on blockchain...🟠`);
+  console.log(`- Registering rider on hedera DLT...🟠`);
 
   try {
     const [accountId, walletInterface, network] = walletData;
@@ -345,26 +345,31 @@ export async function registerRider(
     const success = await checkTransactionStatus(txHash, network, accountId);
 
     if (success.isSuccessful) {
-      console.log(`- Rider registration on blockchain completed successfully ✅`);
+      console.log(`- Rider registration on hedera DLT completed successfully ✅`);
 
-      // Get the rider ID from the blockchain
+      // Get the rider ID from the hedera DLT
       const riderId = await getRiderIdFromTransaction(txHash, network);
 
       if (!riderId) {
-        // Fallback: generate a temporary ID (will be replaced by backend)
-        console.log(`- Could not retrieve rider ID from blockchain, using timestamp`);
+        console.error(`❌ CRITICAL: Could not retrieve rider ID from hedera DLT`);
+        return {
+          success: false,
+          error:
+            'Registration succeeded but could not retrieve rider ID. Please contact support with this transaction hash: ' +
+            txHash,
+        };
       }
 
-      const finalRiderId = riderId || Date.now();
+      console.log(`✅ Rider ID retrieved from hedera DLT: ${riderId}`);
 
       // Save to Web2 backend
       console.log(`\n- Proceeding to save rider data to Web2 backend...`);
-      const backendResult = await saveRiderToBackend(riderData, accountId, finalRiderId);
+      const backendResult = await saveRiderToBackend(riderData, accountId, riderId);
 
       return {
         success: true,
         txHash: txHash,
-        riderId: finalRiderId,
+        riderId: riderId,
         web2Saved: backendResult.success,
         web2Error: backendResult.error,
       };
@@ -593,6 +598,9 @@ function decodeContractError(errorHex: string): string | null {
 /**
  * Get rider ID from successful transaction
  */
+/**
+ * Get rider ID from successful transaction by parsing RiderApplied event
+ */
 async function getRiderIdFromTransaction(txHash: string, network: string): Promise<number | null> {
   try {
     const mirrorNodeUrl =
@@ -605,16 +613,29 @@ async function getRiderIdFromTransaction(txHash: string, network: string): Promi
     if (response.ok) {
       const txData = await response.json();
 
-      // Try to extract rider ID from logs/events
+      // Parse logs to find RiderApplied event
       if (txData.logs && txData.logs.length > 0) {
-        console.log(`  - Transaction logs found, attempting to extract rider ID...`);
-        // The rider ID would typically be in an event emission
-        // This depends on your contract implementation
-      }
+        console.log(`  - Transaction logs found, parsing RiderApplied event...`);
 
-      // Try to get riderCount from contract state
-      // This is a fallback method
-      console.log(`  - Could not extract rider ID from transaction logs`);
+        // RiderApplied event signature: RiderApplied(uint256 indexed riderId, address indexed wallet, string name)
+        // Topic[0] = event signature hash
+        // Topic[1] = riderId (indexed)
+        // Topic[2] = wallet address (indexed)
+
+        for (const log of txData.logs) {
+          // Check if this is the RiderApplied event (first topic is event signature)
+          if (log.topics && log.topics.length >= 2) {
+            // Topic[1] contains the riderId (uint256)
+            const riderIdHex = log.topics[1];
+            const riderId = parseInt(riderIdHex, 16);
+
+            console.log(`  ✅ Extracted rider ID from event: ${riderId}`);
+            return riderId;
+          }
+        }
+
+        console.log(`  - Could not find RiderApplied event in logs`);
+      }
     }
 
     return null;
@@ -623,8 +644,6 @@ async function getRiderIdFromTransaction(txHash: string, network: string): Promi
     return null;
   }
 }
-// services/riderService.ts (continued)
-
 /**
  * Check if a rider is registered and get their status
  * @param walletData - [accountId, walletInterface, network]
