@@ -566,61 +566,61 @@ export async function shopProduct(
  * Get product details from smart contract
  * Helper function to fetch product before purchase
  */
-async function getProductFromContract(
-  walletData: WalletData,
-  productId: number,
-): Promise<ProductItem | null> {
-  try {
-    const [, , network] = walletData;
+// async function getProductFromContract(
+//   walletData: WalletData,
+//   productId: number,
+// ): Promise<ProductItem | null> {
+//   try {
+//     const [, , network] = walletData;
 
-    const mirrorNodeUrl =
-      network === 'testnet'
-        ? 'https://testnet.mirrornode.hedera.com'
-        : 'https://mainnet.mirrornode.hedera.com';
+//     const mirrorNodeUrl =
+//       network === 'testnet'
+//         ? 'https://testnet.mirrornode.hedera.com'
+//         : 'https://mainnet.mirrornode.hedera.com';
 
-    // Call the contract's getProduct view function
-    // This is a simplified approach - you may need to adjust based on your contract
-    const contractAddress = PRODUCT_CONTRACT_ADDRESS.replace(/\./g, '');
-    const paddedContractAddress = '0x' + contractAddress.padStart(40, '0');
+//     // Call the contract's getProduct view function
+//     // This is a simplified approach - you may need to adjust based on your contract
+//     const contractAddress = PRODUCT_CONTRACT_ADDRESS.replace(/\./g, '');
+//     const paddedContractAddress = '0x' + contractAddress.padStart(40, '0');
 
-    // Encode function call: products(uint256)
-    const functionSelector = '0x7acc0b20'; // Keccak256 of "products(uint256)"
-    const paddedProductId = productId.toString(16).padStart(64, '0');
-    const data = functionSelector + paddedProductId;
+//     // Encode function call: products(uint256)
+//     const functionSelector = '0x7acc0b20'; // Keccak256 of "products(uint256)"
+//     const paddedProductId = productId.toString(16).padStart(64, '0');
+//     const data = functionSelector + paddedProductId;
 
-    const response = await fetch(`${mirrorNodeUrl}/api/v1/contracts/call`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data,
-        to: paddedContractAddress,
-        estimate: false,
-      }),
-    });
+//     const response = await fetch(`${mirrorNodeUrl}/api/v1/contracts/call`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         data,
+//         to: paddedContractAddress,
+//         estimate: false,
+//       }),
+//     });
 
-    if (!response.ok) {
-      console.error('Failed to fetch product from contract');
-      return null;
-    }
+//     if (!response.ok) {
+//       console.error('Failed to fetch product from contract');
+//       return null;
+//     }
 
-    const result = await response.json();
+//     const result = await response.json();
 
-    // Parse the result (this is simplified - adjust based on your contract's return format)
-    // You may need to decode the hex result properly
+//     // Parse the result (this is simplified - adjust based on your contract's return format)
+//     // You may need to decode the hex result properly
 
-    // For now, return a mock to test - replace with actual parsing
-    console.log('Contract call result:', result);
+//     // For now, return a mock to test - replace with actual parsing
+//     console.log('Contract call result:', result);
 
-    // ⚠️ TODO: Properly decode the contract response
-    // For now, fetch from backend instead
-    return await getProductFromBackend(productId);
-  } catch (error) {
-    console.error('Error fetching product from contract:', error);
-    return null;
-  }
-}
+//     // ⚠️ TODO: Properly decode the contract response
+//     // For now, fetch from backend instead
+//     return await getProductFromBackend(productId);
+//   } catch (error) {
+//     console.error('Error fetching product from contract:', error);
+//     return null;
+//   }
+// }
 
 /**
  * Fallback: Get product from backend
