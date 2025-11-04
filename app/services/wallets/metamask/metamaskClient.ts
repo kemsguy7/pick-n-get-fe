@@ -186,7 +186,6 @@ class MetaMaskWallet implements WalletInterface {
 
     return hash;
   }
-
   async executeContractFunction(
     contractId: ContractId,
     functionName: string,
@@ -197,7 +196,6 @@ class MetaMaskWallet implements WalletInterface {
     const provider = getProvider();
     const signer = await provider.getSigner();
 
-    // Add "payable" keyword to ABI when payment is included
     const isPayable = payableAmount !== undefined && payableAmount !== null;
     const payableKeyword = isPayable ? ' payable' : '';
     const abi = [
@@ -213,27 +211,28 @@ class MetaMaskWallet implements WalletInterface {
         gasLimit: gasLimit === -1 ? undefined : gasLimit,
       };
 
-      // CRITICAL FIX: Handle HBAR payment for Hedera JSON-RPC relay
       if (isPayable) {
-        let hbarAmount: number;
+        let tinybars: string;
 
         if (typeof payableAmount === 'string') {
-          // Convert from tinybars string to HBAR number
-          hbarAmount = Number(payableAmount) / 1e8;
+          // Already in tinybars
+          tinybars = payableAmount;
         } else {
-          // Already in HBAR
-          hbarAmount = payableAmount;
+          // Convert HBAR to tinybars
+          tinybars = Math.floor(payableAmount * 1e8).toString();
         }
+
+        const hbarAmount = Number(tinybars) / 1e8;
 
         console.log(`💰 Payment details:`);
         console.log(`   - Amount: ${hbarAmount} HBAR`);
-        console.log(`   - Tinybars: ${Math.floor(hbarAmount * 1e8)}`);
+        console.log(`   - Tinybars: ${tinybars}`);
 
-        // ✅ For Hedera JSON-RPC, use Wei-equivalent (18 decimals)
-        // The relay will convert this to tinybars internally
-        ethersOverrides.value = ethers.utils.parseEther(hbarAmount.toString());
+        // ✅ Use the tinybars value directly (8 decimals)
+        ethersOverrides.value = ethers.BigNumber.from(tinybars);
 
-        console.log(`   - Wei value (for RPC): ${ethersOverrides.value.toString()}`);
+        console.log(`   - Contract value: ${ethersOverrides.value.toString()}`);
+        console.log(`   - Verification: ${ethersOverrides.value.toNumber() / 1e8} HBAR`);
       }
 
       console.log(`🚀 Executing contract function: ${functionName}`);
@@ -245,20 +244,35 @@ class MetaMaskWallet implements WalletInterface {
 
       console.log(`✅ Transaction submitted: ${txResult.hash}`);
 
-      // Wait for transaction confirmation
       console.log(`⏳ Waiting for confirmation...`);
       const receipt = await provider.waitForTransaction(txResult.hash);
       console.log(`✅ Transaction confirmed in block ${receipt.blockNumber}`);
 
       return txResult.hash;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.error('❌ MetaMask execution error:', message);
-      console.error('Full error:', error);
+      console.error('❌ MetaMask execution error:');
+      console.error('Error:', error);
+
+      // ✅ Fix TypeScript error with proper typing
+      if (error && typeof error === 'object') {
+        const err = error as {
+          data?: unknown;
+          error?: unknown;
+          reason?: string;
+          code?: string | number;
+          message?: string;
+        };
+
+        if (err.data) console.error('Error data:', err.data);
+        if (err.error) console.error('Inner error:', err.error);
+        if (err.reason) console.error('Reason:', err.reason);
+        if (err.code) console.error('Code:', err.code);
+        if (err.message) console.error('Message:', err.message);
+      }
+
       return null;
     }
   }
-
   disconnect() {
     alert('Please disconnect using the Metamask extension.');
   }
