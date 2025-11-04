@@ -187,7 +187,6 @@ class MetaMaskWallet implements WalletInterface {
     return hash;
   }
 
-  // FIXED: Added payableAmount parameter and proper ABI construction
   async executeContractFunction(
     contractId: ContractId,
     functionName: string,
@@ -198,7 +197,7 @@ class MetaMaskWallet implements WalletInterface {
     const provider = getProvider();
     const signer = await provider.getSigner();
 
-    // FIX: Add "payable" keyword to ABI when payment is included
+    // Add "payable" keyword to ABI when payment is included
     const isPayable = payableAmount !== undefined && payableAmount !== null;
     const payableKeyword = isPayable ? ' payable' : '';
     const abi = [
@@ -214,24 +213,27 @@ class MetaMaskWallet implements WalletInterface {
         gasLimit: gasLimit === -1 ? undefined : gasLimit,
       };
 
-      // Handle HBAR payment
+      // CRITICAL FIX: Handle HBAR payment for Hedera JSON-RPC relay
       if (isPayable) {
-        let valueInTinybars: string;
+        let hbarAmount: number;
 
         if (typeof payableAmount === 'string') {
-          // Already in tinybars as string
-          valueInTinybars = payableAmount;
+          // Convert from tinybars string to HBAR number
+          hbarAmount = Number(payableAmount) / 1e8;
         } else {
-          // Convert HBAR to tinybars (1 HBAR = 100,000,000 tinybars)
-          valueInTinybars = Math.floor(payableAmount * 1e8).toString();
+          // Already in HBAR
+          hbarAmount = payableAmount;
         }
 
         console.log(`💰 Payment details:`);
-        console.log(`   - Amount: ${Number(valueInTinybars) / 1e8} HBAR`);
-        console.log(`   - Tinybars: ${valueInTinybars}`);
+        console.log(`   - Amount: ${hbarAmount} HBAR`);
+        console.log(`   - Tinybars: ${Math.floor(hbarAmount * 1e8)}`);
 
-        // Use tinybars directly
-        ethersOverrides.value = ethers.BigNumber.from(valueInTinybars);
+        // ✅ For Hedera JSON-RPC, use Wei-equivalent (18 decimals)
+        // The relay will convert this to tinybars internally
+        ethersOverrides.value = ethers.utils.parseEther(hbarAmount.toString());
+
+        console.log(`   - Wei value (for RPC): ${ethersOverrides.value.toString()}`);
       }
 
       console.log(`🚀 Executing contract function: ${functionName}`);
