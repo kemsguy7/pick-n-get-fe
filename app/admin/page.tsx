@@ -185,7 +185,7 @@ function AdminDashboardContent() {
       setIsLoadingPending(true);
       console.log('🔍 Fetching pending riders...');
 
-      const response = await fetch(`${BACKEND_URL}/admin/riders/pending`);
+      const response = await fetch(`${BACKEND_URL}/admin/pending`);
       const data = await response.json();
 
       if (data.status === 'success') {

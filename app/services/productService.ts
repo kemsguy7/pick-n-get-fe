@@ -465,7 +465,6 @@ export async function shopProduct(
     console.log(`- Quantity: ${quantity}`);
     console.log(`- Buyer: ${accountId}`);
 
-    // Get product details from backend
     const product = await getProductFromBackend(productId);
 
     if (!product) {
@@ -483,13 +482,14 @@ export async function shopProduct(
       throw new Error('Product is not available');
     }
 
-    //Calculate payment in HBAR (not tinybars!)
+    // ✅ Calculate payment in tinybars
     const pricePerItemTinybars = BigInt(product.amount);
     const totalPaymentTinybars = pricePerItemTinybars * BigInt(quantity);
-    const totalPaymentHBAR = Number(totalPaymentTinybars) / 1e8; // Convert to HBAR
 
     console.log(`- Price per item: ${Number(pricePerItemTinybars) / 1e8} HBAR`);
-    console.log(`- Total payment: ${totalPaymentHBAR} HBAR`);
+    console.log(
+      `- Total payment: ${Number(totalPaymentTinybars) / 1e8} HBAR (${totalPaymentTinybars} tinybars)`,
+    );
 
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
@@ -506,15 +506,15 @@ export async function shopProduct(
     const contractId = ContractId.fromString(PRODUCT_CONTRACT_ADDRESS);
     const gasLimit = 500000;
 
-    console.log(`- Executing shopProduct with payment: ${totalPaymentHBAR} HBAR`);
+    console.log(`- Executing shopProduct with payment: ${Number(totalPaymentTinybars) / 1e8} HBAR`);
 
-    //Pass HBAR amount as a NUMBER
+    // ✅ Pass tinybars as string
     const transactionResult = await walletInterface.executeContractFunction(
       contractId,
       'shopProduct',
       functionParameters,
       gasLimit,
-      totalPaymentHBAR, // ✅ Pass as number in HBAR
+      totalPaymentTinybars.toString(), // ✅ Pass as string in tinybars
     );
 
     if (!transactionResult) {
@@ -524,7 +524,6 @@ export async function shopProduct(
     const txHash = transactionResult.toString();
     console.log(`- Transaction submitted: ${txHash}`);
 
-    // Wait for confirmation
     await delay(3000);
 
     const success = await checkTransactionStatus(txHash, network);
