@@ -170,9 +170,9 @@ export default function ProductDetailPage() {
     );
   }
 
-  const imageUrl = product.imageUrl
-    ? `https://testnet.mirrornode.hedera.com/api/v1/contracts/${product.imageFileId}/results/contents`
-    : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23334155" width="400" height="400"/%3E%3Ctext fill="%239CA3AF" font-family="sans-serif" font-size="20" x="50%" y="50%" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+  //   const imageUrl = product.imageUrl
+  //     ? `https://testnet.mirrornode.hedera.com/api/v1/contracts/${product.imageFileId}/results/contents`
+  //     : 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23334155" width="400" height="400"/%3E%3Ctext fill="%239CA3AF" font-family="sans-serif" font-size="20" x="50%" y="50%" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
 
   const totalPrice = product.price * quantity;
   const totalPriceUSD = product.priceUSD ? product.priceUSD * quantity : totalPrice * 0.05;
@@ -195,7 +195,7 @@ export default function ProductDetailPage() {
             {/* Image */}
             <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6">
               <img
-                src={imageUrl}
+                src={product.imageUrl}
                 alt={product.name}
                 className="w-full rounded-lg object-cover"
                 onError={(e) => {
