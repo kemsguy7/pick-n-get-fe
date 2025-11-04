@@ -7,7 +7,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface PersonalInfo {
   firstName: string;
   lastName: string;
-  phoneNumber: string; // This will be used as string for blockchain
+  phoneNumber: string;
   homeAddress: string;
   country: string;
   nationalIdNumber: string;
@@ -81,6 +81,12 @@ interface AgentSignupContextType {
   // NEW: Web2 status tracking
   updateWeb2Status: (saved: boolean, error?: string) => void;
   updateRegistrationResult: (txHash: string, riderId?: number) => void;
+  saveRegistrationForSuccessPage: (
+    txHash: string,
+    riderId?: number,
+    web2Saved?: boolean,
+    web2Error?: string,
+  ) => void;
 }
 
 // Default signup data
@@ -208,6 +214,38 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const saveRegistrationForSuccessPage = (
+    txHash: string,
+    riderId?: number,
+    web2Saved?: boolean,
+    web2Error?: string,
+  ) => {
+    console.log('Saving registration result to sessionStorage for success page');
+
+    // Save to sessionStorage so the success page can access it
+    if (typeof window !== 'undefined') {
+      const successPageData = {
+        txHash,
+        riderId,
+        web2Saved,
+        web2Error,
+        timestamp: new Date().toISOString(),
+      };
+
+      sessionStorage.setItem('registrationResult', JSON.stringify(successPageData));
+      console.log('Registration result saved to sessionStorage:', successPageData);
+    }
+
+    // Also update the context state
+    setSignupData((prev) => ({
+      ...prev,
+      blockchainTxHash: txHash,
+      riderId: riderId,
+      web2Saved: web2Saved,
+      web2Error: web2Error,
+    }));
+  };
+
   // Reset all signup data
   const resetSignupData = () => {
     console.log('Resetting signup data');
@@ -296,6 +334,7 @@ export function AgentSignupProvider({ children }: { children: ReactNode }) {
     getFormCompletionPercentage,
     updateWeb2Status,
     updateRegistrationResult,
+    saveRegistrationForSuccessPage,
   };
 
   return <AgentSignupContext.Provider value={contextValue}>{children}</AgentSignupContext.Provider>;

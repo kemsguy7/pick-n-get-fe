@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import StatCard, { StatCardProps } from '../components/ui/statCard';
+import { useAuth } from '../contexts/AuthContext';
 import {
   Truck,
   DollarSign,
@@ -20,8 +21,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-// Mock rider ID - will replace with actual auth id after firebase integration
-const RIDER_ID = 123;
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
 interface AgentStats {
   totalPickups: number;
@@ -52,38 +52,22 @@ export default function AgentDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`/api/v1/agents/${RIDER_ID}/stats`);
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data.data);
-        }
-      } catch (err) {
-        console.error('Error fetching stats:', err);
-      }
-    };
-    fetchStats();
-  }, []);
+  // ✅ Get authenticated user data - FIXED: Added hasRole to destructured values
+  const { user, isAuthenticated, hasRole } = useAuth();
 
-  useEffect(() => {
-    if (activeTab === 'active-pickups') {
-      fetchActivePickups();
+  // Get rider ID from auth context
+  const RIDER_ID = user?.riderData?.riderId;
+
+  const fetchActivePickups = useCallback(async () => {
+    if (!RIDER_ID) {
+      setError('Rider ID not found');
+      return;
     }
-  }, [activeTab]);
 
-  useEffect(() => {
-    if (activeTab === 'available-jobs') {
-      fetchAvailableJobs();
-    }
-  }, [activeTab]);
-
-  const fetchActivePickups = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/active`);
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/active`);
       if (response.ok) {
         const data = await response.json();
         setActivePickups(data.data.pickups);
@@ -96,13 +80,18 @@ export default function AgentDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [RIDER_ID]);
 
-  const fetchAvailableJobs = async () => {
+  const fetchAvailableJobs = useCallback(async () => {
+    if (!RIDER_ID) {
+      setError('Rider ID not found');
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/available`);
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/available`);
       if (response.ok) {
         const data = await response.json();
         setAvailableJobs(data.data.jobs);
@@ -115,11 +104,51 @@ export default function AgentDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [RIDER_ID]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!RIDER_ID) {
+        setError('Rider ID not found');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/stats`);
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+
+    if (RIDER_ID) {
+      fetchStats();
+    }
+  }, [RIDER_ID]);
+
+  useEffect(() => {
+    if (activeTab === 'active-pickups') {
+      fetchActivePickups();
+    }
+  }, [activeTab, fetchActivePickups]);
+
+  useEffect(() => {
+    if (activeTab === 'available-jobs') {
+      fetchAvailableJobs();
+    }
+  }, [activeTab, fetchAvailableJobs]);
 
   const handleAcceptJob = async (pickupId: string) => {
+    if (!RIDER_ID) {
+      alert('Rider ID not found');
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/${pickupId}/accept`, {
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/${pickupId}/accept`, {
         method: 'POST',
       });
       if (response.ok) {
@@ -136,8 +165,13 @@ export default function AgentDashboardPage() {
   };
 
   const handleUpdateStatus = async (pickupId: string, status: string) => {
+    if (!RIDER_ID) {
+      alert('Rider ID not found');
+      return;
+    }
+
     try {
-      const response = await fetch(`/api/v1/agents/${RIDER_ID}/pickups/${pickupId}/status`, {
+      const response = await fetch(`${baseUrl}/agents/${RIDER_ID}/pickups/${pickupId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
@@ -153,6 +187,49 @@ export default function AgentDashboardPage() {
       alert('Error updating status');
     }
   };
+
+  // Show loading state or redirect if not authenticated as rider
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if user has rider role - FIXED: Now using hasRole function from AuthContext
+  if (!hasRole('Rider')) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-400" />
+          <h2 className="mb-4 text-2xl font-bold text-red-400">Access Denied</h2>
+          <p className="text-gray-600">You need rider privileges to access this dashboard.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if rider data exists
+  if (!user.riderData?.riderId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="mx-auto mb-4 h-16 w-16 text-yellow-400" />
+          <h2 className="mb-4 text-2xl font-bold text-yellow-400">Rider Setup Required</h2>
+          <p className="text-gray-600">
+            Please complete your rider registration or wait for approval.
+          </p>
+          <div className="mt-4 text-sm text-gray-500">
+            Status: {user.riderData?.approvalStatus || 'Not registered'}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const statsData: StatCardProps[] = [
     {
@@ -218,18 +295,28 @@ export default function AgentDashboardPage() {
 
   return (
     <AppLayout showHeader={true} showSidebar={true} showFooter={true}>
-      <div className="dashboard-container min-h-screen bg-gradient-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
+      <div className="dashboard-container min-h-screen bg-linear-to-br from-teal-900 via-slate-900 to-black p-4 lg:p-6">
         <div className="mx-auto max-w-7xl space-y-6 lg:space-y-8">
+          {/* Header with Real Rider Data */}
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 lg:h-20 lg:w-20">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-green-400 to-green-600 lg:h-20 lg:w-20">
                 <User className="h-8 w-8 text-white lg:h-10 lg:w-10" />
               </div>
               <div>
                 <h1 className="text-primary font-space-grotesk mb-2 flex items-center gap-3 text-2xl font-bold lg:text-3xl">
                   Agent Dashboard <Truck className="h-6 w-6 text-green-400 lg:h-8 lg:w-8" />
                 </h1>
-                <p className="secondary-text font-inter text-lg">Rider ID: {RIDER_ID}</p>
+                <p className="secondary-text font-inter text-lg">
+                  Welcome {user.userData?.name || 'Agent'}
+                </p>
+                <div className="mt-1 flex items-center gap-3 text-sm text-gray-400">
+                  <span>Rider ID: {RIDER_ID}</span>
+                  <span>•</span>
+                  <span>Status: {user.riderData?.riderStatus || 'Unknown'}</span>
+                  <span>•</span>
+                  <span>Approval: {user.riderData?.approvalStatus || 'Pending'}</span>
+                </div>
               </div>
             </div>
           </div>

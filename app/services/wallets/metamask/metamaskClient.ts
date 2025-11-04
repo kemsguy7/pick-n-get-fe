@@ -199,34 +199,48 @@ class MetaMaskWallet implements WalletInterface {
     return hash;
   }
 
-  // Purpose: build contract execute transaction and send to hashconnect for signing and execution
-  // Returns: Promise<TransactionId | null>
+  // Purpose: build contract execute transaction and send to metamask for signing and execution
+  // Returns: Promise<string | null>
   async executeContractFunction(
     contractId: ContractId,
     functionName: string,
     functionParameters: ContractFunctionParameterBuilder,
     gasLimit: number,
+    payableAmount?: string | number,
   ) {
     const provider = getProvider();
     const signer = await provider.getSigner();
     const abi = [`function ${functionName}(${functionParameters.buildAbiFunctionParams()})`];
 
-    // create contract instance for the contract id
-    // to call the function, use contract[functionName](...functionParameters, ethersOverrides)
-    const contract = new ethers.Contract(`0x${contractId.toSolidityAddress()}`, abi, signer);
+    const contract = new ethers.Contract(`0x${contractId.toEvmAddress()}`, abi, signer);
     try {
-      const txResult = await contract[functionName](...functionParameters.buildEthersParams(), {
+      const ethersOverrides: { gasLimit?: number; value?: ethers.BigNumber } = {
         gasLimit: gasLimit === -1 ? undefined : gasLimit,
-      });
+      };
+
+      //FIX: Convert HBAR to Wei (18 decimals for MetaMask)
+      if (payableAmount !== undefined && payableAmount !== null) {
+        // Convert HBAR to Wei (1 HBAR = 10^18 Wei in MetaMask's representation)
+        ethersOverrides.value = ethers.utils.parseEther(payableAmount.toString());
+        console.log(
+          `💰 Sending payment: ${payableAmount} HBAR (${ethersOverrides.value.toString()} Wei)`,
+        );
+      }
+
+      const txResult = await contract[functionName](
+        ...functionParameters.buildEthersParams(),
+        ethersOverrides,
+      );
+
+      console.log(`✅ Transaction hash: ${txResult.hash}`);
       return txResult.hash;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.warn(message);
-
+      console.error('❌ MetaMask execution error:', message);
+      console.error('Full error:', error);
       return null;
     }
   }
-
   disconnect() {
     alert('Please disconnect using the Metamask extension.');
   }

@@ -1,19 +1,18 @@
 [
+  {
+    "type": "constructor",
+    "stateMutability": "undefined",
+    "payable": false,
+    "inputs": [{ "type": "address", "name": "_superAdmin" }]
+  },
   { "type": "error", "name": "AlreadyPaid", "inputs": [] },
-  { "type": "error", "name": "AlreadyRegistered", "inputs": [] },
   { "type": "error", "name": "InValid", "inputs": [] },
   { "type": "error", "name": "InsufficientPayment", "inputs": [] },
-  { "type": "error", "name": "InsufficientStock", "inputs": [] },
-  {
-    "type": "error",
-    "name": "Invalid",
-    "inputs": [{ "type": "address", "name": "" }]
-  },
   { "type": "error", "name": "NoRecycleItem", "inputs": [] },
+  { "type": "error", "name": "NotAllowed", "inputs": [] },
   { "type": "error", "name": "NotAuthorised", "inputs": [] },
   { "type": "error", "name": "NotConfirmed", "inputs": [] },
   { "type": "error", "name": "NotFound", "inputs": [] },
-  { "type": "error", "name": "ProductSoldOut", "inputs": [] },
   { "type": "error", "name": "UserNotRegistered", "inputs": [] },
   {
     "type": "event",
@@ -40,10 +39,20 @@
   {
     "type": "event",
     "anonymous": false,
-    "name": "ProductAdded",
+    "name": "RateUpdated",
     "inputs": [
-      { "type": "uint256", "name": "id", "indexed": true },
-      { "type": "address", "name": "owner", "indexed": false }
+      { "type": "uint8", "name": "itemType", "indexed": true },
+      { "type": "uint256", "name": "newRate", "indexed": false }
+    ]
+  },
+  {
+    "type": "event",
+    "anonymous": false,
+    "name": "RiderApplied",
+    "inputs": [
+      { "type": "uint256", "name": "riderId", "indexed": true },
+      { "type": "address", "name": "wallet", "indexed": true },
+      { "type": "string", "name": "name", "indexed": false }
     ]
   },
   {
@@ -53,7 +62,7 @@
     "inputs": [
       { "type": "uint256", "name": "riderId", "indexed": true },
       { "type": "string", "name": "_name", "indexed": false },
-      { "type": "uint8", "name": "_number", "indexed": false },
+      { "type": "string", "name": "_number", "indexed": false },
       { "type": "string", "name": "_vehicleNumber", "indexed": false },
       { "type": "bytes", "name": "_image", "indexed": false },
       { "type": "string", "name": "_country", "indexed": false },
@@ -72,47 +81,12 @@
   },
   {
     "type": "function",
-    "name": "_addProducts",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "_id" },
-      { "type": "string", "name": "_name" },
-      { "type": "uint256", "name": "_quantity" },
-      { "type": "bytes", "name": "_data" },
-      { "type": "uint256", "name": "_amount" },
-      { "type": "uint8", "name": "_decimals" }
-    ],
-    "outputs": []
-  },
-  {
-    "type": "function",
     "name": "adminId",
     "constant": true,
     "stateMutability": "view",
     "payable": false,
     "inputs": [{ "type": "address", "name": "" }],
     "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "allProductsByProducer",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "" },
-      { "type": "uint256", "name": "" }
-    ],
-    "outputs": [
-      { "type": "uint256", "name": "productId" },
-      { "type": "string", "name": "name" },
-      { "type": "uint256", "name": "quantity" },
-      { "type": "address", "name": "owner" },
-      { "type": "bytes", "name": "data" },
-      { "type": "uint256", "name": "amount" },
-      { "type": "uint8", "name": "productStatus" }
-    ]
   },
   {
     "type": "function",
@@ -161,14 +135,6 @@
   },
   {
     "type": "function",
-    "name": "deleteAdminById",
-    "constant": false,
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "_adminId" }],
-    "outputs": []
-  },
-  {
-    "type": "function",
     "name": "deleteUserAccount",
     "constant": false,
     "payable": false,
@@ -183,6 +149,15 @@
     "payable": true,
     "inputs": [],
     "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "getRole",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [{ "type": "address", "name": "_user" }],
+    "outputs": [{ "type": "string", "name": "" }]
   },
   {
     "type": "function",
@@ -225,19 +200,7 @@
   },
   {
     "type": "function",
-    "name": "isProducerPaidForProduct",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "address", "name": "" },
-      { "type": "uint256", "name": "" }
-    ],
-    "outputs": [{ "type": "bool", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "isProducerRegistered",
+    "name": "isApproved",
     "constant": true,
     "stateMutability": "view",
     "payable": false,
@@ -265,19 +228,6 @@
   },
   {
     "type": "function",
-    "name": "ownerDetails",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [
-      { "type": "string", "name": "name" },
-      { "type": "string", "name": "country" },
-      { "type": "uint256", "name": "phoneNumber" }
-    ]
-  },
-  {
-    "type": "function",
     "name": "payUser",
     "constant": false,
     "stateMutability": "payable",
@@ -287,80 +237,6 @@
       { "type": "uint256", "name": "_recycledItemId" }
     ],
     "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "productCount",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productCountByOwner",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productIdByOwner",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productIds",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "productOwner",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "address", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "products",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [
-      { "type": "uint256", "name": "productId" },
-      { "type": "string", "name": "name" },
-      { "type": "uint256", "name": "quantity" },
-      { "type": "address", "name": "owner" },
-      { "type": "bytes", "name": "data" },
-      { "type": "uint256", "name": "amount" },
-      { "type": "uint8", "name": "productStatus" }
-    ]
-  },
-  {
-    "type": "function",
-    "name": "productsByProducerId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [
-      { "type": "uint256", "name": "" },
-      { "type": "uint256", "name": "" }
-    ],
-    "outputs": [{ "type": "uint256", "name": "" }]
   },
   {
     "type": "function",
@@ -403,45 +279,16 @@
   },
   {
     "type": "function",
-    "name": "registerProducer",
-    "constant": false,
-    "payable": false,
-    "inputs": [
-      { "type": "string", "name": "_name" },
-      { "type": "string", "name": "_country" },
-      { "type": "uint256", "name": "_number" }
-    ],
-    "outputs": []
-  },
-  {
-    "type": "function",
     "name": "registerUser",
     "constant": false,
     "payable": false,
     "inputs": [
-      { "type": "string", "name": "_address" },
-      { "type": "uint8", "name": "_number" },
-      { "type": "string", "name": "_name" }
+      { "type": "string", "name": "_homeAddress" },
+      { "type": "string", "name": "_number" },
+      { "type": "string", "name": "_name" },
+      { "type": "bytes", "name": "_picture" }
     ],
     "outputs": []
-  },
-  {
-    "type": "function",
-    "name": "registrationAddress",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "address", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "registrationId",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "address", "name": "" }],
-    "outputs": [{ "type": "uint256", "name": "" }]
   },
   {
     "type": "function",
@@ -450,14 +297,15 @@
     "payable": false,
     "inputs": [
       { "type": "string", "name": "_name" },
-      { "type": "uint8", "name": "_number" },
+      { "type": "string", "name": "_number" },
       { "type": "string", "name": "_vehicleNumber" },
       { "type": "string", "name": "_homeAddress" },
       { "type": "string", "name": "_country" },
       { "type": "uint256", "name": "_capacity" },
       { "type": "bytes", "name": "_image" },
       { "type": "bytes", "name": "_vehicleRegistration" },
-      { "type": "uint8", "name": "_vehicleType" }
+      { "type": "uint8", "name": "_vehicleType" },
+      { "type": "bytes", "name": "_picture" }
     ],
     "outputs": []
   },
@@ -480,7 +328,7 @@
     "outputs": [
       { "type": "uint256", "name": "id" },
       { "type": "string", "name": "name" },
-      { "type": "uint8", "name": "phoneNumber" },
+      { "type": "string", "name": "phoneNumber" },
       { "type": "string", "name": "vehicleNumber" },
       { "type": "address", "name": "walletAddress" },
       { "type": "string", "name": "homeAddress" },
@@ -489,8 +337,27 @@
       { "type": "uint256", "name": "capacity" },
       { "type": "bytes", "name": "vehicleImage" },
       { "type": "bytes", "name": "vehicleRegistrationImage" },
-      { "type": "uint8", "name": "vehicleType" }
+      { "type": "uint8", "name": "vehicleType" },
+      { "type": "bytes", "name": "profilePicture" }
     ]
+  },
+  {
+    "type": "function",
+    "name": "riderIdByAddress",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [{ "type": "address", "name": "" }],
+    "outputs": [{ "type": "uint256", "name": "" }]
+  },
+  {
+    "type": "function",
+    "name": "role",
+    "constant": true,
+    "stateMutability": "view",
+    "payable": false,
+    "inputs": [{ "type": "address", "name": "" }],
+    "outputs": [{ "type": "uint8", "name": "" }]
   },
   {
     "type": "function",
@@ -532,8 +399,9 @@
       { "type": "uint256", "name": "id" },
       { "type": "address", "name": "userAddress" },
       { "type": "string", "name": "homeAddress" },
-      { "type": "uint8", "name": "phoneNumber" },
-      { "type": "string", "name": "name" }
+      { "type": "string", "name": "phoneNumber" },
+      { "type": "string", "name": "name" },
+      { "type": "bytes", "name": "profilePicture" }
     ]
   },
   {
@@ -544,15 +412,6 @@
     "payable": false,
     "inputs": [{ "type": "address", "name": "" }],
     "outputs": [{ "type": "uint256", "name": "" }]
-  },
-  {
-    "type": "function",
-    "name": "validPid",
-    "constant": true,
-    "stateMutability": "view",
-    "payable": false,
-    "inputs": [{ "type": "uint256", "name": "" }],
-    "outputs": [{ "type": "bool", "name": "" }]
   },
   {
     "type": "function",

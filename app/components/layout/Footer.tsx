@@ -1,4 +1,5 @@
 import { FooterLink } from '../../types/footerTypes';
+import Image from 'next/image';
 
 const platformLinks: FooterLink[] = [
   { id: 1, title: 'Start Recycling', href: '/start-recycling' },
@@ -36,23 +37,9 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <div className="mb-4 flex items-center gap-3">
-              {/* Dummy Logo Icon */}
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500">
-                <svg
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-green-400">EcoCleans</h3>
+              {/*  Logo Icon */}
+
+              <Image src="/PickLogo.png" width={120} height={120} alt="Pick-n-Get Logo" />
             </div>
 
             <p className="mb-6 leading-relaxed text-gray-300">
@@ -164,7 +151,7 @@ const Footer = () => {
       {/* Bottom Section */}
       <div className="mx-3 mt-12 flex flex-col items-center gap-4 pt-8 md:justify-between lg:flex-row">
         <p className="text-sm text-gray-400">
-          © {getYear()} EcoCleans • All Rights Reserved • Built for sustainable, tokenized
+          © {getYear()} Pick-n-Get • All Rights Reserved • Built for sustainable, tokenized
           recycling
         </p>
 

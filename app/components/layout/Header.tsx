@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Leaf, Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
+import { Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLayout } from './LayoutProvider';
-import { useWalletInterface } from '../../../app/services//wallets/useWalletInterface';
+import { useWalletInterface } from '../../../app/services/wallets/useWalletInterface';
+import { useAuth } from '../../contexts/AuthContext';
 import { WalletSelectionDialog } from '../walletConnection/WalletSelectionDialog';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface HeaderProps {
   className?: string;
@@ -22,13 +24,16 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
   const { toggleSidebar } = useLayout();
   const { accountId, walletInterface } = useWalletInterface();
 
+  // ✅ ADD AUTH HOOK
+  const { user, login, logout, isLoading } = useAuth();
+
   // Mock data for demo - replace with real data later
   const walletData = {
     balance: '2,450',
     co2Saved: '23.4kg',
     notifications: 2,
-    userName: 'User',
-    userAvatar: '/api/placeholder/32/32',
+    userName: user?.userData?.name || 'User',
+    userAvatar: user?.userData?.profileImage || '/api/placeholder/32/32',
   };
 
   const navLinks = ['Home', 'Recycle', 'How It Works', 'Features', 'Shop', 'FAQs', 'Contact'];
@@ -50,6 +55,22 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
     }
   }, []);
 
+  // ✅ AUTO-LOGIN WHEN WALLET CONNECTS
+  useEffect(() => {
+    const handleWalletConnection = async () => {
+      if (accountId && !user && !isLoading) {
+        console.log('🔗 Wallet connected, attempting login...');
+        try {
+          await login(accountId);
+        } catch (error) {
+          console.error('❌ Auto-login failed:', error);
+        }
+      }
+    };
+
+    handleWalletConnection();
+  }, [accountId, user, isLoading, login]);
+
   // Close wallet dialog when connected
   useEffect(() => {
     if (accountId) {
@@ -65,9 +86,12 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
     document.documentElement.setAttribute('data-theme', theme);
   };
 
+  // ✅ UPDATED CONNECT/DISCONNECT HANDLER
   const handleConnect = async () => {
     if (accountId) {
+      // Disconnect wallet AND logout
       walletInterface?.disconnect();
+      logout();
     } else {
       setOpen(true);
     }
@@ -150,14 +174,11 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
 
               {/* Logo */}
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500 sm:h-10 sm:w-10 lg:h-12 lg:w-12">
+                <div className="flex items-center sm:h-10">
                   <Link href="/" passHref>
-                    <Leaf className="h-4 w-4 text-white sm:h-6 sm:w-6 lg:h-7 lg:w-7" />
+                    <Image src="/PickLogo.png" width={120} height={120} alt="Pick-n-Get Logo" />
                   </Link>
                 </div>
-                <span className="font-space-grotesk text-lg font-semibold text-white sm:text-xl lg:text-2xl">
-                  EcoCleans
-                </span>
               </div>
             </div>
 
@@ -179,11 +200,11 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
             </nav>
 
             {/* Right Section */}
-            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
-                className="focus-visible flex-shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2"
+                className="focus-visible shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2"
                 aria-label="Toggle theme"
               >
                 {isDarkMode ? (
@@ -193,27 +214,27 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
                 )}
               </button>
 
-              {/* Wallet Connected State */}
-              {accountId ? (
-                <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+              {/* Wallet Connected State - ✅ NOW USES AUTH USER */}
+              {user && accountId ? (
+                <div className="flex shrink-0 items-center gap-1 sm:gap-2">
                   {/* Token Balance */}
-                  <div className="hidden flex-shrink-0 items-center gap-1 rounded-lg border border-green-500/30 bg-green-500/20 px-2 py-1 sm:flex">
-                    <div className="h-2 w-2 flex-shrink-0 rounded-full bg-green-400"></div>
+                  <div className="hidden shrink-0 items-center gap-1 rounded-lg border border-green-500/30 bg-green-500/20 px-2 py-1 sm:flex">
+                    <div className="h-2 w-2 shrink-0 rounded-full bg-green-400"></div>
                     <span className="text-xs font-medium whitespace-nowrap text-green-400">
                       {walletData.balance}ECO
                     </span>
                   </div>
 
                   {/* CO2 Saved */}
-                  <div className="hidden flex-shrink-0 items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-500/20 px-2 py-1 lg:flex">
-                    <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-400"></div>
+                  <div className="hidden shrink-0 items-center gap-1 rounded-lg border border-blue-500/30 bg-blue-500/20 px-2 py-1 lg:flex">
+                    <div className="h-2 w-2 shrink-0 rounded-full bg-blue-400"></div>
                     <span className="text-xs font-medium whitespace-nowrap text-blue-400">
                       {walletData.co2Saved}CO₂
                     </span>
                   </div>
 
                   {/* Notification Bell */}
-                  <button className="relative flex-shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2">
+                  <button className="relative shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2">
                     <Bell className="h-4 w-4 text-white sm:h-5 sm:w-5" />
                     {walletData.notifications > 0 && (
                       <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
@@ -224,25 +245,33 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
 
                   {/* User Profile / Wallet Info */}
                   <div className="group relative">
-                    <div className="flex max-w-[120px] flex-shrink-0 cursor-pointer items-center gap-1 rounded-lg p-1 transition-colors duration-200 hover:bg-white/10 sm:gap-2">
-                      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-purple-400 to-blue-400 sm:h-8 sm:w-8">
+                    <div className="flex max-w-[120px] shrink-0 cursor-pointer items-center gap-1 rounded-lg p-1 transition-colors duration-200 hover:bg-white/10 sm:gap-2">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-r from-purple-400 to-blue-400 sm:h-8 sm:w-8">
                         <Wallet className="h-4 w-4 text-white" />
                       </div>
                       <div className="hidden text-left sm:block">
-                        <div className="truncate text-xs font-medium text-white">Connected</div>
+                        <div className="truncate text-xs font-medium text-white">
+                          {user.primaryRole}
+                        </div>
                         <div className="truncate text-xs text-white/70">{getDisplayAddress()}</div>
                       </div>
                     </div>
 
                     {/* Disconnect Dropdown */}
                     <div className="invisible absolute top-full right-0 mt-2 w-48 rounded-lg border border-white/20 bg-white/10 opacity-0 backdrop-blur-sm transition-all duration-200 group-hover:visible group-hover:opacity-100">
-                      <button
-                        onClick={handleConnect}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white transition-colors duration-200 hover:bg-white/10"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        Disconnect
-                      </button>
+                      <div className="p-2">
+                        <div className="mb-2 border-b border-white/20 pb-2">
+                          <p className="text-xs text-white/70">Roles:</p>
+                          <p className="text-xs font-medium text-white">{user.roles.join(', ')}</p>
+                        </div>
+                        <button
+                          onClick={handleConnect}
+                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white transition-colors duration-200 hover:bg-white/10"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Disconnect
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -250,9 +279,10 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
                 /* Connect Wallet Button */
                 <button
                   onClick={handleConnect}
-                  className="gradient-button focus-visible flex-shrink-0 rounded-lg px-2 py-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 hover:shadow-lg sm:px-3 sm:py-1.5 sm:text-sm lg:text-base"
+                  disabled={isLoading}
+                  className="gradient-button focus-visible shrink-0 rounded-lg px-2 py-1 text-xs font-semibold whitespace-nowrap transition-all duration-200 hover:shadow-lg disabled:opacity-50 sm:px-3 sm:py-1.5 sm:text-sm lg:text-base"
                 >
-                  Connect Wallet
+                  {isLoading ? 'Loading...' : 'Connect Wallet'}
                 </button>
               )}
 
@@ -309,15 +339,15 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
           <div className="header-gradient backdrop-blur-custom border-t border-white/10">
             <nav className="mx-auto max-w-[90vw] px-4 py-4">
               <div className="flex flex-col space-y-2">
-                {/* Mobile Wallet Info (when connected) */}
-                {accountId && (
+                {/* Mobile Wallet Info (when connected) - ✅ SHOWS USER ROLES */}
+                {user && accountId && (
                   <div className="mb-2 flex items-center justify-between rounded-lg bg-white/10 p-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-400 to-blue-400">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-r from-purple-400 to-blue-400">
                         <Wallet className="h-4 w-4 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-white">Connected</p>
+                        <p className="text-sm font-medium text-white">{user.primaryRole}</p>
                         <div className="flex items-center gap-3 text-xs">
                           <span className="text-white/70">{getDisplayAddress()}</span>
                           <span className="text-green-400">{walletData.balance}ECO</span>

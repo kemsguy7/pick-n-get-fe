@@ -8,8 +8,10 @@ import { WalletConnectContext } from '../../../contexts/WalletConnectContext';
 import { useWalletInterface } from '../../../services/wallets/useWalletInterface';
 import { registerUser, checkUserRegistration, UserData } from '../../../services/userService';
 import { WalletInterface } from '../../../services/wallets/walletInterface';
-import { validateFile, uploadToIPFS } from '../../../apis/ipfsApi';
+import { validateFile, uploadToHedera } from '../../../apis/hederaApi';
+import { saveUserToBackend } from '../../../apis/backendApi';
 import AppLayout from '../../../components/layout/AppLayout';
+import Image from 'next/image';
 
 interface UserFormData {
   name: string;
@@ -21,7 +23,7 @@ interface UserFormData {
 interface UploadProgress {
   uploading: boolean;
   progress: number;
-  cid: string;
+  fileId: string;
   error: string;
 }
 
@@ -57,7 +59,7 @@ export default function SignupPage(): React.JSX.Element {
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
     uploading: false,
     progress: 0,
-    cid: '',
+    fileId: '',
     error: '',
   });
 
@@ -98,11 +100,11 @@ export default function SignupPage(): React.JSX.Element {
 
     if (!file) {
       setUserForm((prev) => ({ ...prev, profilePicture: undefined }));
-      setUploadProgress({ uploading: false, progress: 0, cid: '', error: '' });
+      setUploadProgress({ uploading: false, progress: 0, fileId: '', error: '' });
       return;
     }
 
-    const validation = await validateFile(file, {
+    const validation = validateFile(file, {
       maxSize: 5 * 1024 * 1024,
       allowedTypes: ['image/jpeg', 'image/png', 'image/jpg'],
     });
@@ -111,30 +113,30 @@ export default function SignupPage(): React.JSX.Element {
       setUploadProgress({
         uploading: false,
         progress: 0,
-        cid: '',
+        fileId: '',
         error: validation.errors?.[0] || 'Invalid file',
       });
       return;
     }
 
-    setUploadProgress({ uploading: true, progress: 10, cid: '', error: '' });
+    setUploadProgress({ uploading: true, progress: 10, fileId: '', error: '' });
 
     try {
-      const progressInterval = setInterval(() => {
+      console.log('📤 Uploading profile picture to Hedera...');
+
+      const uploadResult = await uploadToHedera(file, (progress) => {
         setUploadProgress((prev) => ({
           ...prev,
-          progress: Math.min(prev.progress + 10, 90),
+          progress,
         }));
-      }, 500);
-
-      const uploadResult = await uploadToIPFS(file, `profile-${Date.now()}-${file.name}`);
-      clearInterval(progressInterval);
+      });
 
       if (uploadResult.success) {
+        console.log('✅ Upload successful:', uploadResult.fileId);
         setUploadProgress({
           uploading: false,
           progress: 100,
-          cid: uploadResult.cid!,
+          fileId: uploadResult.fileId!,
           error: '',
         });
         setUserForm((prev) => ({ ...prev, profilePicture: file }));
@@ -142,7 +144,7 @@ export default function SignupPage(): React.JSX.Element {
         setUploadProgress({
           uploading: false,
           progress: 0,
-          cid: '',
+          fileId: '',
           error: uploadResult.error || 'Upload failed',
         });
       }
@@ -150,7 +152,7 @@ export default function SignupPage(): React.JSX.Element {
       setUploadProgress({
         uploading: false,
         progress: 0,
-        cid: '',
+        fileId: '',
         error: error instanceof Error ? error.message : 'Upload failed',
       });
     }
@@ -200,23 +202,45 @@ export default function SignupPage(): React.JSX.Element {
         name: userForm.name,
         homeAddress: userForm.homeAddress,
         phoneNumber: userForm.phoneNumber,
-        profilePicture: uploadProgress.cid || undefined,
+        profilePicture: uploadProgress.fileId || undefined, // Hedera File ID
       };
 
       const walletData = createWalletData(accountId, walletInterface);
 
+      // Step 1: Register on smart contract
       setLoadingMessage('Submitting transaction to blockchain...');
-      const result = await registerUser(walletData, userData);
+      const contractResult = await registerUser(walletData, userData);
 
-      if (result.success) {
-        setLoadingMessage('');
-        setSuccess(`Registration successful! Transaction: ${result.txHash}`);
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 4000);
-      } else {
-        throw new Error(result.error || 'Registration failed');
+      if (!contractResult.success) {
+        throw new Error(contractResult.error || 'Contract registration failed');
       }
+
+      console.log('✅ Contract registration successful:', contractResult.txHash);
+
+      // Step 2: Save to backend
+      setLoadingMessage('Saving user data to backend...');
+
+      try {
+        const backendResult = await saveUserToBackend({
+          walletAddress: accountId,
+          name: userForm.name,
+          phoneNumber: userForm.phoneNumber,
+          homeAddress: userForm.homeAddress,
+          profilePicture: uploadProgress.fileId || undefined,
+        });
+
+        console.log('✅ Backend save successful:', backendResult);
+      } catch (backendError) {
+        console.warn('⚠️ Backend save failed (non-critical):', backendError);
+        // Continue even if backend fails - contract is source of truth
+      }
+
+      setLoadingMessage('');
+      setSuccess(`Registration successful! Transaction: ${contractResult.txHash}`);
+
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 3000);
     } catch (error) {
       console.error('Registration error:', error);
       const errorMessage =
@@ -416,7 +440,7 @@ export default function SignupPage(): React.JSX.Element {
                   <div className="rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-4 text-center">
                     <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-500" />
                     <p className="mt-2 text-sm text-blue-600">
-                      Uploading... {uploadProgress.progress}%
+                      Uploading to Hedera... {uploadProgress.progress}%
                     </p>
                     <div className="mt-2 h-2 w-full rounded-full bg-blue-200">
                       <div
@@ -425,20 +449,20 @@ export default function SignupPage(): React.JSX.Element {
                       />
                     </div>
                   </div>
-                ) : uploadProgress.cid ? (
+                ) : uploadProgress.fileId ? (
                   <div className="rounded-lg border-2 border-green-300 bg-green-50 p-4 text-center">
                     <Check className="mx-auto h-8 w-8 text-green-500" />
                     <p className="mt-2 text-sm font-medium text-green-600">
                       {userForm.profilePicture?.name}
                     </p>
-                    <p className="mt-1 text-xs text-gray-500">Uploaded to IPFS</p>
+                    <p className="mt-1 text-xs text-gray-500">Uploaded to Hedera File Service</p>
                     <p className="mt-1 font-mono text-xs break-all text-green-600">
-                      {uploadProgress.cid.substring(0, 20)}...
+                      File ID: {uploadProgress.fileId}
                     </p>
                     <button
                       onClick={() => {
                         setUserForm((prev) => ({ ...prev, profilePicture: undefined }));
-                        setUploadProgress({ uploading: false, progress: 0, cid: '', error: '' });
+                        setUploadProgress({ uploading: false, progress: 0, fileId: '', error: '' });
                       }}
                       className="mx-auto mt-2 flex items-center gap-1 text-xs text-red-500 hover:text-red-700"
                     >
@@ -486,9 +510,9 @@ export default function SignupPage(): React.JSX.Element {
           {/* Logo */}
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500">
-              <div className="h-8 w-8 rounded-lg bg-white"></div>
+              <Image src="/PickLogo.png" width={200} height={200} alt="Pick-n-Get Logo" />
             </div>
-            <h1 className="font-space-grotesk text-2xl font-bold text-white">Join EcoCleans</h1>
+            <h1 className="font-space-grotesk text-2xl font-bold text-white">Join Pick-n-Get</h1>
             <p className="font-inter text-gray-300">Start your sustainable journey today</p>
           </div>
 

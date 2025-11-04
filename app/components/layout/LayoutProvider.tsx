@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AllWalletsProvider } from '../../services/wallets/AllWalletsProvider';
 import { AgentSignupProvider } from '../../contexts/AgentSignupContext';
-
+import { AuthProvider } from '../../contexts/AuthContext';
 interface LayoutContextType {
   isSidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
@@ -41,11 +41,13 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   return (
     <AllWalletsProvider>
-      <AgentSignupProvider>
-        <LayoutContext.Provider value={{ isSidebarOpen, setSidebarOpen, toggleSidebar }}>
-          {children}
-        </LayoutContext.Provider>
-      </AgentSignupProvider>
+      <AuthProvider>
+        <AgentSignupProvider>
+          <LayoutContext.Provider value={{ isSidebarOpen, setSidebarOpen, toggleSidebar }}>
+            {children}
+          </LayoutContext.Provider>
+        </AgentSignupProvider>
+      </AuthProvider>
     </AllWalletsProvider>
   );
 };

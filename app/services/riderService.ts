@@ -2,7 +2,8 @@ import { ContractId } from '@hashgraph/sdk';
 import { WalletInterface } from './wallets/walletInterface';
 import { ContractFunctionParameterBuilder } from './wallets/contractFunctionParameterBuilder';
 
-const CONTRACT_ADDRESS = '0.0.6960598';
+const CONTRACT_ADDRESS = '0.0.7162853';
+
 const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:5000/api/v1';
 
 // Type definitions for rider registration
@@ -13,15 +14,15 @@ export interface RiderData {
   homeAddress: string;
   country: string;
   capacity: number; // uint256
-  vehicleImage: string; // IPFS CID
-  vehicleRegistration: string; // IPFS CID
+  vehicleImage: string; // HFS ID
+  vehicleRegistration: string; // HFS ID
   vehicleType: VehicleType;
-  profilePicture?: string; // IPFS CID - NEW FIELD
-  driversLicense?: string; // IPFS CID - for web2
-  insuranceCertificate?: string; // IPFS CID - for web2
-  vehicleMakeModel?: string; // for web2
-  vehiclePlateNumber?: string; // for web2
-  vehicleColor?: string; // for web2
+  profilePicture?: string; // HFS ID
+  driversLicense?: string; // HFS ID
+  insuranceCertificate?: string; // HFS ID
+  vehicleMakeModel?: string; // HFS ID
+  vehiclePlateNumber?: string; // HFS ID
+  vehicleColor?: string; // HFS ID
 }
 
 export enum VehicleType {
@@ -48,10 +49,10 @@ export interface RiderDetails {
   riderStatus: RiderStatus;
   country: string;
   capacity: number;
-  vehicleImage: string; // IPFS CID
-  vehicleRegistrationImage: string; // IPFS CID
+  vehicleImage: string; // HFS ID
+  vehicleRegistrationImage: string; // HFS ID
   vehicleType: VehicleType;
-  profilePicture?: string; // IPFS CID - NEW FIELD
+  profilePicture?: string; // HFS ID
 }
 
 export interface RiderRegistrationResult {
@@ -88,7 +89,7 @@ const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res
 function ipfsHashToBytes(ipfsHash: string): string {
   try {
     if (!ipfsHash || ipfsHash.trim().length === 0) {
-      throw new Error('Empty IPFS hash provided');
+      throw new Error('Empty  hash provided');
     }
 
     const encoder = new TextEncoder();
@@ -101,42 +102,19 @@ function ipfsHashToBytes(ipfsHash: string): string {
         .join('');
 
     console.log(
-      `  - Converted IPFS hash "${ipfsHash}" to hex (${bytes.length} bytes): ${hexString.substring(0, 20)}...`,
+      `  - Converted Image hash "${ipfsHash}" to hex (${bytes.length} bytes): ${hexString.substring(0, 20)}...`,
     );
 
     return hexString;
   } catch (error) {
-    console.error('Error converting IPFS hash to bytes:', error);
-    throw new Error(`Failed to convert IPFS hash to bytes: ${error}`);
+    console.error('Error converting Image hash to bytes:', error);
+    throw new Error(`Failed to convert Image hash to bytes: ${error}`);
   }
 }
 
 /**
- * Map frontend vehicle type string to VehicleType enum
- */
-// function mapVehicleTypeToEnum(vehicleTypeString: string): VehicleType {
-//   const normalizedType = vehicleTypeString.toLowerCase().trim();
-
-//   const typeMap: { [key: string]: VehicleType } = {
-//     bike: VehicleType.Bike,
-//     car: VehicleType.Car,
-//     truck: VehicleType.Truck,
-//     van: VehicleType.Van,
-//   };
-
-//   const mappedType = typeMap[normalizedType];
-
-//   if (mappedType === undefined) {
-//     throw new Error(
-//       `Invalid vehicle type: ${vehicleTypeString}. Must be one of: ${Object.keys(typeMap).join(', ')}`,
-//     );
-//   }
-
-//   return mappedType;
-// }
-
-/**
- * Save rider data to Web2 backend after successful blockchain registration
+ * Save rider data to Web2 backend after successful hedera DLT registration
+ *
  */
 async function saveRiderToBackend(
   riderData: RiderData,
@@ -145,7 +123,7 @@ async function saveRiderToBackend(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log(`\n- Saving rider data to Web2 backend...`);
-    console.log(`  - Backend URL: ${BACKEND_API_URL}/riders`);
+    console.log(`  - Backend URL: ${BACKEND_API_URL}/delivery/riders`);
 
     // Map vehicle type to backend format
     let backendVehicleType: string;
@@ -166,19 +144,19 @@ async function saveRiderToBackend(
         backendVehicleType = 'Car';
     }
 
-    // Prepare payload for backend
+    // Prepare payload for backend (simpler structure)
     const backendPayload = {
       id: riderId,
+      walletAddress,
       name: riderData.name,
-      phoneNumber: riderData.phoneNumber, // Now string, no conversion needed
+      phoneNumber: riderData.phoneNumber,
       vehicleNumber: riderData.vehicleNumber,
       homeAddress: riderData.homeAddress,
-      walletAddress: walletAddress,
       vehicleType: backendVehicleType,
       country: riderData.country,
       capacity: riderData.capacity,
 
-      // IPFS CIDs for documents
+      // Hedera File IDs for documents
       profileImage: riderData.profilePicture,
       driversLicense: riderData.driversLicense,
       vehicleRegistration: riderData.vehicleRegistration,
@@ -189,15 +167,11 @@ async function saveRiderToBackend(
       vehicleMakeModel: riderData.vehicleMakeModel,
       vehiclePlateNumber: riderData.vehiclePlateNumber,
       vehicleColor: riderData.vehicleColor,
-
-      // Status fields
-      riderStatus: 'Available',
-      approvalStatus: 'Pending',
     };
 
     console.log(`  - Payload prepared for backend`);
 
-    const response = await fetch(`${BACKEND_API_URL}/riders`, {
+    const response = await fetch(`${BACKEND_API_URL}/delivery/riders`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -235,7 +209,7 @@ async function saveRiderToBackend(
 }
 
 /**
- * Register a new rider/agent on the blockchain with profile picture
+ * Register a new rider/agent on the hedera DLT with profile picture
  * @param walletData - [accountId, walletInterface, network]
  * @param riderData - Rider registration data
  * @returns Promise<RiderRegistrationResult>
@@ -245,7 +219,7 @@ export async function registerRider(
   riderData: RiderData,
 ): Promise<RiderRegistrationResult> {
   console.log(`\n=======================================`);
-  console.log(`- Registering rider on blockchain...🟠`);
+  console.log(`- Registering rider on hedera DLT...🟠`);
 
   try {
     const [accountId, walletInterface, network] = walletData;
@@ -280,23 +254,18 @@ export async function registerRider(
     console.log(`- Vehicle: ${riderData.vehicleNumber} (${VehicleType[riderData.vehicleType]})`);
     console.log(`- Phone: ${riderData.phoneNumber}`);
     console.log(`- Capacity: ${riderData.capacity} kg`);
-    console.log(`- Vehicle Image IPFS: ${riderData.vehicleImage}`);
-    console.log(`- Vehicle Registration IPFS: ${riderData.vehicleRegistration}`);
-    console.log(`- Profile Picture IPFS: ${riderData.profilePicture || 'Not provided'}`);
+    console.log(`- Vehicle Image Hedera HFS: ${riderData.vehicleImage}`);
+    console.log(`- Vehicle Registration HFS: ${riderData.vehicleRegistration}`);
+    console.log(`- Profile Picture HFS: ${riderData.profilePicture || 'Not provided'}`);
 
     // Convert IPFS hashes to hex strings (ethers.js compatible format)
-    console.log(`- Converting IPFS hashes to hex strings...`);
+    console.log(`- Converting HFS hashes to hex strings...`);
     const vehicleImageHex = ipfsHashToBytes(riderData.vehicleImage);
     const vehicleRegistrationHex = ipfsHashToBytes(riderData.vehicleRegistration);
     const profilePictureHex = riderData.profilePicture
       ? ipfsHashToBytes(riderData.profilePicture)
       : '0x'; // Empty bytes if no profile picture
 
-    // Build contract function parameters
-    // Contract function signature:
-    // riderApplication(string _name, string _number, string _vehicleNumber,
-    //                  string _homeAddress, string _country, uint256 _capacity,
-    //                  bytes _image, bytes _vehicleRegistration, uint8 _vehicleType, bytes _picture)
     const functionParameters = new ContractFunctionParameterBuilder()
       .addParam({
         type: 'string',
@@ -376,26 +345,31 @@ export async function registerRider(
     const success = await checkTransactionStatus(txHash, network, accountId);
 
     if (success.isSuccessful) {
-      console.log(`- Rider registration on blockchain completed successfully ✅`);
+      console.log(`- Rider registration on hedera DLT completed successfully ✅`);
 
-      // Get the rider ID from the blockchain
+      // Get the rider ID from the hedera DLT
       const riderId = await getRiderIdFromTransaction(txHash, network);
 
       if (!riderId) {
-        // Fallback: generate a temporary ID (will be replaced by backend)
-        console.log(`- Could not retrieve rider ID from blockchain, using timestamp`);
+        console.error(`❌ CRITICAL: Could not retrieve rider ID from hedera DLT`);
+        return {
+          success: false,
+          error:
+            'Registration succeeded but could not retrieve rider ID. Please contact support with this transaction hash: ' +
+            txHash,
+        };
       }
 
-      const finalRiderId = riderId || Date.now();
+      console.log(`✅ Rider ID retrieved from hedera DLT: ${riderId}`);
 
       // Save to Web2 backend
       console.log(`\n- Proceeding to save rider data to Web2 backend...`);
-      const backendResult = await saveRiderToBackend(riderData, accountId, finalRiderId);
+      const backendResult = await saveRiderToBackend(riderData, accountId, riderId);
 
       return {
         success: true,
         txHash: txHash,
-        riderId: finalRiderId,
+        riderId: riderId,
         web2Saved: backendResult.success,
         web2Error: backendResult.error,
       };
@@ -506,7 +480,7 @@ export function validateRiderData(riderData: RiderData): { isValid: boolean; err
 
   // Profile picture is optional, but validate if provided
   if (riderData.profilePicture && riderData.profilePicture.trim().length === 0) {
-    errors.push('Profile picture IPFS hash is invalid');
+    errors.push('Profile picture HFS hash is invalid');
   }
 
   return {
@@ -624,6 +598,9 @@ function decodeContractError(errorHex: string): string | null {
 /**
  * Get rider ID from successful transaction
  */
+/**
+ * Get rider ID from successful transaction by parsing RiderApplied event
+ */
 async function getRiderIdFromTransaction(txHash: string, network: string): Promise<number | null> {
   try {
     const mirrorNodeUrl =
@@ -636,16 +613,29 @@ async function getRiderIdFromTransaction(txHash: string, network: string): Promi
     if (response.ok) {
       const txData = await response.json();
 
-      // Try to extract rider ID from logs/events
+      // Parse logs to find RiderApplied event
       if (txData.logs && txData.logs.length > 0) {
-        console.log(`  - Transaction logs found, attempting to extract rider ID...`);
-        // The rider ID would typically be in an event emission
-        // This depends on your contract implementation
-      }
+        console.log(`  - Transaction logs found, parsing RiderApplied event...`);
 
-      // Try to get riderCount from contract state
-      // This is a fallback method
-      console.log(`  - Could not extract rider ID from transaction logs`);
+        // RiderApplied event signature: RiderApplied(uint256 indexed riderId, address indexed wallet, string name)
+        // Topic[0] = event signature hash
+        // Topic[1] = riderId (indexed)
+        // Topic[2] = wallet address (indexed)
+
+        for (const log of txData.logs) {
+          // Check if this is the RiderApplied event (first topic is event signature)
+          if (log.topics && log.topics.length >= 2) {
+            // Topic[1] contains the riderId (uint256)
+            const riderIdHex = log.topics[1];
+            const riderId = parseInt(riderIdHex, 16);
+
+            console.log(`  ✅ Extracted rider ID from event: ${riderId}`);
+            return riderId;
+          }
+        }
+
+        console.log(`  - Could not find RiderApplied event in logs`);
+      }
     }
 
     return null;
@@ -654,8 +644,6 @@ async function getRiderIdFromTransaction(txHash: string, network: string): Promi
     return null;
   }
 }
-// services/riderService.ts (continued)
-
 /**
  * Check if a rider is registered and get their status
  * @param walletData - [accountId, walletInterface, network]

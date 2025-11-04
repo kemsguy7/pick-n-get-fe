@@ -1,6 +1,9 @@
 const config = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    '@tailwindcss/postcss': {
+      // Disable native optimizations that require Lightning CSS
+      optimize: false,
+    },
   },
 };
 
