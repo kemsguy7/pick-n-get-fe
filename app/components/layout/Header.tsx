@@ -202,7 +202,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
             {/* Right Section */}
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {/* Theme Toggle */}
-              <button
+              {/* <button
                 onClick={toggleTheme}
                 className="focus-visible shrink-0 rounded-full p-1.5 transition-colors duration-200 hover:bg-white/20 sm:p-2"
                 aria-label="Toggle theme"
@@ -212,7 +212,7 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
                 ) : (
                   <Moon className="h-4 w-4 text-white sm:h-5 sm:w-5" />
                 )}
-              </button>
+              </button> */}
 
               {/* Wallet Connected State - ✅ NOW USES AUTH USER */}
               {user && accountId ? (
