@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
+// import { Sun, Moon, Menu, Bell, Wallet, LogOut } from 'lucide-react';
+
+import { Menu, Bell, Wallet, LogOut } from 'lucide-react';
+
 import { useRouter } from 'next/navigation';
 import { useLayout } from './LayoutProvider';
 import { useWalletInterface } from '../../../app/services/wallets/useWalletInterface';
