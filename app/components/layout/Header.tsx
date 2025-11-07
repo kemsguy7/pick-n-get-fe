@@ -81,13 +81,13 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
     }
   }, [accountId]);
 
-  const toggleTheme = () => {
-    const newTheme = !isDarkMode;
-    setIsDarkMode(newTheme);
-    const theme = newTheme ? 'dark' : 'light';
-    localStorage.setItem('theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  };
+  // const toggleTheme = () => {
+  //   const newTheme = !isDarkMode;
+  //   setIsDarkMode(newTheme);
+  //   const theme = newTheme ? 'dark' : 'light';
+  //   localStorage.setItem('theme', theme);
+  //   document.documentElement.setAttribute('data-theme', theme);
+  // };
 
   // ✅ UPDATED CONNECT/DISCONNECT HANDLER
   const handleConnect = async () => {
