@@ -20,7 +20,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = false }) => {
   const [activeLink, setActiveLink] = useState('Home');
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const router = useRouter();
