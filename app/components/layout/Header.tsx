@@ -20,7 +20,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = false }) => {
   const [activeLink, setActiveLink] = useState('Home');
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // const [isDarkMode, setIsDarkMode] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -42,21 +42,21 @@ const Header: React.FC<HeaderProps> = ({ className = '', showSidebarToggle = fal
   const navLinks = ['Home', 'Recycle', 'How It Works', 'Features', 'Shop', 'FAQs', 'Contact'];
 
   // Initialize theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // useEffect(() => {
+  //   const savedTheme = localStorage.getItem('theme');
+  //   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    if (savedTheme) {
-      setIsDarkMode(savedTheme === 'dark');
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    } else if (prefersDark) {
-      setIsDarkMode(true);
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-  }, []);
+  //   if (savedTheme) {
+  //     setIsDarkMode(savedTheme === 'dark');
+  //     document.documentElement.setAttribute('data-theme', savedTheme);
+  //   } else if (prefersDark) {
+  //     setIsDarkMode(true);
+  //     document.documentElement.setAttribute('data-theme', 'dark');
+  //   } else {
+  //     setIsDarkMode(false);
+  //     document.documentElement.setAttribute('data-theme', 'light');
+  //   }
+  // }, []);
 
   // ✅ AUTO-LOGIN WHEN WALLET CONNECTS
   useEffect(() => {
