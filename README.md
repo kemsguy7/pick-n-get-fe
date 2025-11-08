@@ -10,11 +10,27 @@
 - Hedera Testnet wallet (MetaMask or HashPack)
 - Pinata API keys
 - Firebase project
+- **Backend server running** (Required)
 
-### Installation
+### ⚠️ IMPORTANT: Backend Setup Required
+
+**You MUST have the backend running before starting the frontend application.**
 
 ```bash
-# Install dependencies
+# Clone and start the backend first
+git clone https://github.com/Dev-JoyA/pick-n-get-be
+cd pick-n-get-be
+# Follow backend setup instructions in that repository
+npm install
+npm start
+```
+
+The backend should be running on `http://localhost:5000` before you proceed with the frontend.
+
+### Frontend Installation
+
+```bash
+# After backend is running, install frontend dependencies
 npm install
 
 # Create environment file
@@ -26,27 +42,21 @@ npm run dev
 
 **Access:** `http://localhost:3000`
 
-## Make sure backend server is running before trying to start test the frontend
-
 ---
 
 ## ⚙️ Environment Configuration
 
-Create `.env` with the following:
+Create `.env.local` with the following:
 
 ```bash
-# Backend API
+# Backend API (ensure this matches your running backend)
 NEXT_PUBLIC_BACKEND_API_URL=http://localhost:5000/api/v1
 
 # Hedera Network
 NEXT_PUBLIC_HEDERA_NETWORK=testnet
 NEXT_PUBLIC_CONTRACT_ADDRESS=0.0.7162853
 
-# Pinata (IPFS)
-IPFS_WRITE_API_KEY=your_pinata_api_key
-IPFS_WRITE_API_SECRET=your_pinata_secret
-NEXT_PUBLIC_IPFS_WRITE_JWT=your_pinata_jwt
-NEXT_PUBLIC_GATEWAY_URL=https://gateway.pinata.cloud
+
 
 # WalletConnect
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
@@ -78,11 +88,16 @@ app/
 │   ├── login/              # Login page
 │   └── signup/
 │       ├── agent/          # Rider registration (4 steps)
-│       ├── recycler/       # User registration
+│       │   ├── page.tsx           # Step 1: Connect wallet
+│       │   ├── personal-info/     # Step 2: Personal details
+│       │   ├── vehicle/           # Step 3: Vehicle details
+│       │   └── documents/         # Step 4: Upload documents
+│       ├── recycler/       # Recycler registration
 │       ├── vendor/         # Vendor registration
-│       └── success/        # Success page
+│       ├── security/       # Security/verification step
+│       └── success/        # Registration success page
 │
-├── dashboard/              # User dashboard
+├── dashboard/              # Recycler dashboard
 ├── recycle/                # Recycling submission flow
 ├── shop/                   # Marketplace
 │   ├── [id]/              # Product details
@@ -93,7 +108,7 @@ app/
 │   └── users/             # User management
 ├── vendors/                # Vendor dashboard
 │   └── add-product/       # Product creation
-├── agents/                 # Rider dashboard
+├── agents/                 # Rider/Agent dashboard
 │
 ├── components/             # Reusable components
 │   ├── layout/            # AppLayout, Header, Footer
@@ -122,7 +137,7 @@ app/
 ├── apis/                   # API integration
 │   ├── backendApi.ts      # Backend REST calls
 │   ├── hederaApi.ts       # Hedera SDK
-│   ├── ipfsApi.js         # IPFS/Pinata
+│   ├── ipfsApi.js         # Hedera File Service API
 │   └── paymentApi.ts      # Payment processing
 │
 ├── config/                 # Configuration
@@ -135,7 +150,37 @@ app/
 
 ---
 
-## 🔑 Key Features
+## 🔑 Key Features & User Roles
+
+### User Role System
+
+**Important Role Rules:**
+
+- **Users must sign up before accessing any dashboard**
+- **A user CANNOT be both a Recycler and an Agent/Rider**
+- **A user CAN be a Vendor AND (Recycler OR Agent)**
+- **Admin access requires blockchain registration**
+
+### Signup Paths
+
+**Recycler:** `/auth/signup/recycler`  
+**Agent/Rider:** `/auth/signup/agent` (4-step process)  
+**Vendor:** `/auth/signup/vendor`
+
+### Admin Access
+
+To access the admin dashboard, you must register as an admin through the smart contract:
+
+1. Visit [HashScan Contract ABI](https://hashscan.io/testnet/contract/0.0.7162853/abi)
+2. Connect your wallet
+3. Use the `registerAdmin` function (function #8):
+   ```solidity
+   function registerAdmin(address _admin)
+   ```
+4. Pass your wallet address as the `_admin` parameter
+5. After successful registration, you can access `/admin` dashboard
+
+Then add your EVM compatible wallet address, private key and Operator ID to the backend .env file
 
 ### Wallet Integration
 
@@ -143,37 +188,110 @@ app/
 - **WalletConnect:** Mobile wallet support
 - **Unified API:** Single interface for all wallets
 
-### User Flows
+---
 
-**Recycler Registration:**
+## 👥 User Flows
+
+### Recycler Registration
+
+**Path:** `/auth/signup/recycler`
 
 1. Connect wallet
 2. Enter personal info (name, address, phone)
 3. Upload profile picture (optional)
 4. Submit to blockchain
 5. Save to backend
+6. Access dashboard at `/dashboard`
 
-**Rider Registration (4 Steps):**
+**After Signup:** Users can submit recycling items, track pickups, and view earnings.
 
-1. **Connect Wallet** — Wallet connection
-2. **Personal Info** — Name, phone, address, country
-3. **Vehicle Details** — Type, make/model, plate, capacity
-4. **Documents** — Upload driver's license, registration, insurance, photos
+---
 
-**Recycling Submission:**
+### Agent/Rider Registration (4 Steps)
 
-1. **Select Category** — Choose material type
-2. **Item Details** — Weight, description, photos
-3. **Pickup Schedule** — Address, date, time, select rider
-4. **Confirmation** — Review and submit to blockchain
+**Path:** `/auth/signup/agent`
 
-**Vendor Product Listing:**
+**Step 1 - Connect Wallet** (`/auth/signup/agent`)
+
+- Connect MetaMask or WalletConnect
+
+**Step 2 - Personal Info** (`/auth/signup/agent/personal-info`)
+
+- Name, phone number
+- Home address
+- Country
+
+**Step 3 - Vehicle Details** (`/auth/signup/agent/vehicle`)
+
+- Vehicle type (Bike, Car, Truck, Van)
+- Vehicle make/model
+- License plate number
+- Capacity (kg)
+
+**Step 4 - Documents** (`/auth/signup/agent/documents`)
+
+- Upload driver's license
+- Vehicle registration
+- Insurance documents
+- Vehicle photo
+- Profile picture
+
+**After Signup:** Application goes to admin for approval. Once approved, access dashboard at `/agents`.
+
+---
+
+### Vendor Registration
+
+**Path:** `/auth/signup/vendor`
 
 1. Connect wallet
-2. Fill product details
+2. Enter business details
+3. Upload business documents (optional)
+4. Submit to blockchain and backend
+5. Access vendor dashboard at `/vendors`
+
+**After Signup:** Vendors can list products, manage inventory, and process orders.
+
+---
+
+### Vendor Product Listing
+
+**Path:** `/vendors/add-product`
+
+1. Connect wallet
+2. Fill product details (name, description, category)
 3. Upload product image to Hedera File Service
 4. Set price (USD → auto-converted to HBAR)
-5. Submit to blockchain
+5. Set quantity
+6. Submit to blockchain
+
+---
+
+### Recycling Submission Flow
+
+**Path:** `/recycle`
+
+**Step 1 - Select Category**
+
+- Choose material type (Plastic, Metal, Glass, Paper, Electronics, etc.)
+
+**Step 2 - Item Details**
+
+- Weight (kg)
+- Description
+- Upload photos
+
+**Step 3 - Pickup Schedule**
+
+- Pickup address
+- Preferred date and time
+- Select available rider
+
+**Step 4 - Confirmation**
+
+- Review all details
+- Submit to blockchain
+- Rider receives notification
 
 ---
 
@@ -212,20 +330,23 @@ npm run restart          # Clean + reinstall + dev
 ### Wallet Security
 
 - Never store private keys in frontend
-- Always verify transaction details
+- Always verify transaction details before signing
 - Use hardware wallets for large amounts
+- Double-check contract addresses
 
 ### API Security
 
 - HTTPS only for production
 - Rate limiting on sensitive endpoints
 - Input validation before submission
+- Sanitize user uploads
 
 ### File Uploads
 
 - Validate file types and sizes
 - Scan uploads before storing
-- Use IPFS for immutable storage
+- Use Hedera file service for immutable storage
+- Maximum file size: 10MB recommended
 
 ---
 
@@ -233,16 +354,31 @@ npm run restart          # Clean + reinstall + dev
 
 ### Common Issues
 
+**Backend connection fails:**
+
+```bash
+# Ensure backend is running on correct port
+# Check NEXT_PUBLIC_BACKEND_API_URL in .env.local
+# Verify backend is accessible at http://localhost:5000
+```
+
 **Wallet won't connect:**
 
 ```bash
-# Ensure correct network
+# Ensure correct network in MetaMask
 MetaMask → Settings → Networks → Add Network
 Name: Hedera Testnet
 RPC: https://testnet.hashio.io/api
 Chain ID: 296
 Currency: HBAR
 ```
+
+**Cannot access dashboard:**
+
+- Ensure you've completed signup process
+- Check that wallet is connected
+- Verify role assignment in contract
+- For admin: Ensure `registerAdmin` was called on contract
 
 **Build errors:**
 
@@ -263,13 +399,11 @@ npx tsc --version
 npm run type-check
 ```
 
-**IPFS upload fails:**
+**Role conflicts:**
 
-```bash
-# Verify Pinata keys in .env.local
-# Check file size (<10MB recommended)
-# Ensure API keys have write permissions
-```
+- A user cannot be both Recycler and Agent
+- To switch roles, you must use a different wallet address
+- Admin role must be assigned via contract, not through signup
 
 ---
 
@@ -304,6 +438,15 @@ npm run type-check
 
 ---
 
+## 🔗 Important Links
+
+- **Backend Repository:** [https://github.com/Dev-JoyA/pick-n-get-be](https://github.com/Dev-JoyA/pick-n-get-be)
+- **Smart Contract:** [0.0.7162853](https://hashscan.io/testnet/contract/0.0.7162853)
+- **Contract ABI:** [https://hashscan.io/testnet/contract/0.0.7162853/abi](https://hashscan.io/testnet/contract/0.0.7162853/abi)
+- **Hedera Testnet:** [https://portal.hedera.com](https://portal.hedera.com)
+
+---
+
 ## 📄 License
 
 UNLICENSED — Research and hackathon purposes only.
@@ -314,7 +457,7 @@ UNLICENSED — Research and hackathon purposes only.
 
 - **GitHub Issues:** [Report bugs](https://github.com/kemsguy7/pick-n-get-fe/issues)
 - **Email:** support@pick-n-get.io
-- **Docs:** [Full Documentation](../README.md)
+- **Documentation:** See project wiki for detailed guides
 
 ---
 
